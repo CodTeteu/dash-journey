@@ -1,0 +1,99 @@
+table CONTRATOS_OPORTUNIDADES
+	lineageTag: bd2c0838-bc63-49a4-a5f4-5ce99e556ff6
+
+	column job
+		dataType: string
+		lineageTag: 608f35e1-d1d1-4941-916c-761b2bb4b0b3
+		summarizeBy: none
+		sourceColumn: job
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_contrato
+		dataType: int64
+		formatString: 0
+		lineageTag: bb324dc0-d3be-4bde-b3db-aafb3a2b608f
+		summarizeBy: sum
+		sourceColumn: id_contrato
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_diagnostico
+		dataType: int64
+		formatString: 0
+		lineageTag: bd05e8e9-a3e5-475f-a76e-c87377fffea9
+		summarizeBy: sum
+		sourceColumn: id_diagnostico
+
+		annotation SummarizationSetBy = Automatic
+
+	column data_contrato
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 15e24e4b-3538-482d-a45d-29ce33ee5e8e
+		summarizeBy: none
+		sourceColumn: data_contrato
+
+		variation Variation
+			isDefault
+			relationship: d7d2785a-1ccf-4bbf-93fb-48936fbfc8b2
+			defaultHierarchy: LocalDateTable_8fc92519-9842-44fa-b636-c2435cd2ba48.'Hierarquia de datas'
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_solucao
+		dataType: int64
+		formatString: 0
+		lineageTag: e6faf695-c963-43c7-9950-6531b41ce7b9
+		summarizeBy: sum
+		sourceColumn: id_solucao
+
+		annotation SummarizationSetBy = Automatic
+
+	column oportunidade
+		dataType: string
+		lineageTag: b9f46f81-2ca1-40c0-a23f-98f5d21c96c1
+		summarizeBy: none
+		sourceColumn: oportunidade
+
+		annotation SummarizationSetBy = Automatic
+
+	column estimativa
+		dataType: double
+		lineageTag: 2a85e4df-24d1-4d40-8b35-a133dc6db549
+		summarizeBy: sum
+		sourceColumn: estimativa
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column razao_social
+		dataType: string
+		lineageTag: e0fea4ee-55c3-43f6-b441-489f20e21228
+		summarizeBy: none
+		sourceColumn: razao_social
+
+		annotation SummarizationSetBy = Automatic
+
+	column cnpj
+		dataType: string
+		lineageTag: d863ad19-7af4-45a5-b71c-322c45feeb92
+		summarizeBy: none
+		sourceColumn: cnpj
+
+		annotation SummarizationSetBy = Automatic
+
+	partition CONTRATOS_OPORTUNIDADES = m
+		mode: import
+		source =
+				let
+				    Fonte =
+				        Odbc.Query("dsn=pj360_mysql_user", "SELECT * FROM vw_contratos_oportunidades")
+				in
+				    Fonte
+
+	annotation PBI_NavigationStepName = Navegação
+
+	annotation PBI_ResultType = Table
+

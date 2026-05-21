@@ -5,7 +5,7 @@ table PROJECT_QBERT_JOBS
 		dataType: int64
 		formatString: 0
 		lineageTag: b80434f4-7639-44c3-95ec-5434001b248e
-		summarizeBy: none
+		summarizeBy: sum
 		sourceColumn: CODIGO
 
 		annotation SummarizationSetBy = Automatic
