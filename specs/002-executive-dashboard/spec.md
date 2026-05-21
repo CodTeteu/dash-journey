@@ -95,3 +95,4 @@ Como usuário executivo ou analista, eu preciso ver um detalhamento focado apena
 - O desenvolvimento das páginas executivas não deve impactar ou alterar retroativamente a lógica interna dos dados das fontes primárias sem aviso prévio.
 - O público-alvo executivo possui acesso adequado à licença do Power BI para visualização interativa do dashboard.
 - As regras de formatação e temas visuais seguirão os padrões corporativos estabelecidos.
+- **Uso de MCP vs. TMDL para Desenvolvimento**: O agente DEVE sempre realizar análises, consultas e diagnósticos de dados utilizando a ferramenta Power BI MCP instalada. Edições e modificações diretas nos arquivos TMDL do projeto `.pbip` devem ser efetuadas apenas no momento de realizar grandes ajustes estruturais ou modificações no modelo de dados, visando a economia de tokens de IA, máxima velocidade e produtividade no desenvolvimento.

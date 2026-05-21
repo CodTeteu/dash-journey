@@ -102,6 +102,15 @@ O dashboard deve apresentar apenas as informações necessárias ao objetivo da 
 - Regras de acesso devem ser respeitadas.
 - Exportações e compartilhamentos devem considerar o risco de exposição indevida.
 
+### VIII. Ferramental Adequado e Economia de Recursos (MCP vs. TMDL)
+
+O desenvolvimento deve ser otimizado para velocidade, produtividade e economia de tokens de IA, utilizando o melhor recurso para cada cenário de trabalho.
+
+**Obrigatório**:
+- **Análises e Consultas via MCP**: O agente DEVE sempre realizar leituras, análises, consultas e diagnósticos de dados utilizando a ferramenta Power BI MCP instalada.
+- **Modificações via TMDL**: Edições e manipulações diretas nos arquivos TMDL do projeto `.pbip` devem ser feitas apenas ao realizar grandes ajustes estruturais ou modificações no modelo.
+- **Eficiência e Produtividade**: Esta divisão de tarefas visa economizar tokens de IA e garantir o fluxo de trabalho mais rápido e produtivo possível.
+
 ## Critérios de Qualidade
 
 Uma entrega só deve ser considerada pronta quando atender aos critérios abaixo:
@@ -214,6 +223,7 @@ Ao usar o Spec Kit neste projeto:
 - Toda lista de tarefas deve incluir validação de dados, revisão visual e checagem de versionamento.
 - Qualquer exceção aos princípios deve ser justificada explicitamente.
 - A constituição tem prioridade sobre preferências pontuais de implementação.
+- **Priorização do Power BI MCP para Análise**: O agente DEVE sempre realizar análises e diagnósticos de dados utilizando a ferramenta Power BI MCP instalada. Edições e manipulações diretas nos arquivos TMDL do projeto `.pbip` devem ser realizadas apenas para grandes ajustes estruturais ou modificações no modelo, visando a economia de tokens de IA, maior velocidade e ganho de produtividade.
 
 ### Controle de Mudanças
 
