@@ -1,0 +1,181 @@
+relationship f3c056f0-9b95-4b15-8854-ad1d8d5dcf91
+	joinOnDateBehavior: datePartOnly
+	fromColumn: JOBS_Produto.DATA_CADASTRO
+	toColumn: dCalendar.Date
+
+relationship 806a5a55-1e3d-4011-8864-e57ae0c7a54e
+	joinOnDateBehavior: datePartOnly
+	fromColumn: JOBS_Produto.DATA_ASSINATURA
+	toColumn: LocalDateTable_3f10bcdf-fe39-4870-a267-d82b335c23c3.Date
+
+relationship 3bfe0d37-c997-44c9-8087-d6ddafd7fdd0
+	joinOnDateBehavior: datePartOnly
+	fromColumn: JOBS_Produto.TRIBUTO_DATA_ENTRADA
+	toColumn: LocalDateTable_ceeada72-be36-4848-bdbe-c2e04a81fc1c.Date
+
+relationship 18873034-9e62-469a-a04c-befc869ef0a0
+	joinOnDateBehavior: datePartOnly
+	fromColumn: QBERT_JOBS_JOURNEY.DATA_CADASTRO
+	toColumn: LocalDateTable_ab399244-0340-457e-9a3e-95064e6bf44c.Date
+
+relationship f1fc04cd-be37-40e8-b240-f338367d6a54
+	joinOnDateBehavior: datePartOnly
+	fromColumn: PROJECT_QBERT_JOBS.DATA_CADASTRO
+	toColumn: LocalDateTable_1b242057-333c-4953-bc3d-489720cbd8c3.Date
+
+relationship 2535fcb6-bdc3-473e-b1c1-360ed4692545
+	joinOnDateBehavior: datePartOnly
+	fromColumn: PROJECT_QBERT_JOBS.DATA_PROC_ELETRONICA
+	toColumn: LocalDateTable_736e2e2f-44dd-4969-8d51-973dcadc3d2a.Date
+
+relationship f060f270-8fb8-4939-8f58-8c01db48d76e
+	joinOnDateBehavior: datePartOnly
+	fromColumn: PROJECT_QBERT_JOBS.DATA_INICIO_CONTRATO
+	toColumn: LocalDateTable_cefd6b54-4f0f-4d1e-9da4-ccf3d9a9a4ed.Date
+
+relationship e5128cd3-2131-4d6f-8af9-18b7c7b2ca2d
+	joinOnDateBehavior: datePartOnly
+	fromColumn: PROJECT_QBERT_JOBS.DATA_ENTREGA
+	toColumn: LocalDateTable_72a94729-fedf-446f-acb9-33855eb8807d.Date
+
+relationship cfbb832d-6d5c-44c8-9252-8e2677617c52
+	joinOnDateBehavior: datePartOnly
+	fromColumn: PROJECT_QBERT_JOBS.PRAZO_ATA
+	toColumn: LocalDateTable_1ca05569-e62b-4cff-9c81-808a5503a231.Date
+
+relationship 531593c0-dba1-4a96-b9d9-a651e8485fa9
+	joinOnDateBehavior: datePartOnly
+	fromColumn: PROJECT_QBERT_JOBS.DATA_CANCELAMENTO
+	toColumn: LocalDateTable_cd8b3b62-7883-4bd2-9ca9-2884324d644c.Date
+
+relationship abc51ac1-22c4-47a3-a122-a7e763000434
+	joinOnDateBehavior: datePartOnly
+	fromColumn: PROJECT_QBERT_JOBS.DATA_INTERNA
+	toColumn: LocalDateTable_2cb83304-439b-48f4-9fa2-5acc4ff771a4.Date
+
+relationship ef7016d2-3988-476e-9d6c-42d590e14abb
+	joinOnDateBehavior: datePartOnly
+	fromColumn: PROJECT_QBERT_JOBS.PRAZO_QUALIDADE
+	toColumn: LocalDateTable_2b1ce973-c85b-41c5-9b4d-4a74e0ea5763.Date
+
+relationship d338632f-0433-47fd-a7e6-79f91bcdcd77
+	joinOnDateBehavior: datePartOnly
+	fromColumn: PROJECT_QBERT_JOBS.DATA_RECEBIMENTO
+	toColumn: LocalDateTable_42e251f4-b9df-45ec-a651-2b63fdbc8c02.Date
+
+relationship 1d0c7d77-0d32-4aef-85a6-ae572c1a57fc
+	joinOnDateBehavior: datePartOnly
+	fromColumn: PROJECT_QBERT_JOBS.CONTRATOOK_DATA
+	toColumn: LocalDateTable_f1b3ce3a-2a94-4936-929a-6ad8a36b8292.Date
+
+relationship 645ffa04-28db-426e-82bf-ea69a5100b6f
+	joinOnDateBehavior: datePartOnly
+	fromColumn: PROJECT_QBERT_JOBS.CONTRATOJURIDICOOK_DATA
+	toColumn: LocalDateTable_7d2203ca-6170-4e77-aef4-4c02a09d323e.Date
+
+relationship b4f0aedf-fdc4-4029-91b1-f88729ba5e10
+	joinOnDateBehavior: datePartOnly
+	fromColumn: PROJECT_QBERT_JOBS.CONTRATOFINANCEIROOK_DATA
+	toColumn: LocalDateTable_1d37ed04-d531-4127-878d-db2302b76c05.Date
+
+relationship 5ed60aee-918a-4a84-8e9b-fede2fda50af
+	joinOnDateBehavior: datePartOnly
+	fromColumn: PROJECT_QBERT_JOBS.CONTRATOCHECKLISTOK_DATA
+	toColumn: LocalDateTable_9a27435d-c2bb-436d-b7e6-067768850de5.Date
+
+relationship f448c08d-1f28-4493-aae3-fda1c9b851e0
+	joinOnDateBehavior: datePartOnly
+	fromColumn: PROJECT_QBERT_JOBS.DISTRATO_DATA
+	toColumn: LocalDateTable_5d8da693-a3ba-4d46-b83b-7f315bc65e20.Date
+
+relationship 1e7212bc-96f6-4639-b880-9cc7e95142ab
+	joinOnDateBehavior: datePartOnly
+	fromColumn: PROJECT_QBERT_JOBS.SERVICOS_DATA_INI
+	toColumn: LocalDateTable_fc815b18-2d27-4234-bd0c-677ada47ce3b.Date
+
+relationship d04926a0-2dfa-4fbb-9096-ea52c240c0ea
+	joinOnDateBehavior: datePartOnly
+	fromColumn: PROJECT_QBERT_JOBS.SERVICOS_DATA_FIM
+	toColumn: LocalDateTable_1ce3b51f-822a-4208-9c75-e693f7723751.Date
+
+relationship AutoDetected_971d1e59-6951-4c16-b49e-af51b1b128ec
+	crossFilteringBehavior: bothDirections
+	fromCardinality: one
+	fromColumn: PROJECT_QBERT_JOBS.CODIGO
+	toColumn: QBERT_JOBS_JOURNEY.CODIGO
+
+relationship fd314d50-c8e1-4a90-a547-a56f41e7fecd
+	joinOnDateBehavior: datePartOnly
+	fromColumn: QBERT_JOBS_JOURNEY.DATA_PROC_ELETRONICA
+	toColumn: LocalDateTable_6b3493d9-7dee-4cca-be49-96fd75771451.Date
+
+relationship db22a511-09ac-4aaa-89a1-c86e441c7220
+	joinOnDateBehavior: datePartOnly
+	fromColumn: QBERT_JOBS_JOURNEY.DATA_INICIO_CONTRATO
+	toColumn: LocalDateTable_f26b1b0f-0acc-4463-832c-01ae80e104e3.Date
+
+relationship 2211de11-37b7-4c14-9578-1bf3930d0182
+	joinOnDateBehavior: datePartOnly
+	fromColumn: QBERT_JOBS_JOURNEY.DATA_ENTREGA
+	toColumn: LocalDateTable_dbce03ef-6471-4d5c-bccf-2d16fe1e4c4c.Date
+
+relationship ac838df4-dcce-4f0c-8d8f-013faad3b403
+	joinOnDateBehavior: datePartOnly
+	fromColumn: QBERT_JOBS_JOURNEY.PRAZO_ATA
+	toColumn: LocalDateTable_6e7ae696-2177-4943-ba3c-e07737b27b04.Date
+
+relationship b8398da8-61f1-4c36-a6b8-2560fa5557f1
+	joinOnDateBehavior: datePartOnly
+	fromColumn: QBERT_JOBS_JOURNEY.DATA_CANCELAMENTO
+	toColumn: LocalDateTable_549aab74-8933-4111-a617-50f38fe4d9a9.Date
+
+relationship 75feab2a-98d5-4752-9e50-a3180afa2904
+	joinOnDateBehavior: datePartOnly
+	fromColumn: QBERT_JOBS_JOURNEY.DATA_INTERNA
+	toColumn: LocalDateTable_1b0ea89f-272d-4bcc-9f02-b375df2a9ebf.Date
+
+relationship aeb2a3dd-05f9-44b5-9d74-e85671f114ed
+	joinOnDateBehavior: datePartOnly
+	fromColumn: QBERT_JOBS_JOURNEY.PRAZO_QUALIDADE
+	toColumn: LocalDateTable_f1fb6bf9-6d1f-44cb-9a73-60360ad49e5b.Date
+
+relationship 1b5828aa-930c-4c67-b065-280f1c67a0c0
+	joinOnDateBehavior: datePartOnly
+	fromColumn: QBERT_JOBS_JOURNEY.DATA_RECEBIMENTO
+	toColumn: LocalDateTable_9f075ec0-89c9-4a9d-9105-cbb5f720ef7a.Date
+
+relationship 8ff52f2a-eb20-4853-8d78-479585cae97d
+	joinOnDateBehavior: datePartOnly
+	fromColumn: QBERT_JOBS_JOURNEY.CONTRATOOK_DATA
+	toColumn: LocalDateTable_6c015aac-1a19-44b0-b79b-525ef392cf5a.Date
+
+relationship 6e1f6712-3941-41c3-85c2-0602b3366cc7
+	joinOnDateBehavior: datePartOnly
+	fromColumn: QBERT_JOBS_JOURNEY.CONTRATOJURIDICOOK_DATA
+	toColumn: LocalDateTable_783efd5b-ee5d-4d42-872d-5ee0b7faad6a.Date
+
+relationship a87beb13-15b4-47d1-887e-451f26baa9b4
+	joinOnDateBehavior: datePartOnly
+	fromColumn: QBERT_JOBS_JOURNEY.CONTRATOFINANCEIROOK_DATA
+	toColumn: LocalDateTable_8a636eb6-da25-4892-afd9-a6017d643673.Date
+
+relationship 1d993c54-195f-49dd-aa09-70872704c72c
+	joinOnDateBehavior: datePartOnly
+	fromColumn: QBERT_JOBS_JOURNEY.CONTRATOCHECKLISTOK_DATA
+	toColumn: LocalDateTable_310b0e48-bbed-4e50-a67b-37ee9fd78727.Date
+
+relationship ea9aac97-3578-4a41-af7e-64f317d61778
+	joinOnDateBehavior: datePartOnly
+	fromColumn: QBERT_JOBS_JOURNEY.DISTRATO_DATA
+	toColumn: LocalDateTable_af2c66f1-74cc-4d3b-ba6a-48aeccd88b39.Date
+
+relationship 387c309d-0cc3-4000-8d5a-6d9876500fa5
+	joinOnDateBehavior: datePartOnly
+	fromColumn: QBERT_JOBS_JOURNEY.SERVICOS_DATA_INI
+	toColumn: LocalDateTable_4edad926-2817-4669-b869-34748bb8f537.Date
+
+relationship 93dc20be-b85d-47de-b151-f314ce98086d
+	joinOnDateBehavior: datePartOnly
+	fromColumn: QBERT_JOBS_JOURNEY.SERVICOS_DATA_FIM
+	toColumn: LocalDateTable_dde6048b-a6ea-4dd6-b455-79790b6a5efe.Date
+

@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "Bash(npx skills *)",
+      "Bash(npx.cmd skills *)",
+      "Bash(where.exe npx *)",
+      "Read(//c/Program Files/nodejs/**)",
+      "Read(//c/Program Files \\(x86\\)/nodejs/**)",
+      "Bash(where.exe node *)",
+      "Read(//c/Users/matheus.castro/AppData/Roaming/npm/**)",
+      "Read(//c/Users/matheus.castro/AppData/Local/**)",
+      "Read(//mnt/c/Program Files/nodejs/**)",
+      "Bash(ls \"C:/Users/matheus.castro/.local/bin/npx\" \"C:/Users/matheus.castro/.local/bin/npx.cmd\" 2>/dev/null)",
+      "Read(//c/Users/matheus.castro/.local/bin/**)",
+      "Bash(\"C:/Users/matheus.castro/AppData/Roaming/npm/skills.cmd\" add *)"
+    ],
+    "defaultMode": "bypassPermissions"
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "powerbi-modeling-mcp"
+  ]
+}

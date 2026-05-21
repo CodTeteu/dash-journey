@@ -1,0 +1,61 @@
+{
+  "version": "1.1.0",
+  "diagrams": [
+    {
+      "ordinal": 0,
+      "scrollPosition": {
+        "x": 0,
+        "y": 0
+      },
+      "nodes": [
+        {
+          "location": {
+            "x": 829.99999455043235,
+            "y": 0
+          },
+          "nodeIndex": "medidas_html",
+          "nodeLineageTag": "f371007f-daa0-4acf-919c-58dc35ff6b74",
+          "size": {
+            "height": 600,
+            "width": 234
+          },
+          "zIndex": 1
+        },
+        {
+          "location": {
+            "x": 421.25,
+            "y": 0
+          },
+          "nodeIndex": "dCalendar",
+          "nodeLineageTag": "d58b8c12-880e-4b34-bbce-b4552a2e6229",
+          "size": {
+            "height": 867,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 0,
+            "y": 0
+          },
+          "nodeIndex": "JOBS_Produto",
+          "nodeLineageTag": "158fe7f9-dd3a-437e-8f71-29e16f3d09b9",
+          "size": {
+            "height": 725,
+            "width": 234
+          },
+          "zIndex": 0
+        }
+      ],
+      "name": "Todas as tabelas",
+      "zoomValue": 78.133333333333326,
+      "pinKeyFieldsToTop": false,
+      "showExtraHeaderInfo": false,
+      "hideKeyFieldsWhenCollapsed": false,
+      "tablesLocked": false
+    }
+  ],
+  "selectedDiagram": "Todas as tabelas",
+  "defaultDiagram": "Todas as tabelas"
+}

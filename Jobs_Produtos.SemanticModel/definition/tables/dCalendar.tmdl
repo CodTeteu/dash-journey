@@ -1,0 +1,473 @@
+table dCalendar
+	lineageTag: d58b8c12-880e-4b34-bbce-b4552a2e6229
+	dataCategory: Time
+
+	column Date
+		isUnique
+		isKey
+		formatString: General Date
+		lineageTag: 2c49e809-6bf2-4fe6-bb87-1c315f05ac12
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Date]
+
+		annotation SummarizationSetBy = Automatic
+
+	column Year
+		formatString: 0
+		lineageTag: 4fa3f239-f650-470c-a39c-578b82854edf
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Year]
+
+		annotation SummarizationSetBy = Automatic
+
+	column MonthNumber
+		formatString: 0
+		lineageTag: 145bec48-a902-4539-b1e2-339bed2e111f
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [MonthNumber]
+
+		annotation SummarizationSetBy = Automatic
+
+	column MonthName
+		lineageTag: 931b841d-ae6f-4d66-b5e8-02a7e26c9578
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [MonthName]
+		sortByColumn: MonthNumber
+
+		annotation SummarizationSetBy = Automatic
+
+	column YearMonth
+		formatString: 0
+		lineageTag: 244c5777-36c3-4d17-8e0f-4ecfa6e5950c
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [YearMonth]
+
+		annotation SummarizationSetBy = Automatic
+
+	column YearMonthName
+		lineageTag: 3ae86c82-ea5f-432f-8010-8210a2025691
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [YearMonthName]
+		sortByColumn: YearMonth
+
+		annotation SummarizationSetBy = Automatic
+
+	column Quarter
+		formatString: 0
+		lineageTag: bdbe36d4-2247-481a-bdc4-8edc36239513
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Quarter]
+
+		annotation SummarizationSetBy = Automatic
+
+	column QuarterName
+		lineageTag: 76161708-77ce-4d6b-b81e-7291faa90085
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [QuarterName]
+		sortByColumn: Quarter
+
+		annotation SummarizationSetBy = Automatic
+
+	column DateInt
+		formatString: 0
+		lineageTag: 8913147c-f2be-4d4c-9902-e8366350d4fe
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [DateInt]
+
+		annotation SummarizationSetBy = Automatic
+
+	column YearShort
+		lineageTag: ff920996-5c4a-4cd6-91ac-0e71a0a08877
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [YearShort]
+
+		annotation SummarizationSetBy = Automatic
+
+	column MonthNameLong
+		lineageTag: 6c8b2fa2-7572-42a3-b2ef-ae360424f942
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [MonthNameLong]
+		sortByColumn: MonthNumber
+
+		annotation SummarizationSetBy = Automatic
+
+	column YearMonthLong
+		lineageTag: 91a60eb1-730f-464c-b5c3-efb9fd12203c
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [YearMonthLong]
+		sortByColumn: YearMonth
+
+		annotation SummarizationSetBy = Automatic
+
+	column MonthStart
+		formatString: General Date
+		lineageTag: 7d375b16-6e06-4135-930f-8831024ef44a
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [MonthStart]
+
+		annotation SummarizationSetBy = Automatic
+
+	column MonthEnd
+		formatString: General Date
+		lineageTag: beb1eea8-8481-4f3a-9250-5beb48fe2aa2
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [MonthEnd]
+
+		annotation SummarizationSetBy = Automatic
+
+	column YearQuarter
+		formatString: 0
+		lineageTag: 22168ee0-6689-46b1-88d4-1072f91d5605
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [YearQuarter]
+
+		annotation SummarizationSetBy = Automatic
+
+	column YearQuarterName
+		lineageTag: cf996fea-085b-4ea2-9fc9-bd7a627b1742
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [YearQuarterName]
+		sortByColumn: YearQuarter
+
+		annotation SummarizationSetBy = Automatic
+
+	column Semester
+		formatString: 0
+		lineageTag: c085b389-1e8a-4656-a213-1fbe25302a0d
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Semester]
+
+		annotation SummarizationSetBy = Automatic
+
+	column SemesterName
+		lineageTag: 998e6f63-b251-4fb6-8ccd-1b0a1cdc0905
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [SemesterName]
+		sortByColumn: Semester
+
+		annotation SummarizationSetBy = Automatic
+
+	column YearSemester
+		formatString: 0
+		lineageTag: 2e86ae09-eadd-4aed-98d4-d2342a7bac05
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [YearSemester]
+
+		annotation SummarizationSetBy = Automatic
+
+	column YearSemesterName
+		lineageTag: b63ef792-4341-4f0a-968f-82c8ae1afb93
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [YearSemesterName]
+		sortByColumn: YearSemester
+
+		annotation SummarizationSetBy = Automatic
+
+	column Day
+		formatString: 0
+		lineageTag: f19b84b7-be41-49b8-9644-d1737cc0b10f
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Day]
+
+		annotation SummarizationSetBy = Automatic
+
+	column DayOfWeekNumber
+		formatString: 0
+		lineageTag: 8ebe9e08-1403-496e-a515-6124939b7808
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [DayOfWeekNumber]
+
+		annotation SummarizationSetBy = Automatic
+
+	column DayOfWeekName
+		lineageTag: d839dbdf-10f3-4507-bb3a-ebf241a88831
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [DayOfWeekName]
+		sortByColumn: DayOfWeekNumber
+
+		annotation SummarizationSetBy = Automatic
+
+	column DayOfWeekShort
+		lineageTag: 48fb956d-f193-44db-97b7-c338a8778c5a
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [DayOfWeekShort]
+		sortByColumn: DayOfWeekNumber
+
+		annotation SummarizationSetBy = Automatic
+
+	column IsWeekend
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 1cb86c02-9bca-4a17-b146-701483447082
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [IsWeekend]
+
+		annotation SummarizationSetBy = Automatic
+
+	column WeekStart
+		formatString: General Date
+		lineageTag: 76fec0f9-f50f-46c7-a532-82de8fafab46
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [WeekStart]
+
+		annotation SummarizationSetBy = Automatic
+
+	column WeekEnd
+		formatString: General Date
+		lineageTag: ade3f857-37d4-4f1c-9a83-0d0175a33a26
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [WeekEnd]
+
+		annotation SummarizationSetBy = Automatic
+
+	column ISOWeekNumber
+		formatString: 0
+		lineageTag: 8888491f-9db8-413a-820a-47f7d5988cd7
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [ISOWeekNumber]
+
+		annotation SummarizationSetBy = Automatic
+
+	column ISOYear
+		formatString: 0
+		lineageTag: 7975579a-859f-4cf6-84ff-5ed5fa54d855
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [ISOYear]
+
+		annotation SummarizationSetBy = Automatic
+
+	column ISOYearWeek
+		formatString: 0
+		lineageTag: bc6aa540-5125-49fd-8399-c3df7bf33286
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [ISOYearWeek]
+
+		annotation SummarizationSetBy = Automatic
+
+	column ISOYearWeekName
+		lineageTag: cee073bc-13fc-47c4-a632-3fad6cbced01
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [ISOYearWeekName]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dCalendar = calculated
+		mode: import
+		source = ```
+				
+				VAR vMinAllowed = DATE(2000, 1, 1)
+				
+				VAR vMinBase =
+				    MINX (
+				        FILTER (
+				            ALL ( 'JOBS_Produto' ),
+				            NOT ISBLANK ( 'JOBS_Produto'[DATA_CADASTRO] )
+				                && 'JOBS_Produto'[DATA_CADASTRO] >= vMinAllowed
+				        ),
+				        'JOBS_Produto'[DATA_CADASTRO]
+				    )
+				
+				VAR vMaxBase =
+				    MAXX (
+				        FILTER (
+				            ALL ( 'JOBS_Produto' ),
+				            NOT ISBLANK ( 'JOBS_Produto'[DATA_CADASTRO] )
+				        ),
+				        'JOBS_Produto'[DATA_CADASTRO]
+				    )
+				
+				VAR vMinAssinatura =
+				    MINX (
+				        FILTER (
+				            ALL ( 'JOBS_Produto' ),
+				            NOT ISBLANK ( 'JOBS_Produto'[DATA_ASSINATURA] )
+				                && 'JOBS_Produto'[DATA_ASSINATURA] >= vMinAllowed
+				        ),
+				        'JOBS_Produto'[DATA_ASSINATURA]
+				    )
+				
+				VAR vMaxAssinatura =
+				    MAXX (
+				        FILTER (
+				            ALL ( 'JOBS_Produto' ),
+				            NOT ISBLANK ( 'JOBS_Produto'[DATA_ASSINATURA] )
+				        ),
+				        'JOBS_Produto'[DATA_ASSINATURA]
+				    )
+				
+				VAR vMinTributo =
+				    MINX (
+				        FILTER (
+				            ALL ( 'JOBS_Produto' ),
+				            NOT ISBLANK ( 'JOBS_Produto'[TRIBUTO_DATA_ENTRADA] )
+				                && 'JOBS_Produto'[TRIBUTO_DATA_ENTRADA] >= vMinAllowed
+				        ),
+				        'JOBS_Produto'[TRIBUTO_DATA_ENTRADA]
+				    )
+				
+				VAR vMaxTributo =
+				    MAXX (
+				        FILTER (
+				            ALL ( 'JOBS_Produto' ),
+				            NOT ISBLANK ( 'JOBS_Produto'[TRIBUTO_DATA_ENTRADA] )
+				        ),
+				        'JOBS_Produto'[TRIBUTO_DATA_ENTRADA]
+				    )
+				
+				VAR vStartDate =
+				    DATE (
+				        YEAR ( COALESCE ( MIN ( MIN ( vMinBase, vMinAssinatura ), vMinTributo ), TODAY () ) ),
+				        1,
+				        1
+				    )
+				
+				VAR vEndDate =
+				    EOMONTH (
+				        COALESCE ( MAX ( MAX ( vMaxBase, vMaxAssinatura ), vMaxTributo ), TODAY () ),
+				        0
+				    )
+				
+				VAR vTodayEnd = EOMONTH(TODAY(), 0)
+				
+				RETURN
+				    ADDCOLUMNS (
+				        CALENDAR ( vStartDate, MIN(vEndDate, vTodayEnd) ),
+				
+				        "DateInt",
+				            YEAR ( [Date] ) * 10000
+				                + MONTH ( [Date] ) * 100
+				                + DAY ( [Date] ),
+				
+				        "Year",
+				            YEAR ( [Date] ),
+				
+				        "YearShort",
+				            FORMAT ( [Date], "yy" ),
+				
+				        "MonthNumber",
+				            MONTH ( [Date] ),
+				
+				        "MonthName",
+				            FORMAT ( [Date], "[$-pt-BR]mmm" ),
+				
+				        "MonthNameLong",
+				            FORMAT ( [Date], "[$-pt-BR]mmmm" ),
+				
+				        "YearMonth",
+				            YEAR ( [Date] ) * 100
+				                + MONTH ( [Date] ),
+				
+				        "YearMonthName",
+				            FORMAT ( [Date], "[$-pt-BR]mmm/yyyy" ),
+				
+				        "YearMonthLong",
+				            FORMAT ( [Date], "[$-pt-BR]mmmm/yyyy" ),
+				
+				        "MonthStart",
+				            DATE ( YEAR ( [Date] ), MONTH ( [Date] ), 1 ),
+				
+				        "MonthEnd",
+				            EOMONTH ( [Date], 0 ),
+				
+				        "Quarter",
+				            QUARTER ( [Date] ),
+				
+				        "QuarterName",
+				            "T" & QUARTER ( [Date] ),
+				
+				        "YearQuarter",
+				            YEAR ( [Date] ) * 10
+				                + QUARTER ( [Date] ),
+				
+				        "YearQuarterName",
+				            "T" & QUARTER ( [Date] )
+				                & "/"
+				                & FORMAT ( [Date], "yyyy" ),
+				
+				        "Semester",
+				            IF ( MONTH ( [Date] ) <= 6, 1, 2 ),
+				
+				        "SemesterName",
+				            "S" & IF ( MONTH ( [Date] ) <= 6, 1, 2 ),
+				
+				        "YearSemester",
+				            YEAR ( [Date] ) * 10
+				                + IF ( MONTH ( [Date] ) <= 6, 1, 2 ),
+				
+				        "YearSemesterName",
+				            "S" & IF ( MONTH ( [Date] ) <= 6, 1, 2 )
+				                & "/"
+				                & FORMAT ( [Date], "yyyy" ),
+				
+				        "Day",
+				            DAY ( [Date] ),
+				
+				        "DayOfWeekNumber",
+				            WEEKDAY ( [Date], 2 ),
+				
+				        "DayOfWeekName",
+				            FORMAT ( [Date], "[$-pt-BR]dddd" ),
+				
+				        "DayOfWeekShort",
+				            FORMAT ( [Date], "[$-pt-BR]ddd" ),
+				
+				        "IsWeekend",
+				            WEEKDAY ( [Date], 2 ) >= 6,
+				
+				        "WeekStart",
+				            [Date] - WEEKDAY ( [Date], 2 ) + 1,
+				
+				        "WeekEnd",
+				            [Date] - WEEKDAY ( [Date], 2 ) + 7,
+				
+				        "ISOWeekNumber",
+				            WEEKNUM ( [Date], 21 ),
+				
+				        "ISOYear",
+				            YEAR ( [Date] - WEEKDAY ( [Date], 2 ) + 4 ),
+				
+				        "ISOYearWeek",
+				            YEAR ( [Date] - WEEKDAY ( [Date], 2 ) + 4 ) * 100
+				                + WEEKNUM ( [Date], 21 ),
+				
+				        "ISOYearWeekName",
+				            FORMAT (
+				                YEAR ( [Date] - WEEKDAY ( [Date], 2 ) + 4 ),
+				                "0000"
+				            )
+				                & "-S"
+				                & FORMAT ( WEEKNUM ( [Date], 21 ), "00" )
+				    )
+				
+				```
+

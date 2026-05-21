@@ -1,0 +1,1087 @@
+	measure DOCUMENTACAO_DIAGNOSTICO_JOURNEY_HTML_V4_FORMAL_TODO_PERIODO = ```
+			
+			VAR vIntFormat = "#,##0"
+			VAR vPctFormat = "0.0%"
+			VAR vDateFormat = "dd/mm/yyyy"
+			VAR vAtualizadoEm = FORMAT ( NOW (), "dd/mm/yyyy HH:mm" )
+			
+			VAR vBaseJourney = 'JOBS_Produto'
+			
+			VAR vJobStatusRaw =
+			    ADDCOLUMNS (
+			        SUMMARIZE ( vBaseJourney, 'JOBS_Produto'[JOB] ),
+			        "__OpenRows",
+			            VAR vJobKey = 'JOBS_Produto'[JOB]
+			            RETURN
+			                COUNTROWS (
+			                    FILTER (
+			                        vBaseJourney,
+			                        'JOBS_Produto'[JOB] = vJobKey
+			                            && UPPER ( COALESCE ( 'JOBS_Produto'[NOME_AREA], "" ) ) <> "FIM"
+			                    )
+			                ),
+			        "__FimRows",
+			            VAR vJobKey = 'JOBS_Produto'[JOB]
+			            RETURN
+			                COUNTROWS (
+			                    FILTER (
+			                        vBaseJourney,
+			                        'JOBS_Produto'[JOB] = vJobKey
+			                            && UPPER ( COALESCE ( 'JOBS_Produto'[NOME_AREA], "" ) ) = "FIM"
+			                    )
+			                ),
+			        "__StageOpen",
+			            VAR vJobKey = 'JOBS_Produto'[JOB]
+			            RETURN
+			                MAXX (
+			                    FILTER (
+			                        vBaseJourney,
+			                        'JOBS_Produto'[JOB] = vJobKey
+			                            && UPPER ( COALESCE ( 'JOBS_Produto'[NOME_AREA], "" ) ) <> "FIM"
+			                    ),
+			                    VAR vArea = UPPER ( COALESCE ( 'JOBS_Produto'[NOME_AREA], "" ) )
+			                    RETURN
+			                        SWITCH (
+			                            TRUE (),
+			                            vArea = "CHECKLIST", 1,
+			                            vArea = "OPERAÇÃO", 2,
+			                            vArea = "OPERACAO", 2,
+			                            vArea = "PROCURAÇÃO ELETRÔNICA", 3,
+			                            vArea = "PROCURACAO ELETRONICA", 3,
+			                            0
+			                        )
+			                )
+			    )
+			
+			VAR vJobStatus =
+			    ADDCOLUMNS (
+			        vJobStatusRaw,
+			        "__Stage",
+			            IF (
+			                [__OpenRows] = 0 && [__FimRows] > 0,
+			                4,
+			                COALESCE ( [__StageOpen], 0 )
+			            ),
+			        "__Status",
+			            IF (
+			                [__OpenRows] = 0 && [__FimRows] > 0,
+			                "Finalizado",
+			                "Ativo"
+			            )
+			    )
+			
+			VAR vRegistros = COUNTROWS ( vBaseJourney )
+			VAR vJobs = COUNTROWS ( vJobStatus )
+			VAR vJobsAtivos = COUNTROWS ( FILTER ( vJobStatus, [__Status] = "Ativo" ) )
+			VAR vJobsFinalizados = COUNTROWS ( FILTER ( vJobStatus, [__Status] = "Finalizado" ) )
+			VAR vJobsChecklist = COUNTROWS ( FILTER ( vJobStatus, [__Stage] = 1 ) )
+			VAR vJobsOperacao = COUNTROWS ( FILTER ( vJobStatus, [__Stage] = 2 ) )
+			VAR vJobsProcuracao = COUNTROWS ( FILTER ( vJobStatus, [__Stage] = 3 ) )
+			VAR vJobsFim = COUNTROWS ( FILTER ( vJobStatus, [__Stage] = 4 ) )
+			VAR vJobsSemEtapa = COUNTROWS ( FILTER ( vJobStatus, [__Stage] = 0 ) )
+			VAR vJobsPassaram = COUNTROWS ( FILTER ( vJobStatus, [__Stage] >= 2 ) )
+			
+			VAR vClientes =
+			    COUNTROWS (
+			        SUMMARIZE (
+			            FILTER ( vBaseJourney, NOT ISBLANK ( 'JOBS_Produto'[NOME_CLIENTE] ) ),
+			            'JOBS_Produto'[NOME_CLIENTE]
+			        )
+			    )
+			
+			VAR vCNPJs =
+			    COUNTROWS (
+			        SUMMARIZE (
+			            FILTER ( vBaseJourney, NOT ISBLANK ( 'JOBS_Produto'[CNPJ_CLIENTE] ) ),
+			            'JOBS_Produto'[CNPJ_CLIENTE]
+			        )
+			    )
+			
+			VAR vCNPJBlank =
+			    COUNTROWS (
+			        FILTER ( vBaseJourney, ISBLANK ( 'JOBS_Produto'[CNPJ_CLIENTE] ) )
+			    )
+			
+			VAR vProdutos =
+			    COUNTROWS (
+			        SUMMARIZE (
+			            FILTER ( vBaseJourney, NOT ISBLANK ( 'JOBS_Produto'[NOME_PRODUTO] ) ),
+			            'JOBS_Produto'[NOME_PRODUTO]
+			        )
+			    )
+			
+			VAR vSubprodutos =
+			    COUNTROWS (
+			        SUMMARIZE (
+			            FILTER ( vBaseJourney, NOT ISBLANK ( 'JOBS_Produto'[NOME_SUBPRODUTO] ) ),
+			            'JOBS_Produto'[NOME_SUBPRODUTO]
+			        )
+			    )
+			
+			VAR vOportunidadesDisp =
+			    COUNTROWS (
+			        SUMMARIZE (
+			            FILTER ( vBaseJourney, NOT ISBLANK ( 'JOBS_Produto'[NOME_TRIBUTO] ) ),
+			            'JOBS_Produto'[NOME_TRIBUTO]
+			        )
+			    )
+			
+			VAR vOportunidadesPass =
+			    COUNTROWS (
+			        SUMMARIZE (
+			            FILTER (
+			                vBaseJourney,
+			                NOT ISBLANK ( 'JOBS_Produto'[NOME_TRIBUTO] )
+			                    && (
+			                        VAR vAreaPass = UPPER ( COALESCE ( 'JOBS_Produto'[NOME_AREA], "" ) )
+			                        RETURN
+			                            vAreaPass IN {
+			                                "OPERAÇÃO",
+			                                "OPERACAO",
+			                                "PROCURAÇÃO ELETRÔNICA",
+			                                "PROCURACAO ELETRONICA",
+			                                "FIM"
+			                            }
+			                    )
+			            ),
+			            'JOBS_Produto'[NOME_TRIBUTO]
+			        )
+			    )
+			
+			VAR vPctAtivo = DIVIDE ( vJobsAtivos, vJobs , 0 )
+			VAR vPctFinalizado = DIVIDE ( vJobsFinalizados, vJobs , 0 )
+			VAR vPctPassaram = DIVIDE ( vJobsPassaram, vJobs , 0 )
+			VAR vPctOportPass = DIVIDE ( vOportunidadesPass, vOportunidadesDisp , 0 )
+			VAR vPctCNPJBlank = DIVIDE ( vCNPJBlank, vRegistros , 0 )
+			VAR vDiasMed = MEDIANX ( vBaseJourney, 'JOBS_Produto'[DIAS] )
+			
+			VAR vMinCadastro = MINX ( vBaseJourney, 'JOBS_Produto'[DATA_CADASTRO] )
+			VAR vMaxCadastro = MAXX ( vBaseJourney, 'JOBS_Produto'[DATA_CADASTRO] )
+			VAR vUltimoMovimento =
+			    MAXX (
+			        vBaseJourney,
+			        COALESCE ( 'JOBS_Produto'[TRIBUTO_DATA_ENTRADA], 'JOBS_Produto'[DATA_CADASTRO] )
+			    )
+			
+			VAR vPeriodo =
+			    IF (
+			        ISBLANK ( vMinCadastro ) || ISBLANK ( vMaxCadastro ),
+			        "Sem dados no recorte",
+			        FORMAT ( vMinCadastro, vDateFormat ) & " a " & FORMAT ( vMaxCadastro, vDateFormat )
+			    )
+			
+			VAR vUltimoMovimentoTxt =
+			    IF (
+			        ISBLANK ( vUltimoMovimento ),
+			        "Sem movimento",
+			        FORMAT ( vUltimoMovimento, vDateFormat )
+			    )
+			
+			VAR vStatusExecutivo =
+			    SWITCH (
+			        TRUE (),
+			        vJobs = 0, "Sem dados no recorte",
+			        vPctPassaram >= 0.70, "Avanço operacional forte",
+			        vPctPassaram >= 0.40, "Avanço intermediário",
+			        "Carteira concentrada em etapas iniciais"
+			    )
+			
+			VAR vRiscoTexto =
+			    SWITCH (
+			        TRUE (),
+			        vJobs = 0, "Sem leitura executiva no recorte atual.",
+			        vPctAtivo >= 0.85 && vPctPassaram < 0.40, "Alta carteira ativa com baixo avanço: priorizar desbloqueio de Checklist.",
+			        vPctAtivo >= 0.85, "Carteira majoritariamente ativa: acompanhar envelhecimento e gargalos.",
+			        vPctPassaram >= 0.70, "Bom avanço operacional: acompanhar conversão para FIM e oportunidades.",
+			        "Carteira em acompanhamento: monitorar etapas intermediárias."
+			    )
+			
+			VAR vStageTable =
+			    UNION (
+			        ROW ( "Etapa", "Checklist", "Qtd", vJobsChecklist, "Pct", DIVIDE ( vJobsChecklist, vJobs , 0 ), "Cor", "warn", "Ordem", 1 ),
+			        ROW ( "Etapa", "Operação", "Qtd", vJobsOperacao, "Pct", DIVIDE ( vJobsOperacao, vJobs , 0 ), "Cor", "gold", "Ordem", 2 ),
+			        ROW ( "Etapa", "Procuração Eletrônica", "Qtd", vJobsProcuracao, "Pct", DIVIDE ( vJobsProcuracao, vJobs , 0 ), "Cor", "teal", "Ordem", 3 ),
+			        ROW ( "Etapa", "Fim", "Qtd", vJobsFim, "Pct", DIVIDE ( vJobsFim, vJobs , 0 ), "Cor", "good", "Ordem", 4 ),
+			        ROW ( "Etapa", "Sem etapa mapeada", "Qtd", vJobsSemEtapa, "Pct", DIVIDE ( vJobsSemEtapa, vJobs , 0 ), "Cor", "neutral", "Ordem", 5 )
+			    )
+			
+			VAR vStageHTML =
+			    CONCATENATEX (
+			        vStageTable,
+			        VAR vBar = MAX ( 2, ROUND ( COALESCE ( [Pct], 0 ) * 100, 0 ) )
+			        RETURN
+			            "<div class='stage-line " & [Cor] & "'>"
+			                & "<div class='stage-name'>" & [Etapa] & "</div>"
+			                & "<div class='stage-bar'><span style='width:" & FORMAT ( vBar, "0" ) & "%'></span></div>"
+			                & "<div class='stage-qtd'>" & FORMAT ( [Qtd], vIntFormat ) & "</div>"
+			                & "<div class='stage-pct'>" & FORMAT ( [Pct], vPctFormat ) & "</div>"
+			            & "</div>",
+			        "",
+			        [Ordem], ASC
+			    )
+			
+			VAR vCSS =
+			"
+			<style>
+			.doc-page{
+			    width:1910px;
+			    height:1070px;
+			    box-sizing:border-box;
+			    padding:20px;
+			    font-family:'Segoe UI',Arial,sans-serif;
+			    background:
+			        radial-gradient(circle at 0% 0%,rgba(213,174,119,.18),transparent 32%),
+			        radial-gradient(circle at 94% 7%,rgba(139,224,209,.12),transparent 30%),
+			        linear-gradient(180deg,#101923 0%,#0B1219 100%);
+			    color:#E8EEF5;
+			    overflow:hidden;
+			}
+			.doc-shell{
+			    width:100%;
+			    height:100%;
+			    display:grid;
+			    grid-template-columns:390px 1fr;
+			    gap:16px;
+			}
+			.doc-sidebar{
+			    height:100%;
+			    box-sizing:border-box;
+			    border-radius:20px;
+			    border:1px solid rgba(213,174,119,.28);
+			    background:linear-gradient(180deg,rgba(213,174,119,.15),rgba(255,255,255,.025));
+			    box-shadow:0 18px 42px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.05);
+			    padding:24px 20px 20px;
+			    overflow-y:auto;
+			    overflow-x:hidden;
+			    scrollbar-width:none;
+			    position:relative;
+			}
+			.doc-sidebar::-webkit-scrollbar{display:none}
+			.doc-sidebar:before{
+			    content:'';
+			    position:absolute;
+			    left:0;
+			    top:0;
+			    bottom:0;
+			    width:7px;
+			    background:linear-gradient(180deg,#F4D9A9,#D5AE77,#8BE0D1);
+			}
+			.brand-kicker{
+			    font-size:12.5px;
+			    text-transform:uppercase;
+			    letter-spacing:1.7px;
+			    color:#8BE0D1;
+			    font-weight:950;
+			    margin-bottom:10px;
+			}
+			.brand-title{
+			    color:#F4D9A9;
+			    font-size:37.5px;
+			    line-height:1.02;
+			    font-weight:950;
+			    letter-spacing:.02em;
+			    margin-bottom:10px;
+			    text-transform:uppercase;
+			    text-shadow:0 8px 18px rgba(0,0,0,.35);
+			}
+			.brand-sub{
+			    font-size:15.6px;
+			    line-height:1.48;
+			    color:#B7C2CD;
+			    margin-bottom:14px;
+			}
+			.side-card{
+			    border:1px solid rgba(255,255,255,.09);
+			    background:rgba(255,255,255,.04);
+			    border-radius:15px;
+			    padding:12px;
+			    margin-bottom:10px;
+			}
+			.side-card.highlight{
+			    background:linear-gradient(135deg,rgba(213,174,119,.17),rgba(255,255,255,.035));
+			    border-color:rgba(213,174,119,.30);
+			}
+			.side-label{
+			    display:block;
+			    font-size:11.9px;
+			    color:#8796A5;
+			    text-transform:uppercase;
+			    letter-spacing:.85px;
+			    font-weight:950;
+			    margin-bottom:5px;
+			}
+			.side-value{
+			    display:block;
+			    font-size:17.5px;
+			    color:#F0F5FA;
+			    font-weight:900;
+			    line-height:1.25;
+			}
+			.side-value.big{
+			    color:#F4D9A9;
+			    font-size:27.5px;
+			}
+			.side-small{
+			    color:#AEB8C2;
+			    font-size:13.4px;
+			    line-height:1.4;
+			    margin-top:5px;
+			}
+			.nav-title{
+			    margin-top:14px;
+			    margin-bottom:9px;
+			    font-size:12.5px;
+			    text-transform:uppercase;
+			    letter-spacing:.95px;
+			    color:#D5AE77;
+			    font-weight:950;
+			}
+			.nav-list{
+			    display:flex;
+			    flex-direction:column;
+			    gap:6px;
+			}
+			.nav-pill{
+			    font-size:13.5px;
+			    color:#DCE5EE;
+			    border:1px solid rgba(213,174,119,.16);
+			    background:rgba(255,255,255,.04);
+			    border-radius:999px;
+			    padding:7px 10px;
+			    font-weight:850;
+			    line-height:1;
+			}
+			.nav-pill.active{
+			    color:#8BE0D1;
+			    border-color:rgba(139,224,209,.30);
+			    background:rgba(139,224,209,.08);
+			}
+			.doc-main{
+			    height:100%;
+			    background:linear-gradient(180deg,#121C25 0%,#0D151D 100%);
+			    border:1px solid rgba(213,174,119,.20);
+			    border-radius:20px;
+			    box-shadow:0 18px 42px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.05);
+			    overflow:hidden;
+			    display:flex;
+			    flex-direction:column;
+			}
+			.doc-header{
+			    padding:17px 20px 15px;
+			    border-bottom:1px solid rgba(213,174,119,.16);
+			    display:flex;
+			    align-items:flex-start;
+			    justify-content:space-between;
+			    gap:18px;
+			    background:linear-gradient(90deg,rgba(255,255,255,.03),rgba(213,174,119,.035));
+			}
+			.doc-header h1{
+			    margin:0;
+			    color:#F4D9A9;
+			    font-size:33.8px;
+			    line-height:1.08;
+			    font-weight:950;
+			    letter-spacing:.3px;
+			    text-transform:uppercase;
+			}
+			.doc-header p{
+			    margin:7px 0 0;
+			    color:#B7C2CD;
+			    font-size:16px;
+			    line-height:1.4;
+			    max-width:1120px;
+			}
+			.doc-actions{
+			    display:flex;
+			    flex-direction:column;
+			    align-items:flex-end;
+			    gap:9px;
+			    flex-shrink:0;
+			}
+			.back-report-fake{
+			    display:inline-flex;
+			    align-items:center;
+			    justify-content:center;
+			    gap:8px;
+			    min-height:36px;
+			    padding:9px 15px;
+			    border-radius:999px;
+			    background:linear-gradient(135deg,rgba(213,174,119,.18),rgba(139,224,209,.10));
+			    border:1px solid rgba(213,174,119,.38);
+			    color:#F4D9A9;
+			    font-size:13.1px;
+			    font-weight:950;
+			    letter-spacing:.65px;
+			    text-transform:uppercase;
+			    white-space:nowrap;
+			    box-shadow:0 10px 22px rgba(213,174,119,.10),inset 0 1px 0 rgba(255,255,255,.07);
+			}
+			.back-report-fake:before{
+			    content:'←';
+			    width:18px;
+			    height:18px;
+			    display:inline-flex;
+			    align-items:center;
+			    justify-content:center;
+			    border-radius:50%;
+			    background:rgba(213,174,119,.14);
+			    border:1px solid rgba(213,174,119,.34);
+			    color:#8BE0D1;
+			    font-size:15px;
+			    font-weight:950;
+			    line-height:1;
+			}
+			.badge-wrap{
+			    display:flex;
+			    justify-content:flex-end;
+			    align-items:center;
+			    flex-wrap:wrap;
+			    gap:6px;
+			}
+			.badge{
+			    display:inline-flex;
+			    border-radius:999px;
+			    border:1px solid rgba(213,174,119,.30);
+			    background:rgba(213,174,119,.08);
+			    color:#F4D9A9;
+			    font-size:12.5px;
+			    font-weight:950;
+			    text-transform:uppercase;
+			    letter-spacing:.6px;
+			    padding:5px 10px;
+			    white-space:nowrap;
+			}
+			.badge.teal{
+			    color:#8BE0D1;
+			    border-color:rgba(139,224,209,.34);
+			    background:rgba(139,224,209,.08);
+			}
+			.doc-scroll{
+			    flex:1 1 auto;
+			    min-height:0;
+			    overflow-y:auto;
+			    overflow-x:hidden;
+			    padding:18px 20px 20px;
+			    box-sizing:border-box;
+			    scrollbar-width:thin;
+			    scrollbar-color:rgba(213,174,119,.60) rgba(8,14,20,.95);
+			}
+			.doc-scroll::-webkit-scrollbar{width:12px}
+			.doc-scroll::-webkit-scrollbar-track{
+			    background:rgba(8,14,20,.96);
+			    border-left:1px solid rgba(213,174,119,.10);
+			}
+			.doc-scroll::-webkit-scrollbar-thumb{
+			    background:linear-gradient(180deg,rgba(213,174,119,.78),rgba(109,84,51,.86));
+			    border:3px solid rgba(8,14,20,.96);
+			    border-radius:999px;
+			}
+			.metric-grid{
+			    display:grid;
+			    grid-template-columns:repeat(6,1fr);
+			    gap:11px;
+			    margin-bottom:14px;
+			}
+			.metric{
+			    position:relative;
+			    min-height:124px;
+			    padding:15px 13px 13px;
+			    border-radius:18px;
+			    background:linear-gradient(160deg,rgba(18,28,37,.96),rgba(11,18,25,.94));
+			    border:1px solid rgba(255,255,255,.10);
+			    box-shadow:0 16px 28px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.06);
+			    overflow:hidden;
+			}
+			.metric:before{
+			    content:'';
+			    position:absolute;
+			    left:14px;
+			    top:0;
+			    width:42px;
+			    height:4px;
+			    border-radius:0 0 10px 10px;
+			    background:linear-gradient(90deg,#F4D9A9,#8BE0D1);
+			}
+			.metric.primary{
+			    background:linear-gradient(155deg,rgba(213,174,119,.20),rgba(18,28,37,.96) 36%,rgba(11,18,25,.96));
+			    border-color:rgba(213,174,119,.40);
+			}
+			.metric.attention{
+			    background:linear-gradient(155deg,rgba(139,224,209,.08),rgba(18,28,37,.96) 34%,rgba(11,18,25,.96));
+			    border-color:rgba(139,224,209,.30);
+			}
+			.m-label{
+			    display:block;
+			    color:#AEB9C4;
+			    font-size:12.5px;
+			    letter-spacing:.08em;
+			    text-transform:uppercase;
+			    font-weight:950;
+			    margin-bottom:8px;
+			}
+			.m-value{
+			    display:block;
+			    color:#F4D9A9;
+			    font-size:32.5px;
+			    font-weight:950;
+			    line-height:1.05;
+			    white-space:nowrap;
+			    overflow:hidden;
+			    text-overflow:ellipsis;
+			}
+			.m-note{
+			    display:block;
+			    color:#8B98A6;
+			    font-size:13.8px;
+			    line-height:1.28;
+			    margin-top:7px;
+			    font-weight:850;
+			}
+			.insight-strip{
+			    display:grid;
+			    grid-template-columns:repeat(4,1fr);
+			    gap:10px;
+			    margin-bottom:14px;
+			}
+			.insight{
+			    border-radius:14px;
+			    border:1px solid rgba(255,255,255,.09);
+			    background:rgba(255,255,255,.035);
+			    padding:11px 12px;
+			    border-left:4px solid rgba(174,185,196,.48);
+			}
+			.insight.good{border-left-color:#8BE0D1}
+			.insight.warn{border-left-color:#F4D9A9}
+			.insight.bad{border-left-color:#FFB0A8}
+			.insight-label{
+			    display:block;
+			    color:#8796A5;
+			    font-size:11.9px;
+			    font-weight:950;
+			    letter-spacing:.08em;
+			    text-transform:uppercase;
+			    margin-bottom:5px;
+			}
+			.insight-text{
+			    display:block;
+			    color:#DCE5EE;
+			    font-size:14.1px;
+			    font-weight:850;
+			    line-height:1.32;
+			}
+			.doc-section{
+			    border:1px solid rgba(213,174,119,.19);
+			    background:rgba(255,255,255,.027);
+			    border-radius:17px;
+			    margin-bottom:12px;
+			    overflow:hidden;
+			}
+			.doc-section summary{
+			    cursor:pointer;
+			    list-style:none;
+			    display:flex;
+			    align-items:center;
+			    justify-content:space-between;
+			    gap:12px;
+			    padding:14px 15px;
+			    background:linear-gradient(90deg,rgba(213,174,119,.17),rgba(213,174,119,.035));
+			    border-bottom:1px solid rgba(213,174,119,.13);
+			}
+			.doc-section summary::-webkit-details-marker{display:none}
+			.summary-left{
+			    display:flex;
+			    align-items:center;
+			    gap:10px;
+			    min-width:0;
+			}
+			.summary-index{
+			    display:inline-flex;
+			    align-items:center;
+			    justify-content:center;
+			    width:28px;
+			    height:28px;
+			    border-radius:50%;
+			    background:rgba(213,174,119,.19);
+			    border:1px solid rgba(213,174,119,.30);
+			    color:#F4D9A9;
+			    font-size:12.5px;
+			    font-weight:950;
+			}
+			.summary-title{
+			    color:#F4D9A9;
+			    font-size:17.5px;
+			    font-weight:950;
+			    text-transform:uppercase;
+			    letter-spacing:.45px;
+			}
+			.summary-action{
+			    color:#B7C2CD;
+			    font-size:12.2px;
+			    font-weight:950;
+			    text-transform:uppercase;
+			    letter-spacing:.5px;
+			    border:1px solid rgba(255,255,255,.10);
+			    background:rgba(255,255,255,.04);
+			    border-radius:999px;
+			    padding:5px 9px;
+			    white-space:nowrap;
+			}
+			.section-body{padding:15px}
+			.two-col{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+			.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+			.doc-table{
+			    width:100%;
+			    border-collapse:separate;
+			    border-spacing:0;
+			    table-layout:fixed;
+			    overflow:hidden;
+			    border-radius:13px;
+			    border:1px solid rgba(255,255,255,.08);
+			    margin-bottom:10px;
+			}
+			.doc-table th{
+			    background:#111A22;
+			    color:#D5AE77;
+			    font-size:12.5px;
+			    font-weight:950;
+			    text-transform:uppercase;
+			    letter-spacing:.55px;
+			    text-align:left;
+			    padding:10px;
+			    border-bottom:1px solid rgba(213,174,119,.30);
+			}
+			.doc-table td{
+			    color:#DCE5EE;
+			    font-size:14px;
+			    line-height:1.45;
+			    padding:9px 10px;
+			    border-bottom:1px solid rgba(255,255,255,.055);
+			    vertical-align:top;
+			}
+			.doc-table tr:last-child td{border-bottom:none}
+			.doc-table td strong{color:#F4D9A9}
+			.tag{
+			    display:inline-flex;
+			    border:1px solid rgba(213,174,119,.26);
+			    background:rgba(213,174,119,.07);
+			    color:#F4D9A9;
+			    border-radius:999px;
+			    padding:3px 7px;
+			    font-size:11.2px;
+			    font-weight:950;
+			    text-transform:uppercase;
+			    letter-spacing:.35px;
+			    white-space:nowrap;
+			}
+			.tag.good{color:#8BE0D1;border-color:rgba(139,224,209,.35);background:rgba(139,224,209,.09)}
+			.tag.info{color:#AEB9C4;border-color:rgba(255,255,255,.14);background:rgba(255,255,255,.05)}
+			.tag.warn{color:#F4D9A9;border-color:rgba(213,174,119,.35);background:rgba(213,174,119,.09)}
+			.tag.bad{color:#FFB0A8;border-color:rgba(217,93,93,.35);background:rgba(217,93,93,.09)}
+			.callout{
+			    border-left:4px solid rgba(213,174,119,.82);
+			    background:rgba(213,174,119,.06);
+			    border-radius:13px;
+			    padding:12px 13px;
+			    color:#DCE5EE;
+			    font-size:14.2px;
+			    line-height:1.5;
+			    margin:10px 0;
+			}
+			.callout.tech{
+			    border-left-color:#8BE0D1;
+			    background:rgba(139,224,209,.055);
+			}
+			.callout.warn{
+			    border-left-color:#F4D9A9;
+			    background:rgba(244,217,169,.065);
+			}
+			.callout.bad{
+			    border-left-color:#FFB0A8;
+			    background:rgba(217,93,93,.065);
+			}
+			.stage-box{
+			    display:grid;
+			    grid-template-columns:1fr;
+			    gap:8px;
+			}
+			.stage-line{
+			    display:grid;
+			    grid-template-columns:210px minmax(190px,1fr) 86px 86px;
+			    gap:10px;
+			    align-items:center;
+			    padding:8px 9px;
+			    border-radius:11px;
+			    background:rgba(255,255,255,.035);
+			    border:1px solid rgba(255,255,255,.07);
+			}
+			.stage-name{color:#DCE5EE;font-size:14.1px;font-weight:850}
+			.stage-bar{height:9px;border-radius:999px;background:rgba(255,255,255,.07);overflow:hidden}
+			.stage-bar span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#D5AE77,#8BE0D1)}
+			.stage-qtd,.stage-pct{color:#AEB9C4;font-size:13.8px;font-weight:900;text-align:right}
+			.footer-doc{
+			    font-size:13.4px;
+			    color:#8796A5;
+			    line-height:1.38;
+			    padding:10px 2px 2px;
+			}
+			</style>
+			"
+			
+			VAR vHTML =
+			"<div class='doc-page'>
+			    <div class='doc-shell'>
+			        <aside class='doc-sidebar'>
+			            <div class='brand-kicker'>Power BI · Documentação</div>
+			            <div class='brand-title'>Diagnóstico<br><span style='color:#8BE0D1'>Journey</span></div>
+			            <div class='brand-sub'>Documentação do dashboard: período controlado por slicer, botão Documentação no título, botão Detalhamento na medida principal, expansão macro simplificada e aba dedicada para análise job por job.</div>
+			
+			            <div class='side-card highlight'>
+			                <span class='side-label'>Status executivo</span>
+			                <span class='side-value big'>" & vStatusExecutivo & "</span>
+			                <div class='side-small'>" & vRiscoTexto & "</div>
+			            </div>
+			
+			            <div class='side-card'>
+			                <span class='side-label'>Período exibido</span>
+			                <span class='side-value'>" & vPeriodo & "</span>
+			                <div class='side-small'>Sem filtro fixo de ano. O padrão é todo o período disponível; o usuário escolhe o recorte pelo slicer de data. A regra de base desta documentação foi alinhada à medida principal para evitar divergência de valores.</div>
+			            </div>
+			
+			            <div class='side-card'>
+			                <span class='side-label'>Último movimento</span>
+			                <span class='side-value'>" & vUltimoMovimentoTxt & "</span>
+			                <div class='side-small'>Baseado em TRIBUTO_DATA_ENTRADA, com fallback em DATA_CADASTRO quando necessário.</div>
+			            </div>
+			
+			            <div class='side-card'>
+			                <span class='side-label'>Atualização</span>
+			                <span class='side-value'>" & vAtualizadoEm & "</span>
+			                <div class='side-small'>Atualizado automaticamente pela medida HTML no refresh/abertura do relatório.</div>
+			            </div>
+			
+			            <div class='nav-title'>Guia executivo e técnico</div>
+			            <div class='nav-list'>
+			                <div class='nav-pill active'>01. O que mudou agora</div>
+			                <div class='nav-pill'>02. Como usar</div>
+			                <div class='nav-pill'>03. Perguntas respondidas</div>
+			                <div class='nav-pill'>04. Layout final</div>
+			                <div class='nav-pill'>05. KPIs</div>
+			                <div class='nav-pill'>06. Etapas e status</div>
+			                <div class='nav-pill'>07. Slicers</div>
+			                <div class='nav-pill'>08. Calendário</div>
+			                <div class='nav-pill'>09. Aba Detalhamento</div>
+			                <div class='nav-pill'>10. Dados</div>
+			                <div class='nav-pill'>11. Manutenção</div>
+			                <div class='nav-pill'>12. QA</div>
+			                <div class='nav-pill'>13. Performance</div>
+			                <div class='nav-pill'>14. Roadmap</div>
+			            </div>
+			        </aside>
+			
+			        <main class='doc-main'>
+			            <div class='doc-header'>
+			                <div>
+			                    <h1>Documentação · Diagnóstico - Journey</h1>
+			                    <p>Versão atualizada e detalhada para diretoria e time técnico. Explica o que cada tela faz, quais botões existem, como os slicers atuam, como interpretar os KPIs, como manter as medidas e onde validar divergências.</p>
+			                </div>
+			                <div class='doc-actions'>
+			                    <div class='back-report-fake'>Voltar ao relatório</div>
+			                    <div class='badge-wrap'>
+			                        <span class='badge'>Diretoria</span>
+			                        <span class='badge'>Técnico</span>
+			                        <span class='badge teal'>Journey</span>
+			                        <span class='badge'>Todo período</span>
+			                    </div>
+			                </div>
+			            </div>
+			
+			            <div class='doc-scroll'>
+			
+			                <div class='metric-grid'>
+			                    <div class='metric primary'><span class='m-label'>Diagnósticos</span><span class='m-value'>" & FORMAT ( vJobs, vIntFormat ) & "</span><span class='m-note'>Jobs no período</span></div>
+			                    <div class='metric'><span class='m-label'>Ativos</span><span class='m-value'>" & FORMAT ( vJobsAtivos, vIntFormat ) & "</span><span class='m-note'>" & FORMAT ( vPctAtivo, vPctFormat ) & " da carteira</span></div>
+			                    <div class='metric'><span class='m-label'>Finalizados</span><span class='m-value'>" & FORMAT ( vJobsFinalizados, vIntFormat ) & "</span><span class='m-note'>" & FORMAT ( vPctFinalizado, vPctFormat ) & " em FIM</span></div>
+			                    <div class='metric attention'><span class='m-label'>Passaram etapa</span><span class='m-value'>" & FORMAT ( vJobsPassaram, vIntFormat ) & "</span><span class='m-note'>" & FORMAT ( vPctPassaram, vPctFormat ) & " em Operação/Proc/FIM</span></div>
+			                    <div class='metric'><span class='m-label'>Oportunidades</span><span class='m-value'>" & FORMAT ( vOportunidadesDisp, vIntFormat ) & "</span><span class='m-note'>" & FORMAT ( vOportunidadesPass, vIntFormat ) & " com passagem</span></div>
+			                    <div class='metric'><span class='m-label'>Dias mediano</span><span class='m-value'>" & FORMAT ( vDiasMed, "#,##0" ) & "</span><span class='m-note'>Tempo operacional mediano</span></div>
+			                </div>
+			
+			                <div class='insight-strip'>
+			                    <div class='insight " & IF ( vPctPassaram >= 0.40, "good", "warn" ) & "'><span class='insight-label'>Andamento</span><span class='insight-text'>" & vStatusExecutivo & " no recorte atual.</span></div>
+			                    <div class='insight " & IF ( vPctAtivo >= 0.80, "warn", "good" ) & "'><span class='insight-label'>Carteira</span><span class='insight-text'>" & FORMAT ( vPctAtivo, vPctFormat ) & " dos jobs permanecem ativos.</span></div>
+			                    <div class='insight " & IF ( vPctOportPass >= 0.50, "good", "warn" ) & "'><span class='insight-label'>Oportunidades</span><span class='insight-text'>" & FORMAT ( vPctOportPass, vPctFormat ) & " das oportunidades tiveram passagem.</span></div>
+			                    <div class='insight " & IF ( vPctCNPJBlank > 0, "warn", "good" ) & "'><span class='insight-label'>Chave futura</span><span class='insight-text'>" & FORMAT ( vCNPJBlank, vIntFormat ) & " linhas sem CNPJ no recorte.</span></div>
+			                </div>
+			
+			                <details class='doc-section' open>
+			                    <summary><div class='summary-left'><span class='summary-index'>01</span><span class='summary-title'>O que mudou na versão atual</span></div><span class='summary-action'>Atualização</span></summary>
+			                    <div class='section-body'>
+			                        <table class='doc-table'>
+			                            <thead><tr><th>Mudança</th><th>Antes</th><th>Agora</th><th>Impacto</th></tr></thead>
+			                            <tbody>
+			                                <tr><td><strong>Período</strong></td><td>Recorte fixo de ano.</td><td>Todo o período disponível por padrão.</td><td>O usuário escolhe o período pelo slicer da dCalendar.</td></tr>
+			                                <tr><td><strong>Botão Documentação</strong></td><td>Ficava na medida principal.</td><td>Fica no título.</td><td>A navegação para esta página fica sempre visível no topo.</td></tr>
+			                                <tr><td><strong>Botão Detalhamento</strong></td><td>Não existia como aba própria no início.</td><td>Fica no espaço superior da medida principal.</td><td>Leva para a página job por job.</td></tr>
+			                                <tr><td><strong>Expansão da medida principal</strong></td><td>Trazia job por job, clientes/CNPJs e oportunidades detalhadas.</td><td>Mostra apenas resumo macro.</td><td>Evita duplicidade com a aba Detalhamento e melhora performance.</td></tr>
+			                                <tr><td><strong>Bolhas por produto</strong></td><td>Exibia status como Checklist dominante e Em andamento.</td><td>Removidas.</td><td>Visual mais limpo e menos redundante.</td></tr>
+			                                <tr><td><strong>Fonte</strong></td><td>Menor.</td><td>Zoom aplicado na principal, documentação e detalhamento.</td><td>Melhor leitura em tela grande.</td></tr>
+			                            </tbody>
+			                        </table>
+			                    </div>
+			                </details>
+			
+			                <details class='doc-section' open>
+			                    <summary><div class='summary-left'><span class='summary-index'>02</span><span class='summary-title'>Como usar o dashboard no dia a dia</span></div><span class='summary-action'>Usuário</span></summary>
+			                    <div class='section-body'>
+			                        <table class='doc-table'>
+			                            <thead><tr><th>Passo</th><th>O que fazer</th><th>Resultado esperado</th></tr></thead>
+			                            <tbody>
+			                                <tr><td><strong>1</strong></td><td>Abra a aba principal.</td><td>Veja a visão macro de Diagnóstico - Journey.</td></tr>
+			                                <tr><td><strong>2</strong></td><td>Escolha período no slicer de mês/data, se necessário.</td><td>Cards, tabela e detalhamento passam a respeitar o recorte escolhido.</td></tr>
+			                                <tr><td><strong>3</strong></td><td>Use os slicers de Produto, Etapa e Cliente.</td><td>Filtre a carteira conforme a reunião ou análise.</td></tr>
+			                                <tr><td><strong>4</strong></td><td>Expanda um produto na medida principal.</td><td>Veja resumo macro por etapa, volume, ativos, passagens e oportunidades.</td></tr>
+			                                <tr><td><strong>5</strong></td><td>Clique no botão Detalhamento.</td><td>Vá para a aba job por job, com busca, filtros e copiar tabela.</td></tr>
+			                                <tr><td><strong>6</strong></td><td>Clique em Documentação no título.</td><td>Abra esta página para entender regras e manutenção.</td></tr>
+			                            </tbody>
+			                        </table>
+			                        <div class='callout'>
+			                            A regra prática é: página principal para leitura executiva, aba Detalhamento para análise operacional linha a linha e documentação para entendimento/manutenção.
+			                        </div>
+			                    </div>
+			                </details>
+			
+			                <details class='doc-section' open>
+			                    <summary><div class='summary-left'><span class='summary-index'>03</span><span class='summary-title'>Perguntas que o dashboard responde</span></div><span class='summary-action'>Diretoria</span></summary>
+			                    <div class='section-body'>
+			                        <table class='doc-table'>
+			                            <thead><tr><th>Pergunta</th><th>Onde olhar</th><th>Como interpretar</th></tr></thead>
+			                            <tbody>
+			                                <tr><td><strong>Quantos diagnósticos temos?</strong></td><td>Card Diagnósticos.</td><td>Total de jobs Journey no período selecionado.</td></tr>
+			                                <tr><td><strong>Quanto ainda está em aberto?</strong></td><td>Card Ativos e coluna Ativos.</td><td>Quanto maior, maior a carteira que ainda precisa de gestão.</td></tr>
+			                                <tr><td><strong>Onde está o gargalo?</strong></td><td>Colunas Checklist, Operação, Procuração e FIM.</td><td>A etapa com maior volume indica onde concentrar atenção.</td></tr>
+			                                <tr><td><strong>Quais oportunidades existem?</strong></td><td>Card Oportunidades e aba Detalhamento.</td><td>Oportunidades disponibilizadas indicam potencial de aprofundamento.</td></tr>
+			                                <tr><td><strong>Quais oportunidades passaram?</strong></td><td>Card Oportunidades e aba Detalhamento.</td><td>Oportunidades que chegaram em Operação, Procuração ou FIM.</td></tr>
+			                                <tr><td><strong>Qual cliente ou job precisa de ação?</strong></td><td>Aba Detalhamento.</td><td>Usar etapa atual, ação sugerida, dias e último movimento.</td></tr>
+			                            </tbody>
+			                        </table>
+			                    </div>
+			                </details>
+			
+			                <details class='doc-section' open>
+			                    <summary><div class='summary-left'><span class='summary-index'>04</span><span class='summary-title'>Layout final das páginas</span></div><span class='summary-action'>Layout</span></summary>
+			                    <div class='section-body'>
+			                        <table class='doc-table'>
+			                            <thead><tr><th>Página</th><th>Conteúdo</th><th>Finalidade</th><th>Botão</th></tr></thead>
+			                            <tbody>
+			                                <tr><td><strong>Principal</strong></td><td>Título, slicers, botão Detalhamento, cards e tabela macro por produto.</td><td>Leitura executiva e acompanhamento de andamento.</td><td>Detalhamento.</td></tr>
+			                                <tr><td><strong>Detalhamento</strong></td><td>Tabela job por job com busca, filtros de coluna e copiar tabela.</td><td>Análise operacional e exportação para Excel.</td><td>Voltar.</td></tr>
+			                                <tr><td><strong>Documentação</strong></td><td>Regras, manutenção, validação, performance e roadmap.</td><td>Apoio para diretoria e time técnico.</td><td>Voltar ao relatório.</td></tr>
+			                            </tbody>
+			                        </table>
+			                        <div class='callout tech'>
+			                            Os botões desenhados em HTML são visuais. A navegação real deve ser feita com botões nativos transparentes do Power BI posicionados por cima.
+			                        </div>
+			                    </div>
+			                </details>
+			
+			                <details class='doc-section' open>
+			                    <summary><div class='summary-left'><span class='summary-index'>05</span><span class='summary-title'>KPIs e definição de cada card</span></div><span class='summary-action'>KPIs</span></summary>
+			                    <div class='section-body'>
+			                        <table class='doc-table'>
+			                            <thead><tr><th>Card</th><th>Regra de cálculo</th><th>Como ler</th><th>Cuidado</th></tr></thead>
+			                            <tbody>
+			                                <tr><td><strong>Diagnósticos</strong></td><td>Distinct count de JOB no recorte Journey.</td><td>Tamanho da carteira atual.</td><td>Respeita os slicers ativos.</td></tr>
+			                                <tr><td><strong>Ativos</strong></td><td>Job com pelo menos uma linha diferente de FIM.</td><td>Itens que ainda precisam de acompanhamento.</td><td>Um único item fora de FIM mantém o job ativo.</td></tr>
+			                                <tr><td><strong>Finalizados</strong></td><td>Job com todas as linhas em FIM.</td><td>Carteira encerrada operacionalmente.</td><td>Depende da consistência da etapa FIM.</td></tr>
+			                                <tr><td><strong>Passaram de etapa</strong></td><td>Job que chegou em Operação, Procuração ou FIM.</td><td>Avanço além do Checklist.</td><td>Não significa necessariamente finalização.</td></tr>
+			                                <tr><td><strong>Oportunidades</strong></td><td>Distinct count de NOME_TRIBUTO.</td><td>Potencial disponibilizado no diagnóstico.</td><td>Depende da padronização de nomes de tributo.</td></tr>
+			                                <tr><td><strong>Dias mediano</strong></td><td>Mediana do campo DIAS.</td><td>Envelhecimento operacional típico.</td><td>Mediana reduz impacto de outliers.</td></tr>
+			                            </tbody>
+			                        </table>
+			                    </div>
+			                </details>
+			
+			                <details class='doc-section' open>
+			                    <summary><div class='summary-left'><span class='summary-index'>06</span><span class='summary-title'>Regras de etapa, status e ação sugerida</span></div><span class='summary-action'>Regra</span></summary>
+			                    <div class='section-body'>
+			                        <div class='three-col'>
+			                            <div class='callout'><strong>Ativo:</strong> existe pelo menos uma linha do job fora de FIM.</div>
+			                            <div class='callout'><strong>Finalizado:</strong> todas as linhas do job estão em FIM.</div>
+			                            <div class='callout'><strong>Passou:</strong> o job chegou em Operação, Procuração Eletrônica ou FIM.</div>
+			                        </div>
+			                        <div class='stage-box'>" & vStageHTML & "</div>
+			                        <table class='doc-table' style='margin-top:10px'>
+			                            <thead><tr><th>Etapa</th><th>Significado operacional</th><th>Ação sugerida na aba Detalhamento</th></tr></thead>
+			                            <tbody>
+			                                <tr><td><strong>Checklist</strong></td><td>Etapa inicial ou pendência de documentação/conferência.</td><td>Priorizar avanço.</td></tr>
+			                                <tr><td><strong>Operação</strong></td><td>Job ou oportunidade em execução operacional.</td><td>Acompanhar operação.</td></tr>
+			                                <tr><td><strong>Procuração Eletrônica</strong></td><td>Dependência de autorização/documentação.</td><td>Acompanhar procuração.</td></tr>
+			                                <tr><td><strong>Fim</strong></td><td>Job ou item encerrado.</td><td>Finalizado.</td></tr>
+			                                <tr><td><strong>Sem etapa mapeada</strong></td><td>Área vazia ou fora do padrão esperado.</td><td>Verificar base.</td></tr>
+			                            </tbody>
+			                        </table>
+			                    </div>
+			                </details>
+			
+			                <details class='doc-section' open>
+			                    <summary><div class='summary-left'><span class='summary-index'>07</span><span class='summary-title'>Slicers e interatividade</span></div><span class='summary-action'>Interação</span></summary>
+			                    <div class='section-body'>
+			                        <table class='doc-table'>
+			                            <thead><tr><th>Slicer</th><th>Campo</th><th>Configuração</th><th>Uso</th></tr></thead>
+			                            <tbody>
+			                                <tr><td><strong>Período/Mês</strong></td><td>dCalendar[YearMonthName] ou dCalendar[Date]</td><td>Sem filtro padrão; usuário escolhe o recorte.</td><td>Controla todo o dashboard.</td></tr>
+			                                <tr><td><strong>Produto Diagnóstico</strong></td><td>JOBS_Produto[NOME_PRODUTO]</td><td>Dropdown com pesquisa.</td><td>Filtra a visão macro e ajuda a abrir detalhe por produto.</td></tr>
+			                                <tr><td><strong>Etapa</strong></td><td>JOBS_Produto[NOME_AREA]</td><td>Checklist, Operação, Procuração Eletrônica e FIM.</td><td>Mostra gargalos por etapa.</td></tr>
+			                                <tr><td><strong>Cliente</strong></td><td>JOBS_Produto[NOME_CLIENTE]</td><td>Dropdown com pesquisa.</td><td>Aprofundamento por cliente.</td></tr>
+			                                <tr><td><strong>CNPJ</strong></td><td>Não usado no topo.</td><td>Deixar para detalhe/drillthrough.</td><td>Evita poluir a visão macro.</td></tr>
+			                                <tr><td><strong>Documentação</strong></td><td>Botão transparente sobre o título.</td><td>Navegação de página.</td><td>Abre esta página.</td></tr>
+			                                <tr><td><strong>Detalhamento</strong></td><td>Botão transparente sobre a medida principal.</td><td>Navegação de página.</td><td>Abre a aba job por job.</td></tr>
+			                            </tbody>
+			                        </table>
+			                        <div class='callout warn'>
+			                            No painel Seleção, mantenha os slicers acima da medida HTML apenas na faixa reservada. Se um slicer cobrir a tabela, pode bloquear o clique de expansão das linhas.
+			                        </div>
+			                    </div>
+			                </details>
+			
+			                <details class='doc-section' open>
+			                    <summary><div class='summary-left'><span class='summary-index'>08</span><span class='summary-title'>Calendário e relacionamentos</span></div><span class='summary-action'>Modelo</span></summary>
+			                    <div class='section-body'>
+			                        <table class='doc-table'>
+			                            <thead><tr><th>Item</th><th>Configuração recomendada</th><th>Por quê</th></tr></thead>
+			                            <tbody>
+			                                <tr><td><strong>dCalendar</strong></td><td>Gerada do menor DATA_CADASTRO até o maior DATA_CADASTRO, expandindo para ano completo.</td><td>Permite todo o período por padrão.</td></tr>
+			                                <tr><td><strong>Relacionamento ativo</strong></td><td>dCalendar[Date] → JOBS_Produto[DATA_CADASTRO]</td><td>É a data principal de análise.</td></tr>
+			                                <tr><td><strong>Cardinalidade</strong></td><td>Um para muitos.</td><td>Uma data filtra várias linhas da base.</td></tr>
+			                                <tr><td><strong>Direção</strong></td><td>Única: dCalendar filtra JOBS_Produto.</td><td>Evita ambiguidade e mantém modelo previsível.</td></tr>
+			                                <tr><td><strong>Sem filtro fixo</strong></td><td>Não manter filtro dCalendar[Year] = ano fixo.</td><td>Agora o padrão é todo o período.</td></tr>
+			                            </tbody>
+			                        </table>
+			                        <div class='callout tech'>
+			                            Se precisar analisar DATA_ASSINATURA ou TRIBUTO_DATA_ENTRADA, criar relacionamentos inativos e usar USERELATIONSHIP em medidas específicas. Não trocar o relacionamento ativo principal sem revisar o dashboard.
+			                        </div>
+			                    </div>
+			                </details>
+			
+			                <details class='doc-section' open>
+			                    <summary><div class='summary-left'><span class='summary-index'>09</span><span class='summary-title'>Aba Detalhamento</span></div><span class='summary-action'>Operação</span></summary>
+			                    <div class='section-body'>
+			                        <table class='doc-table'>
+			                            <thead><tr><th>Elemento</th><th>O que faz</th><th>Como usar</th></tr></thead>
+			                            <tbody>
+			                                <tr><td><strong>Busca global</strong></td><td>Procura por Job, Etapa, Cliente, CNPJ, Produto e Oportunidade.</td><td>Use quando já souber parte do texto.</td></tr>
+			                                <tr><td><strong>Filtros por coluna</strong></td><td>Filtram Job, Etapa, Cliente e Produto/Subproduto.</td><td>Use para reduzir a tabela antes de copiar.</td></tr>
+			                                <tr><td><strong>Copiar tabela</strong></td><td>Copia apenas linhas visíveis.</td><td>Ideal para colar no Excel depois de filtrar.</td></tr>
+			                                <tr><td><strong>Botão Voltar</strong></td><td>Visual HTML.</td><td>Precisa de botão transparente nativo por cima para navegar.</td></tr>
+			                                <tr><td><strong>Campos principais</strong></td><td>Job, etapa, ação sugerida, cliente, CNPJ, produto, oportunidades, datas e dias.</td><td>Base da análise operacional detalhada.</td></tr>
+			                            </tbody>
+			                        </table>
+			                        <div class='callout'>
+			                            A aba Detalhamento substitui o antigo job por job dentro da expansão da principal. Isso deixa a principal mais rápida e concentra análise operacional no lugar certo.
+			                        </div>
+			                    </div>
+			                </details>
+			
+			                <details class='doc-section' open>
+			                    <summary><div class='summary-left'><span class='summary-index'>10</span><span class='summary-title'>Dados, campos e qualidade da base</span></div><span class='summary-action'>Dados</span></summary>
+			                    <div class='section-body'>
+			                        <table class='doc-table'>
+			                            <thead><tr><th>Campo</th><th>Função</th><th>Qualidade / cuidado</th></tr></thead>
+			                            <tbody>
+			                                <tr><td><strong>JOB</strong></td><td>Identificador do diagnóstico.</td><td>Linhas sem JOB não entram na visão.</td></tr>
+			                                <tr><td><strong>DATA_CADASTRO</strong></td><td>Data principal da análise e do slicer.</td><td>Relacionamento ativo com dCalendar.</td></tr>
+			                                <tr><td><strong>DATA_ASSINATURA</strong></td><td>Marco comercial/contratual.</td><td>Usar apenas em análises específicas.</td></tr>
+			                                <tr><td><strong>TRIBUTO_DATA_ENTRADA</strong></td><td>Movimento operacional.</td><td>Usada para último movimento e aba Detalhamento.</td></tr>
+			                                <tr><td><strong>NOME_PRODUTO</strong></td><td>Agrupamento principal da tabela.</td><td>Base do slicer de produto.</td></tr>
+			                                <tr><td><strong>NOME_AREA</strong></td><td>Etapa/status operacional.</td><td>Valores fora do padrão entram como Sem etapa mapeada.</td></tr>
+			                                <tr><td><strong>NOME_TRIBUTO</strong></td><td>Oportunidades.</td><td>Distinct count para disponibilizadas e passaram.</td></tr>
+			                                <tr><td><strong>CNPJ_CLIENTE / CNPJ_KEY</strong></td><td>Chave futura para cruzar com outra view.</td><td>Padronizar em 14 dígitos. No recorte atual há " & FORMAT ( vCNPJBlank, vIntFormat ) & " linhas sem CNPJ.</td></tr>
+			                            </tbody>
+			                        </table>
+			                    </div>
+			                </details>
+			
+			                <details class='doc-section' open>
+			                    <summary><div class='summary-left'><span class='summary-index'>11</span><span class='summary-title'>Medidas e objetos atuais</span></div><span class='summary-action'>Técnico</span></summary>
+			                    <div class='section-body'>
+			                        <table class='doc-table'>
+			                            <thead><tr><th>Objeto</th><th>Uso</th><th>Manutenção</th></tr></thead>
+			                            <tbody>
+			                                <tr><td><strong>Titulo_Diagnostico_HTML_ano fixo_Novo_Estilo_DOCUMENTACAO</strong></td><td>Cabeçalho com botão Documentação.</td><td>Alterar se mudar título, período, botão ou informações do topo.</td></tr>
+			                                <tr><td><strong>JOBS_DIAGNOSTICO_HTML_JOURNEY_PERIODO_TOTAL</strong></td><td>Visão principal macro, sem filtro fixo de ano.</td><td>Manter cards, tabela por produto, botão Detalhamento e expansão macro.</td></tr>
+			                                <tr><td><strong>HTML_DETALHAMENTO_DIAGNOSTICO_JOURNEY_TODO_PERIODO_ALINHADO</strong></td><td>Aba detalhada job por job.</td><td>Manter busca, filtros, copiar tabela e campos operacionais.</td></tr>
+			                                <tr><td><strong>DOCUMENTACAO_DIAGNOSTICO_JOURNEY_HTML_V4_FORMAL_TODO_PERIODO</strong></td><td>Esta documentação.</td><td>Atualizar sempre que qualquer regra, botão, medida ou layout mudar.</td></tr>
+			                                <tr><td><strong>dCalendar_Todo_Periodo</strong></td><td>Calendário escalável para todo o período.</td><td>Marcar como tabela de data e relacionar com DATA_CADASTRO.</td></tr>
+			                            </tbody>
+			                        </table>
+			                    </div>
+			                </details>
+			
+			                <details class='doc-section' open>
+			                    <summary><div class='summary-left'><span class='summary-index'>12</span><span class='summary-title'>Checklist de validação</span></div><span class='summary-action'>QA</span></summary>
+			                    <div class='section-body'>
+			                        <table class='doc-table'>
+			                            <thead><tr><th>Ordem</th><th>Validação</th><th>Como conferir</th><th>Risco</th></tr></thead>
+			                            <tbody>
+			                                <tr><td><strong>1</strong></td><td>Todo período</td><td>Remover filtros de data e conferir se aparecem anos anteriores/posteriores quando existirem.</td><td><span class='tag bad'>Alto</span></td></tr>
+			                                <tr><td><strong>2</strong></td><td>Slicer de período</td><td>Selecionar um mês/ano e ver se cards e tabela mudam.</td><td><span class='tag bad'>Alto</span></td></tr>
+			                                <tr><td><strong>3</strong></td><td>Filtro Journey</td><td>Comparar produto/subproduto/modelo contendo Journey/Diag.</td><td><span class='tag bad'>Alto</span></td></tr>
+			                                <tr><td><strong>4</strong></td><td>Ativos x Finalizados</td><td>Validar amostra de jobs e suas linhas em FIM.</td><td><span class='tag bad'>Alto</span></td></tr>
+			                                <tr><td><strong>5</strong></td><td>Etapas</td><td>Conferir CHECKLIST, OPERAÇÃO, PROCURAÇÃO ELETRÔNICA e FIM.</td><td><span class='tag warn'>Médio</span></td></tr>
+			                                <tr><td><strong>6</strong></td><td>Bolhas removidas</td><td>Conferir se não aparece Checklist dominante/Em andamento ao lado do produto.</td><td><span class='tag info'>Baixo</span></td></tr>
+			                                <tr><td><strong>7</strong></td><td>Expansão macro</td><td>Expandir produto e confirmar que não há lista job por job na principal.</td><td><span class='tag warn'>Médio</span></td></tr>
+			                                <tr><td><strong>8</strong></td><td>Aba Detalhamento</td><td>Testar busca, filtros e copiar tabela.</td><td><span class='tag warn'>Médio</span></td></tr>
+			                                <tr><td><strong>9</strong></td><td>Navegação</td><td>Testar botões transparentes: Documentação, Detalhamento e Voltar.</td><td><span class='tag info'>Baixo</span></td></tr>
+			                            </tbody>
+			                        </table>
+			                    </div>
+			                </details>
+			
+			                <details class='doc-section' open>
+			                    <summary><div class='summary-left'><span class='summary-index'>13</span><span class='summary-title'>Performance e limites do HTML Content</span></div><span class='summary-action'>Performance</span></summary>
+			                    <div class='section-body'>
+			                        <table class='doc-table'>
+			                            <thead><tr><th>Risco</th><th>Por que acontece</th><th>Controle atual</th></tr></thead>
+			                            <tbody>
+			                                <tr><td><strong>HTML muito grande</strong></td><td>O HTML é gerado inteiro, mesmo quando details está fechado.</td><td>Job por job saiu da expansão da principal e foi para aba própria.</td></tr>
+			                                <tr><td><strong>Tabela detalhada muito extensa</strong></td><td>Muitos jobs e oportunidades podem pesar.</td><td>Aba Detalhamento é mais adequada para isso e permite filtros antes de copiar.</td></tr>
+			                                <tr><td><strong>Camadas de botões/slicers</strong></td><td>Botões transparentes e slicers ficam sobre o HTML.</td><td>Usar painel Seleção para organizar ordem das camadas.</td></tr>
+			                                <tr><td><strong>Auditoria completa</strong></td><td>HTML não substitui tabela nativa quando há necessidade de auditoria linha a linha.</td><td>Manter página técnica ou tabela nativa oculta para validação.</td></tr>
+			                                <tr><td><strong>Fontes maiores</strong></td><td>Melhora leitura, mas aumenta demanda de espaço.</td><td>Foi aplicado zoom e aumentadas larguras/containers onde necessário.</td></tr>
+			                            </tbody>
+			                        </table>
+			                    </div>
+			                </details>
+			
+			                <details class='doc-section' open>
+			                    <summary><div class='summary-left'><span class='summary-index'>14</span><span class='summary-title'>Roadmap recomendado</span></div><span class='summary-action'>Próximos passos</span></summary>
+			                    <div class='section-body'>
+			                        <table class='doc-table'>
+			                            <thead><tr><th>Prioridade</th><th>Ação</th><th>Resultado esperado</th></tr></thead>
+			                            <tbody>
+			                                <tr><td><strong>Alta</strong></td><td>Padronizar CNPJ_KEY em 14 dígitos.</td><td>Preparar relacionamento com outra view por CNPJ.</td></tr>
+			                                <tr><td><strong>Alta</strong></td><td>Criar página de drillthrough por Cliente/CNPJ.</td><td>Aprofundamento sem poluir a página principal.</td></tr>
+			                                <tr><td><strong>Alta</strong></td><td>Criar tabela nativa de auditoria operacional.</td><td>Conferência linha a linha fora do HTML.</td></tr>
+			                                <tr><td><strong>Média</strong></td><td>Separar medidas base de status e contagem.</td><td>Reduzir DAX duplicado e facilitar manutenção.</td></tr>
+			                                <tr><td><strong>Média</strong></td><td>Criar changelog técnico.</td><td>Rastrear mudanças de regra, layout e medidas.</td></tr>
+			                                <tr><td><strong>Baixa</strong></td><td>Parametrizar grupos de produto.</td><td>Facilitar novas frentes além do Journey.</td></tr>
+			                            </tbody>
+			                        </table>
+			                        <div class='footer-doc'>
+			                            Recorte atual: " & vPeriodo & ". Registros: " & FORMAT ( vRegistros, vIntFormat ) & ". Jobs: " & FORMAT ( vJobs, vIntFormat ) & ". Ativos: " & FORMAT ( vJobsAtivos, vIntFormat ) & ". Finalizados: " & FORMAT ( vJobsFinalizados, vIntFormat ) & ". Clientes: " & FORMAT ( vClientes, vIntFormat ) & ". CNPJs: " & FORMAT ( vCNPJs, vIntFormat ) & ". Produtos: " & FORMAT ( vProdutos, vIntFormat ) & ". Subprodutos: " & FORMAT ( vSubprodutos, vIntFormat ) & ". Oportunidades: " & FORMAT ( vOportunidadesDisp, vIntFormat ) & ". Atualizado em " & vAtualizadoEm & ".
+			                        </div>
+			                    </div>
+			                </details>
+			
+			            </div>
+			        </main>
+			    </div>
+			</div>"
+			
+			RETURN
+			    vCSS & vHTML
+			
+			```
+		displayFolder: 11 | Documentação
+		lineageTag: f12039a5-a0eb-4967-9a5c-c2c27638806e
+

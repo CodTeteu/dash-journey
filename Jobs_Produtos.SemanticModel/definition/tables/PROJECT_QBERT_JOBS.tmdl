@@ -1,0 +1,1315 @@
+table PROJECT_QBERT_JOBS
+	lineageTag: 335d2b8b-097d-4b5b-8f7f-225c718abc34
+
+	column CODIGO
+		dataType: int64
+		formatString: 0
+		lineageTag: b80434f4-7639-44c3-95ec-5434001b248e
+		summarizeBy: none
+		sourceColumn: CODIGO
+
+		annotation SummarizationSetBy = Automatic
+
+	column JOB
+		dataType: string
+		lineageTag: 35c76828-c8d0-4d72-8e21-028cfd98ddf7
+		summarizeBy: none
+		sourceColumn: JOB
+
+		annotation SummarizationSetBy = Automatic
+
+	column DATA_CADASTRO
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 1164d64c-c0f3-4c28-9fa1-52c7cc17dc9f
+		summarizeBy: none
+		sourceColumn: DATA_CADASTRO
+
+		variation Variation
+			isDefault
+			relationship: f1fc04cd-be37-40e8-b240-f338367d6a54
+			defaultHierarchy: LocalDateTable_1b242057-333c-4953-bc3d-489720cbd8c3.'Hierarquia de datas'
+
+		annotation SummarizationSetBy = Automatic
+
+	column ID_CLIENTE
+		dataType: string
+		lineageTag: eb8de6ea-9b96-4e16-9881-b52ca64463a4
+		summarizeBy: none
+		sourceColumn: ID_CLIENTE
+
+		annotation SummarizationSetBy = Automatic
+
+	column ID_CONTRATO
+		dataType: string
+		lineageTag: a943cd4f-2c0e-4370-911e-12a035c1a5c8
+		summarizeBy: none
+		sourceColumn: ID_CONTRATO
+
+		annotation SummarizationSetBy = Automatic
+
+	column DATA_PROC_ELETRONICA
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 1b603e70-a59b-4fea-89d3-4fe064ace669
+		summarizeBy: none
+		sourceColumn: DATA_PROC_ELETRONICA
+
+		variation Variation
+			isDefault
+			relationship: 2535fcb6-bdc3-473e-b1c1-360ed4692545
+			defaultHierarchy: LocalDateTable_736e2e2f-44dd-4969-8d51-973dcadc3d2a.'Hierarquia de datas'
+
+		annotation SummarizationSetBy = Automatic
+
+	column ID_PRODUTO
+		dataType: string
+		lineageTag: 3b08cf4a-48d6-4fee-bc01-2232292e410c
+		summarizeBy: none
+		sourceColumn: ID_PRODUTO
+
+		annotation SummarizationSetBy = Automatic
+
+	column DATA_INICIO_CONTRATO
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 6f8dc913-3e5c-4b6d-a572-e355534d1bb2
+		summarizeBy: none
+		sourceColumn: DATA_INICIO_CONTRATO
+
+		variation Variation
+			isDefault
+			relationship: f060f270-8fb8-4939-8f58-8c01db48d76e
+			defaultHierarchy: LocalDateTable_cefd6b54-4f0f-4d1e-9da4-ccf3d9a9a4ed.'Hierarquia de datas'
+
+		annotation SummarizationSetBy = Automatic
+
+	column FIM
+		dataType: int64
+		formatString: 0
+		lineageTag: d159f59a-1f2a-4f8e-8cf7-7ca251ab28d0
+		summarizeBy: sum
+		sourceColumn: FIM
+
+		annotation SummarizationSetBy = Automatic
+
+	column ID_EQUIPE
+		dataType: string
+		lineageTag: 01c4a42e-24c8-4619-ad87-6fe92c5fd3f8
+		summarizeBy: none
+		sourceColumn: ID_EQUIPE
+
+		annotation SummarizationSetBy = Automatic
+
+	column DATA_ENTREGA
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: d2e01fc6-e780-471c-841a-c6a24c85bbf2
+		summarizeBy: none
+		sourceColumn: DATA_ENTREGA
+
+		variation Variation
+			isDefault
+			relationship: e5128cd3-2131-4d6f-8af9-18b7c7b2ca2d
+			defaultHierarchy: LocalDateTable_72a94729-fedf-446f-acb9-33855eb8807d.'Hierarquia de datas'
+
+		annotation SummarizationSetBy = Automatic
+
+	column PRAZO_ATA
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 04d75e8b-20fa-4748-a7c5-dae6606beca3
+		summarizeBy: none
+		sourceColumn: PRAZO_ATA
+
+		variation Variation
+			isDefault
+			relationship: cfbb832d-6d5c-44c8-9252-8e2677617c52
+			defaultHierarchy: LocalDateTable_1ca05569-e62b-4cff-9c81-808a5503a231.'Hierarquia de datas'
+
+		annotation SummarizationSetBy = Automatic
+
+	column ID_CLIFOR_FRANQUEADO
+		dataType: string
+		lineageTag: 42b162a3-2e72-4901-b37c-adae8a8b26c8
+		summarizeBy: none
+		sourceColumn: ID_CLIFOR_FRANQUEADO
+
+		annotation SummarizationSetBy = Automatic
+
+	column FATURAMENTO_ANO1
+		dataType: double
+		lineageTag: 4366eed5-2146-4028-a5a4-13743dc61fdf
+		summarizeBy: sum
+		sourceColumn: FATURAMENTO_ANO1
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column FATURAMENTO_ANO2
+		dataType: double
+		lineageTag: 264d11c6-63b5-4506-89d1-d2ad7fda1f88
+		summarizeBy: sum
+		sourceColumn: FATURAMENTO_ANO2
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column ANO_ANALISE_I
+		dataType: int64
+		formatString: 0
+		lineageTag: ca031865-3c88-41cd-8824-d022cac06819
+		summarizeBy: sum
+		sourceColumn: ANO_ANALISE_I
+
+		annotation SummarizationSetBy = Automatic
+
+	column ANO_ANALISE_F
+		dataType: int64
+		formatString: 0
+		lineageTag: 1f37304d-4b10-4f3b-8256-732fdece8ef3
+		summarizeBy: sum
+		sourceColumn: ANO_ANALISE_F
+
+		annotation SummarizationSetBy = Automatic
+
+	column RF_DIAS_DE_PRAZO
+		dataType: int64
+		formatString: 0
+		lineageTag: 933ede1c-ef04-4bbc-a035-4ad1e93489fb
+		summarizeBy: sum
+		sourceColumn: RF_DIAS_DE_PRAZO
+
+		annotation SummarizationSetBy = Automatic
+
+	column RF_CHECK_TERMINO
+		dataType: int64
+		formatString: 0
+		lineageTag: 9c750007-3c5b-44bb-aecd-cbde4f870578
+		summarizeBy: sum
+		sourceColumn: RF_CHECK_TERMINO
+
+		annotation SummarizationSetBy = Automatic
+
+	column RF_UTEIS
+		dataType: int64
+		formatString: 0
+		lineageTag: 9f204418-3a91-4801-8ba4-bbd23314e8d8
+		summarizeBy: sum
+		sourceColumn: RF_UTEIS
+
+		annotation SummarizationSetBy = Automatic
+
+	column RF_DIAS_DE_PRAZO_ST
+		dataType: int64
+		formatString: 0
+		lineageTag: e23ba131-b30a-476d-8ab1-f2048670fb40
+		summarizeBy: sum
+		sourceColumn: RF_DIAS_DE_PRAZO_ST
+
+		annotation SummarizationSetBy = Automatic
+
+	column RF_CHECK_TERMINO_ST
+		dataType: int64
+		formatString: 0
+		lineageTag: 84cc8bc9-e219-43cc-b392-0f8eae4325cb
+		summarizeBy: sum
+		sourceColumn: RF_CHECK_TERMINO_ST
+
+		annotation SummarizationSetBy = Automatic
+
+	column RF_UTEIS_ST
+		dataType: int64
+		formatString: 0
+		lineageTag: 1e9a00da-50a8-4db9-a85e-133c13a558cd
+		summarizeBy: sum
+		sourceColumn: RF_UTEIS_ST
+
+		annotation SummarizationSetBy = Automatic
+
+	column PASSIVO
+		dataType: int64
+		formatString: 0
+		lineageTag: 44f99335-cf7b-4de8-ad90-142603fd80a2
+		summarizeBy: sum
+		sourceColumn: PASSIVO
+
+		annotation SummarizationSetBy = Automatic
+
+	column PERCENTUAL
+		dataType: double
+		lineageTag: e146b70a-55a6-41b7-a419-80ef57f18540
+		summarizeBy: sum
+		sourceColumn: PERCENTUAL
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column MOTIVO_CANCELAMENTO
+		dataType: string
+		lineageTag: 9bcbc368-24ad-4340-9ca9-6f7d1f14dbf5
+		summarizeBy: none
+		sourceColumn: MOTIVO_CANCELAMENTO
+
+		annotation SummarizationSetBy = Automatic
+
+	column USER_CANCELAMENTO
+		dataType: int64
+		formatString: 0
+		lineageTag: 9e3ca76a-12b6-490e-bc27-cd15b4c4618c
+		summarizeBy: sum
+		sourceColumn: USER_CANCELAMENTO
+
+		annotation SummarizationSetBy = Automatic
+
+	column DATA_CANCELAMENTO
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 8780a63c-af35-4d32-a427-e590b2590332
+		summarizeBy: none
+		sourceColumn: DATA_CANCELAMENTO
+
+		variation Variation
+			isDefault
+			relationship: 531593c0-dba1-4a96-b9d9-a651e8485fa9
+			defaultHierarchy: LocalDateTable_cd8b3b62-7883-4bd2-9ca9-2884324d644c.'Hierarquia de datas'
+
+		annotation SummarizationSetBy = Automatic
+
+	column REGIONAL_DEFAULT
+		dataType: int64
+		formatString: 0
+		lineageTag: cd5ad98a-9580-47dc-97cc-43a4be90e787
+		summarizeBy: sum
+		sourceColumn: REGIONAL_DEFAULT
+
+		annotation SummarizationSetBy = Automatic
+
+	column PASSIVO_PERCENTUAL
+		dataType: double
+		lineageTag: c79dbaf4-ddc0-43aa-8bf9-67fbc7a41c0b
+		summarizeBy: sum
+		sourceColumn: PASSIVO_PERCENTUAL
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column PERCENTUAL_ZERO
+		dataType: int64
+		formatString: 0
+		lineageTag: 5af8c974-b2dc-478d-8eb4-d6ddece85d18
+		summarizeBy: sum
+		sourceColumn: PERCENTUAL_ZERO
+
+		annotation SummarizationSetBy = Automatic
+
+	column PAI
+		dataType: int64
+		formatString: 0
+		lineageTag: 0e61989a-74df-4d85-a8b1-3e07cb7a294c
+		summarizeBy: sum
+		sourceColumn: PAI
+
+		annotation SummarizationSetBy = Automatic
+
+	column PERIODO_FUTURO
+		dataType: int64
+		formatString: 0
+		lineageTag: bca6ae0a-eb4f-48c5-bb05-af7d3feeb8ae
+		summarizeBy: sum
+		sourceColumn: PERIODO_FUTURO
+
+		annotation SummarizationSetBy = Automatic
+
+	column PERCENTUAL_ESCALONADO
+		dataType: int64
+		formatString: 0
+		lineageTag: f8921bbe-8052-4242-ad8a-49e365c1e5fe
+		summarizeBy: sum
+		sourceColumn: PERCENTUAL_ESCALONADO
+
+		annotation SummarizationSetBy = Automatic
+
+	column DOCUMENTOS
+		dataType: double
+		lineageTag: aa6eb09f-33c0-4c08-be72-a115e571f4f9
+		summarizeBy: sum
+		sourceColumn: DOCUMENTOS
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column PRIORIDADE
+		dataType: int64
+		formatString: 0
+		lineageTag: 63324235-268f-4a63-828b-0ba81b7592eb
+		summarizeBy: sum
+		sourceColumn: PRIORIDADE
+
+		annotation SummarizationSetBy = Automatic
+
+	column DATA_INTERNA
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 9429ef37-7dd9-4bcc-ace9-e54cf57d7f8b
+		summarizeBy: none
+		sourceColumn: DATA_INTERNA
+
+		variation Variation
+			isDefault
+			relationship: abc51ac1-22c4-47a3-a122-a7e763000434
+			defaultHierarchy: LocalDateTable_2cb83304-439b-48f4-9fa2-5acc4ff771a4.'Hierarquia de datas'
+
+		annotation SummarizationSetBy = Automatic
+
+	column PRAZO_QUALIDADE
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 428a2f4e-c557-4178-8b1a-2c6dc2de36ae
+		summarizeBy: none
+		sourceColumn: PRAZO_QUALIDADE
+
+		variation Variation
+			isDefault
+			relationship: ef7016d2-3988-476e-9d6c-42d590e14abb
+			defaultHierarchy: LocalDateTable_2b1ce973-c85b-41c5-9b4d-4a74e0ea5763.'Hierarquia de datas'
+
+		annotation SummarizationSetBy = Automatic
+
+	column CODIGO_PRODUTO
+		dataType: int64
+		formatString: 0
+		lineageTag: 6c2e3eac-489a-420e-867c-8f9c3ad984a7
+		summarizeBy: sum
+		sourceColumn: CODIGO_PRODUTO
+
+		annotation SummarizationSetBy = Automatic
+
+	column CODIGO_CLIENTE
+		dataType: int64
+		formatString: 0
+		lineageTag: 8261060f-4cfb-4314-9aa2-449c5abc70b1
+		summarizeBy: sum
+		sourceColumn: CODIGO_CLIENTE
+
+		annotation SummarizationSetBy = Automatic
+
+	column CODIGO_FRANQUEADO
+		dataType: int64
+		formatString: 0
+		lineageTag: b247a825-ab8e-4896-adc9-b12da50e760b
+		summarizeBy: sum
+		sourceColumn: CODIGO_FRANQUEADO
+
+		annotation SummarizationSetBy = Automatic
+
+	column CODIGO_CKL
+		dataType: int64
+		formatString: 0
+		lineageTag: a3f35d78-166d-4652-8d17-060c022742b2
+		summarizeBy: sum
+		sourceColumn: CODIGO_CKL
+
+		annotation SummarizationSetBy = Automatic
+
+	column OBSERVACAO
+		dataType: string
+		lineageTag: d99aba8c-e00a-49e1-bc6c-fb6b09473678
+		summarizeBy: none
+		sourceColumn: OBSERVACAO
+
+		annotation SummarizationSetBy = Automatic
+
+	column RF_VALOR
+		dataType: double
+		lineageTag: e94328b3-f0fc-4507-a6ab-771a4dcf39ed
+		summarizeBy: sum
+		sourceColumn: RF_VALOR
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column RF_PARC
+		dataType: int64
+		formatString: 0
+		lineageTag: 6e2d662c-3fd2-4da4-aebb-e3063c383b94
+		summarizeBy: sum
+		sourceColumn: RF_PARC
+
+		annotation SummarizationSetBy = Automatic
+
+	column RF_EXITO
+		dataType: double
+		lineageTag: 12ea680e-f450-4bb0-aeff-4e11398a9994
+		summarizeBy: sum
+		sourceColumn: RF_EXITO
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column RF_INICIO
+		dataType: double
+		lineageTag: e23760d0-0a63-4339-9d78-20f8f53221ca
+		summarizeBy: sum
+		sourceColumn: RF_INICIO
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column NR_FILIAIS
+		dataType: int64
+		formatString: 0
+		lineageTag: dc181e28-4428-4328-9ed3-583b2fa1751f
+		summarizeBy: sum
+		sourceColumn: NR_FILIAIS
+
+		annotation SummarizationSetBy = Automatic
+
+	column DATA_RECEBIMENTO
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 31f06098-0d3d-463d-a7a9-e610fc5ba963
+		summarizeBy: none
+		sourceColumn: DATA_RECEBIMENTO
+
+		variation Variation
+			isDefault
+			relationship: d338632f-0433-47fd-a7e6-79f91bcdcd77
+			defaultHierarchy: LocalDateTable_42e251f4-b9df-45ec-a651-2b63fdbc8c02.'Hierarquia de datas'
+
+		annotation SummarizationSetBy = Automatic
+
+	column USER_ADD
+		dataType: int64
+		formatString: 0
+		lineageTag: f940e7cd-1a79-4168-bc9c-b8c71ee77412
+		summarizeBy: sum
+		sourceColumn: USER_ADD
+
+		annotation SummarizationSetBy = Automatic
+
+	column PROJETO_ESPECIAL
+		dataType: int64
+		formatString: 0
+		lineageTag: 758a7c83-71c8-4ac4-a796-dfb042fe2d16
+		summarizeBy: sum
+		sourceColumn: PROJETO_ESPECIAL
+
+		annotation SummarizationSetBy = Automatic
+
+	column CODIGO_EQUIPE
+		dataType: int64
+		formatString: 0
+		lineageTag: 463131e3-ab05-4279-a5ac-c9ed491bae67
+		summarizeBy: sum
+		sourceColumn: CODIGO_EQUIPE
+
+		annotation SummarizationSetBy = Automatic
+
+	column CAMINHO_CONTRATO
+		dataType: string
+		lineageTag: b0b7ece7-7165-4bc4-88be-809d8c10f6a9
+		summarizeBy: none
+		sourceColumn: CAMINHO_CONTRATO
+
+		annotation SummarizationSetBy = Automatic
+
+	column CODIGO_QUALIDADE
+		dataType: int64
+		formatString: 0
+		lineageTag: 8994f919-4493-4a0a-a2e8-0c9b2f63af95
+		summarizeBy: sum
+		sourceColumn: CODIGO_QUALIDADE
+
+		annotation SummarizationSetBy = Automatic
+
+	column COMPLEMENTO
+		dataType: int64
+		formatString: 0
+		lineageTag: 46419fd5-1743-46aa-aaca-d2bcb14be599
+		summarizeBy: sum
+		sourceColumn: COMPLEMENTO
+
+		annotation SummarizationSetBy = Automatic
+
+	column PARCELAS
+		dataType: int64
+		formatString: 0
+		lineageTag: b9d35fdf-6f87-4ccf-91a8-6044621c9b8e
+		summarizeBy: sum
+		sourceColumn: PARCELAS
+
+		annotation SummarizationSetBy = Automatic
+
+	column COMPENSACAO
+		dataType: int64
+		formatString: 0
+		lineageTag: 459e043d-90b6-47ee-ad8c-14a9d216d09e
+		summarizeBy: sum
+		sourceColumn: COMPENSACAO
+
+		annotation SummarizationSetBy = Automatic
+
+	column COBRANCA_EXTJC
+		dataType: int64
+		formatString: 0
+		lineageTag: b1b900a8-77a8-4cb5-867d-db105e6088bf
+		summarizeBy: sum
+		sourceColumn: COBRANCA_EXTJC
+
+		annotation SummarizationSetBy = Automatic
+
+	column CONTRATOOK
+		dataType: int64
+		formatString: 0
+		lineageTag: 60f9769e-5917-4f9e-bd65-19df1ae22b79
+		summarizeBy: sum
+		sourceColumn: CONTRATOOK
+
+		annotation SummarizationSetBy = Automatic
+
+	column CONTRATOOK_DATA
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: d9042bae-850d-45d1-a621-10d329c0a2a5
+		summarizeBy: none
+		sourceColumn: CONTRATOOK_DATA
+
+		variation Variation
+			isDefault
+			relationship: 1d0c7d77-0d32-4aef-85a6-ae572c1a57fc
+			defaultHierarchy: LocalDateTable_f1b3ce3a-2a94-4936-929a-6ad8a36b8292.'Hierarquia de datas'
+
+		annotation SummarizationSetBy = Automatic
+
+	column CONTRATOOK_USER
+		dataType: int64
+		formatString: 0
+		lineageTag: 24d406de-066a-4595-907f-901604dab542
+		summarizeBy: sum
+		sourceColumn: CONTRATOOK_USER
+
+		annotation SummarizationSetBy = Automatic
+
+	column CONTRATOOK_LOG
+		dataType: string
+		lineageTag: a034444c-ec31-4cd2-8139-027df0d62354
+		summarizeBy: none
+		sourceColumn: CONTRATOOK_LOG
+
+		annotation SummarizationSetBy = Automatic
+
+	column PRE_CADASTRO
+		dataType: int64
+		formatString: 0
+		lineageTag: 2ab01965-a422-4b21-b659-ee7dc3d41487
+		summarizeBy: sum
+		sourceColumn: PRE_CADASTRO
+
+		annotation SummarizationSetBy = Automatic
+
+	column CONTRATOJURIDICOOK
+		dataType: int64
+		formatString: 0
+		lineageTag: 820c3159-d735-4103-a1f8-9651868892ca
+		summarizeBy: sum
+		sourceColumn: CONTRATOJURIDICOOK
+
+		annotation SummarizationSetBy = Automatic
+
+	column CONTRATOJURIDICOOK_DATA
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 3c44d316-785a-46a0-b6c9-f1ba3667ef08
+		summarizeBy: none
+		sourceColumn: CONTRATOJURIDICOOK_DATA
+
+		variation Variation
+			isDefault
+			relationship: 645ffa04-28db-426e-82bf-ea69a5100b6f
+			defaultHierarchy: LocalDateTable_7d2203ca-6170-4e77-aef4-4c02a09d323e.'Hierarquia de datas'
+
+		annotation SummarizationSetBy = Automatic
+
+	column CONTRATOJURIDICOOK_USER
+		dataType: int64
+		formatString: 0
+		lineageTag: 176306ea-17d6-4d9a-ba8c-4835dc203b25
+		summarizeBy: sum
+		sourceColumn: CONTRATOJURIDICOOK_USER
+
+		annotation SummarizationSetBy = Automatic
+
+	column CONTRATOJURIDICOOK_OBS
+		dataType: string
+		lineageTag: 785f6be2-939a-47ec-a372-fa4ca66b4e81
+		summarizeBy: none
+		sourceColumn: CONTRATOJURIDICOOK_OBS
+
+		annotation SummarizationSetBy = Automatic
+
+	column CONTRATOFINANCEIROOK
+		dataType: int64
+		formatString: 0
+		lineageTag: fced01d7-be64-4e6f-bf28-9ca8b1d983ac
+		summarizeBy: sum
+		sourceColumn: CONTRATOFINANCEIROOK
+
+		annotation SummarizationSetBy = Automatic
+
+	column CONTRATOFINANCEIROOK_DATA
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 1fe3d34a-73cf-4a66-b3b1-5a1fa1d09fa9
+		summarizeBy: none
+		sourceColumn: CONTRATOFINANCEIROOK_DATA
+
+		variation Variation
+			isDefault
+			relationship: b4f0aedf-fdc4-4029-91b1-f88729ba5e10
+			defaultHierarchy: LocalDateTable_1d37ed04-d531-4127-878d-db2302b76c05.'Hierarquia de datas'
+
+		annotation SummarizationSetBy = Automatic
+
+	column CONTRATOFINANCEIROOK_USER
+		dataType: int64
+		formatString: 0
+		lineageTag: 368b7909-714b-4dea-9284-414f2d68cc44
+		summarizeBy: sum
+		sourceColumn: CONTRATOFINANCEIROOK_USER
+
+		annotation SummarizationSetBy = Automatic
+
+	column CONTRATOFINANCEIROOK_OBS
+		dataType: string
+		lineageTag: be40ce24-b2a4-48e6-9924-6b6f47ec607a
+		summarizeBy: none
+		sourceColumn: CONTRATOFINANCEIROOK_OBS
+
+		annotation SummarizationSetBy = Automatic
+
+	column CONTRATOCHECKLISTOK
+		dataType: int64
+		formatString: 0
+		lineageTag: d207956c-58ec-4ea2-8691-bde6fb955264
+		summarizeBy: sum
+		sourceColumn: CONTRATOCHECKLISTOK
+
+		annotation SummarizationSetBy = Automatic
+
+	column CONTRATOCHECKLISTOK_DATA
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: aa0bddac-f9c2-4e73-9813-817ed8836a8f
+		summarizeBy: none
+		sourceColumn: CONTRATOCHECKLISTOK_DATA
+
+		variation Variation
+			isDefault
+			relationship: 5ed60aee-918a-4a84-8e9b-fede2fda50af
+			defaultHierarchy: LocalDateTable_9a27435d-c2bb-436d-b7e6-067768850de5.'Hierarquia de datas'
+
+		annotation SummarizationSetBy = Automatic
+
+	column CONTRATOCHECKLISTOK_USER
+		dataType: int64
+		formatString: 0
+		lineageTag: bef1bbf1-719c-4eaf-bf44-67ee3801512f
+		summarizeBy: sum
+		sourceColumn: CONTRATOCHECKLISTOK_USER
+
+		annotation SummarizationSetBy = Automatic
+
+	column CONTRATOCHECKLISTOK_OBS
+		dataType: int64
+		formatString: 0
+		lineageTag: f2a9a39e-9af9-4ac5-858f-ff64c38e77fe
+		summarizeBy: sum
+		sourceColumn: CONTRATOCHECKLISTOK_OBS
+
+		annotation SummarizationSetBy = Automatic
+
+	column ORIGEM_VENDA
+		dataType: int64
+		formatString: 0
+		lineageTag: 7d678399-97bb-4e8f-bda5-54e7c7db9867
+		summarizeBy: sum
+		sourceColumn: ORIGEM_VENDA
+
+		annotation SummarizationSetBy = Automatic
+
+	column NOTAFISCAL_FRANQUEADO
+		dataType: int64
+		formatString: 0
+		lineageTag: d2f98364-7794-4a1d-9e42-91302548bada
+		summarizeBy: sum
+		sourceColumn: NOTAFISCAL_FRANQUEADO
+
+		annotation SummarizationSetBy = Automatic
+
+	column CODIGO_UNIDADE
+		dataType: int64
+		formatString: 0
+		lineageTag: 50f61f16-e5c7-4619-a8de-4e37729c9e24
+		summarizeBy: sum
+		sourceColumn: CODIGO_UNIDADE
+
+		annotation SummarizationSetBy = Automatic
+
+	column RESP_QUALIDADE
+		dataType: int64
+		formatString: 0
+		lineageTag: 2979c237-e3a6-44c0-a10e-1abbf027a825
+		summarizeBy: sum
+		sourceColumn: RESP_QUALIDADE
+
+		annotation SummarizationSetBy = Automatic
+
+	column Handicap
+		dataType: int64
+		formatString: 0
+		lineageTag: 32ccec1c-6658-4de6-b0a1-ea9fba0690f0
+		summarizeBy: sum
+		sourceColumn: Handicap
+
+		annotation SummarizationSetBy = Automatic
+
+	column SUPERCONTA
+		dataType: int64
+		formatString: 0
+		lineageTag: db0d6792-22ec-4b7e-86ef-c1b5bdde9bad
+		summarizeBy: sum
+		sourceColumn: SUPERCONTA
+
+		annotation SummarizationSetBy = Automatic
+
+	column QUANTIFICACAO_CONTRATADA
+		dataType: int64
+		formatString: 0
+		lineageTag: 4747f227-445e-4359-91f7-d02b59381452
+		summarizeBy: sum
+		sourceColumn: QUANTIFICACAO_CONTRATADA
+
+		annotation SummarizationSetBy = Automatic
+
+	column SEMMULTA
+		dataType: int64
+		formatString: 0
+		lineageTag: 3e20ba01-c792-498c-a85e-6090c8f0a4b0
+		summarizeBy: sum
+		sourceColumn: SEMMULTA
+
+		annotation SummarizationSetBy = Automatic
+
+	column HONORRARIOSAPOSRT
+		dataType: int64
+		formatString: 0
+		lineageTag: 80b430c4-73c8-46c6-af65-fd1d22bf66f0
+		summarizeBy: sum
+		sourceColumn: HONORRARIOSAPOSRT
+
+		annotation SummarizationSetBy = Automatic
+
+	column PAUSA_RF
+		dataType: int64
+		formatString: 0
+		lineageTag: 1402168a-1573-4679-8f8b-d64c61d6a3a1
+		summarizeBy: sum
+		sourceColumn: PAUSA_RF
+
+		annotation SummarizationSetBy = Automatic
+
+	column USERCONECT
+		dataType: int64
+		formatString: 0
+		lineageTag: 3ecada4f-afa0-45ce-a431-c50a271075cb
+		summarizeBy: sum
+		sourceColumn: USERCONECT
+
+		annotation SummarizationSetBy = Automatic
+
+	column DISTRATO_DATA
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 68af0c39-deb6-46fd-84a7-261a7246e229
+		summarizeBy: none
+		sourceColumn: DISTRATO_DATA
+
+		variation Variation
+			isDefault
+			relationship: f448c08d-1f28-4493-aae3-fda1c9b851e0
+			defaultHierarchy: LocalDateTable_5d8da693-a3ba-4d46-b83b-7f315bc65e20.'Hierarquia de datas'
+
+		annotation SummarizationSetBy = Automatic
+
+	column DISTRATO_USER
+		dataType: int64
+		formatString: 0
+		lineageTag: 6ce977b5-3839-479a-955f-875225e279c8
+		summarizeBy: sum
+		sourceColumn: DISTRATO_USER
+
+		annotation SummarizationSetBy = Automatic
+
+	column DISTRATO_OBS
+		dataType: string
+		lineageTag: 09bc30c7-abc5-42db-aabb-1a133afde37b
+		summarizeBy: none
+		sourceColumn: DISTRATO_OBS
+
+		annotation SummarizationSetBy = Automatic
+
+	column PercRefFuturo
+		dataType: double
+		lineageTag: cf70e2ef-3a16-445d-b232-b89f141e0e1b
+		summarizeBy: sum
+		sourceColumn: PercRefFuturo
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column OBS_IMPORTANTE
+		dataType: string
+		lineageTag: efac31aa-da45-43ae-b71d-01874e0c3df7
+		summarizeBy: none
+		sourceColumn: OBS_IMPORTANTE
+
+		annotation SummarizationSetBy = Automatic
+
+	column ORIGEMREGISTRO
+		dataType: string
+		lineageTag: 6126691e-d0fe-4955-8d5a-097be7ab4562
+		summarizeBy: none
+		sourceColumn: ORIGEMREGISTRO
+
+		annotation SummarizationSetBy = Automatic
+
+	column CODIGO_SUB_PRODUTO
+		dataType: int64
+		formatString: 0
+		lineageTag: 80beb52f-4054-44b3-9ed6-04112f1f2665
+		summarizeBy: sum
+		sourceColumn: CODIGO_SUB_PRODUTO
+
+		annotation SummarizationSetBy = Automatic
+
+	column PARECER_NAO_CREDITO
+		dataType: int64
+		formatString: 0
+		lineageTag: 0b8d1b8c-0a1f-4b6e-8eeb-5e6408d97823
+		summarizeBy: sum
+		sourceColumn: PARECER_NAO_CREDITO
+
+		annotation SummarizationSetBy = Automatic
+
+	column RESP_COMERCIAL
+		dataType: string
+		lineageTag: d53f7162-02fe-4ea8-b66f-b0f4e7fc899e
+		summarizeBy: none
+		sourceColumn: RESP_COMERCIAL
+
+		annotation SummarizationSetBy = Automatic
+
+	column CODIGO_DIRETOR
+		dataType: int64
+		formatString: 0
+		lineageTag: 61db25ca-2aed-40c9-9a72-128041ec04a9
+		summarizeBy: sum
+		sourceColumn: CODIGO_DIRETOR
+
+		annotation SummarizationSetBy = Automatic
+
+	column FINALIZANDO_CHK
+		dataType: int64
+		formatString: 0
+		lineageTag: 5ce7f672-d172-4201-9cdd-33ac2cfafeeb
+		summarizeBy: sum
+		sourceColumn: FINALIZANDO_CHK
+
+		annotation SummarizationSetBy = Automatic
+
+	column CODIGO_FRANQUEADO_OPERACIONAL
+		dataType: int64
+		formatString: 0
+		lineageTag: 350e1c9c-ef7b-4c91-ac16-dd4b192510bb
+		summarizeBy: sum
+		sourceColumn: CODIGO_FRANQUEADO_OPERACIONAL
+
+		annotation SummarizationSetBy = Automatic
+
+	column JOB_DIVISAO
+		dataType: string
+		lineageTag: 8b8ddd20-6a57-4c86-8ad0-ffff7e46474f
+		summarizeBy: none
+		sourceColumn: JOB_DIVISAO
+
+		annotation SummarizationSetBy = Automatic
+
+	column JOB_CNPJ
+		dataType: string
+		lineageTag: 06bb019e-bb3b-4651-acf1-08bf3e89a638
+		summarizeBy: none
+		sourceColumn: JOB_CNPJ
+
+		annotation SummarizationSetBy = Automatic
+
+	column JOB_CPF
+		dataType: string
+		lineageTag: 1963dd3e-74f3-4f20-9991-71ce8cf90fa5
+		summarizeBy: none
+		sourceColumn: JOB_CPF
+
+		annotation SummarizationSetBy = Automatic
+
+	column SIMULACAO_CREDITO
+		dataType: double
+		lineageTag: b2a8e050-af3c-4fce-98cf-6c7764161f59
+		summarizeBy: sum
+		sourceColumn: SIMULACAO_CREDITO
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column RESPONSAVEL_VENDA
+		dataType: int64
+		formatString: 0
+		lineageTag: 4973b990-383d-4b29-a553-784d7afc7961
+		summarizeBy: sum
+		sourceColumn: RESPONSAVEL_VENDA
+
+		annotation SummarizationSetBy = Automatic
+
+	column ESTIMATIVA_CREDITO
+		dataType: double
+		lineageTag: 45b00cbe-43c6-42b2-ab13-c13e0d152882
+		summarizeBy: sum
+		sourceColumn: ESTIMATIVA_CREDITO
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column PREVE_RETIFICACAO
+		dataType: int64
+		formatString: 0
+		lineageTag: da4b8f72-e00d-45a8-97bf-996d72afda20
+		summarizeBy: sum
+		sourceColumn: PREVE_RETIFICACAO
+
+		annotation SummarizationSetBy = Automatic
+
+	column ALVO_CERTO
+		dataType: int64
+		formatString: 0
+		lineageTag: 18f05345-cb81-45b0-ac80-0c65ebf00d8c
+		summarizeBy: sum
+		sourceColumn: ALVO_CERTO
+
+		annotation SummarizationSetBy = Automatic
+
+	column POSVENDA_DEPOIMENTO
+		dataType: int64
+		formatString: 0
+		lineageTag: 580398cb-12b0-45eb-a36a-510c31002e18
+		summarizeBy: sum
+		sourceColumn: POSVENDA_DEPOIMENTO
+
+		annotation SummarizationSetBy = Automatic
+
+	column POSVENDA_DEPOIMENTO_OBS
+		dataType: string
+		lineageTag: 3d8f993e-5d9e-4a2b-b9d2-0244a1c65b23
+		summarizeBy: none
+		sourceColumn: POSVENDA_DEPOIMENTO_OBS
+
+		annotation SummarizationSetBy = Automatic
+
+	column POSVENDA_ATESTADO
+		dataType: int64
+		formatString: 0
+		lineageTag: 592d2c02-7a09-4cd9-b4d5-b78d303e8815
+		summarizeBy: sum
+		sourceColumn: POSVENDA_ATESTADO
+
+		annotation SummarizationSetBy = Automatic
+
+	column POSVENDA_ATESTADO_OBS
+		dataType: string
+		lineageTag: cf910eb6-e6fe-4c94-82ff-4312b3aec439
+		summarizeBy: none
+		sourceColumn: POSVENDA_ATESTADO_OBS
+
+		annotation SummarizationSetBy = Automatic
+
+	column POSVENDA_INDICACAO
+		dataType: int64
+		formatString: 0
+		lineageTag: 55b76437-2532-4a33-88d8-33f9fbae62ab
+		summarizeBy: sum
+		sourceColumn: POSVENDA_INDICACAO
+
+		annotation SummarizationSetBy = Automatic
+
+	column POSVENDA_INDICACAO_OBS
+		dataType: string
+		lineageTag: 5ab98294-f64a-40ba-9cab-234e75875806
+		summarizeBy: none
+		sourceColumn: POSVENDA_INDICACAO_OBS
+
+		annotation SummarizationSetBy = Automatic
+
+	column PARCEIRO_COMERCIAL
+		dataType: int64
+		formatString: 0
+		lineageTag: e9a7cd77-0b6b-4510-bc22-88e9354c9df1
+		summarizeBy: sum
+		sourceColumn: PARCEIRO_COMERCIAL
+
+		annotation SummarizationSetBy = Automatic
+
+	column LINHA
+		dataType: string
+		lineageTag: 8d92dd50-97dc-4d98-80fe-4c61a539599d
+		summarizeBy: none
+		sourceColumn: LINHA
+
+		annotation SummarizationSetBy = Automatic
+
+	column MODELO_NEGOCIO
+		dataType: int64
+		formatString: 0
+		lineageTag: 4ab6198b-de3b-473d-bbaf-0fbebde98731
+		summarizeBy: sum
+		sourceColumn: MODELO_NEGOCIO
+
+		annotation SummarizationSetBy = Automatic
+
+	column FORMA_PGTO
+		dataType: int64
+		formatString: 0
+		lineageTag: b77dafa1-e1f2-4fc8-813b-eae8bce097fc
+		summarizeBy: sum
+		sourceColumn: FORMA_PGTO
+
+		annotation SummarizationSetBy = Automatic
+
+	column PARECER_OP
+		dataType: int64
+		formatString: 0
+		lineageTag: 82e8cb9d-ab0d-4c76-87a6-912d0e19f61c
+		summarizeBy: sum
+		sourceColumn: PARECER_OP
+
+		annotation SummarizationSetBy = Automatic
+
+	column SEGUNDA_DOC
+		dataType: int64
+		formatString: 0
+		lineageTag: 0b69dcfe-078b-499f-83f7-497630d122d4
+		summarizeBy: sum
+		sourceColumn: SEGUNDA_DOC
+
+		annotation SummarizationSetBy = Automatic
+
+	column POWER_UP
+		dataType: int64
+		formatString: 0
+		lineageTag: fae951e3-8cb2-4889-affc-3210d043fa99
+		summarizeBy: sum
+		sourceColumn: POWER_UP
+
+		annotation SummarizationSetBy = Automatic
+
+	column BONUS_PROD
+		dataType: int64
+		formatString: 0
+		lineageTag: 5c342a41-d784-4e8a-a50c-e105ba88a96c
+		summarizeBy: sum
+		sourceColumn: BONUS_PROD
+
+		annotation SummarizationSetBy = Automatic
+
+	column HONOR_DIF
+		dataType: double
+		lineageTag: 26c8c586-b9ea-4955-8fea-22a61581d4b7
+		summarizeBy: sum
+		sourceColumn: HONOR_DIF
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column SERVICOS_DATA_INI
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 83ae400f-f8ba-425d-9e7e-be3184ede767
+		summarizeBy: none
+		sourceColumn: SERVICOS_DATA_INI
+
+		variation Variation
+			isDefault
+			relationship: 1e7212bc-96f6-4639-b880-9cc7e95142ab
+			defaultHierarchy: LocalDateTable_fc815b18-2d27-4234-bd0c-677ada47ce3b.'Hierarquia de datas'
+
+		annotation SummarizationSetBy = Automatic
+
+	column SERVICOS_DATA_FIM
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: da03d3f9-1b37-4ad4-9c7f-decc6194d01f
+		summarizeBy: none
+		sourceColumn: SERVICOS_DATA_FIM
+
+		variation Variation
+			isDefault
+			relationship: d04926a0-2dfa-4fbb-9096-ea52c240c0ea
+			defaultHierarchy: LocalDateTable_1ce3b51f-822a-4208-9c75-e693f7723751.'Hierarquia de datas'
+
+		annotation SummarizationSetBy = Automatic
+
+	column SERVICOS_VALOR_SETUP
+		dataType: double
+		lineageTag: 63db28fc-1904-4af9-b7c7-bd7dd15274ce
+		summarizeBy: sum
+		sourceColumn: SERVICOS_VALOR_SETUP
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column SERVICOS_VALOR_COM
+		dataType: double
+		lineageTag: 1fa023bf-1870-4313-b08b-926bd54fe46e
+		summarizeBy: sum
+		sourceColumn: SERVICOS_VALOR_COM
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column SERVICOS_VALOR_OPE
+		dataType: double
+		lineageTag: 09490a0b-e636-4d6a-8271-6df2db311cac
+		summarizeBy: sum
+		sourceColumn: SERVICOS_VALOR_OPE
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column SERVICOS_VALOR_MARCA
+		dataType: double
+		lineageTag: ef4e52a6-09f0-40cb-aa9f-2f6e613aa624
+		summarizeBy: sum
+		sourceColumn: SERVICOS_VALOR_MARCA
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column LEAD_CONS
+		dataType: int64
+		formatString: 0
+		lineageTag: 81362090-37a6-4190-8a3b-2a2463b966aa
+		summarizeBy: sum
+		sourceColumn: LEAD_CONS
+
+		annotation SummarizationSetBy = Automatic
+
+	column CONTRATO_SDR
+		dataType: int64
+		formatString: 0
+		lineageTag: 2e242c85-705a-4ccb-b4e8-56cec38d010d
+		summarizeBy: sum
+		sourceColumn: CONTRATO_SDR
+
+		annotation SummarizationSetBy = Automatic
+
+	column SERVICOS_CONTRATO
+		dataType: int64
+		formatString: 0
+		lineageTag: c25feccf-70a1-4953-987d-1526914c9551
+		summarizeBy: sum
+		sourceColumn: SERVICOS_CONTRATO
+
+		annotation SummarizationSetBy = Automatic
+
+	column CODIGO_OP
+		dataType: int64
+		formatString: 0
+		lineageTag: d7a82c69-f28e-4bc5-aa4a-23bfcd4ebf0a
+		summarizeBy: sum
+		sourceColumn: CODIGO_OP
+
+		annotation SummarizationSetBy = Automatic
+
+	column CREDITOS_QUALIFICADOS
+		dataType: int64
+		formatString: 0
+		lineageTag: aaa73072-abd4-40bc-aa3c-6dab536577bb
+		summarizeBy: sum
+		sourceColumn: CREDITOS_QUALIFICADOS
+
+		annotation SummarizationSetBy = Automatic
+
+	column ATA_ASSINADA
+		dataType: int64
+		formatString: 0
+		lineageTag: deb11188-0056-46a7-b3aa-0224c49291b5
+		summarizeBy: sum
+		sourceColumn: ATA_ASSINADA
+
+		annotation SummarizationSetBy = Automatic
+
+	column ID_PJ360
+		dataType: int64
+		formatString: 0
+		lineageTag: d26f384d-5284-448d-a3ff-73f1a011b0bd
+		summarizeBy: sum
+		sourceColumn: ID_PJ360
+
+		annotation SummarizationSetBy = Automatic
+
+	column COBRANCA_GROSSUP
+		dataType: int64
+		formatString: 0
+		lineageTag: d264afb0-8b01-4e65-a50a-ec54900e6475
+		summarizeBy: sum
+		sourceColumn: COBRANCA_GROSSUP
+
+		annotation SummarizationSetBy = Automatic
+
+	column CONSULTOR_UNIDADE_MODELO
+		dataType: int64
+		formatString: 0
+		lineageTag: 704f37d3-69e9-4729-ae0a-c6218554f945
+		summarizeBy: sum
+		sourceColumn: CONSULTOR_UNIDADE_MODELO
+
+		annotation SummarizationSetBy = Automatic
+
+	partition PROJECT_QBERT_JOBS = m
+		mode: import
+		source = ```
+				let 
+				    Fonte = Sql.Databases("192.168.2.34"),
+				    STUDIO_FISCAL = Fonte{[Name="STUDIO_FISCAL"]}[Data],
+				    dbo_PROJECT_QBERT_JOBS = STUDIO_FISCAL{[Schema="dbo", Item="PROJECT_QBERT_JOBS"]}[Data]
+				in
+				    dbo_PROJECT_QBERT_JOBS
+				```
+
+	annotation PBI_NavigationStepName = Navegação
+
+	annotation PBI_ResultType = Table
+

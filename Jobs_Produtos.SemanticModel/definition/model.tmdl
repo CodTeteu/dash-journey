@@ -1,0 +1,59 @@
+model Model
+	culture: pt-BR
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: pt-BR
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation __PBI_TimeIntelligenceEnabled = 1
+
+annotation PBI_QueryOrder = ["JOBS_Produto","QBERT_JOBS_JOURNEY","PROJECT_QBERT_JOBS"]
+
+annotation PBI_ProTooling = ["MCP-PBIModeling","DevMode"]
+
+ref table medidas_html
+ref table dCalendar
+ref table JOBS_Produto
+ref table QBERT_JOBS_JOURNEY
+ref table PROJECT_QBERT_JOBS
+ref table DateTableTemplate_02ed78ad-26f0-4795-9e7e-2e6268bfd4b3
+ref table LocalDateTable_3f10bcdf-fe39-4870-a267-d82b335c23c3
+ref table LocalDateTable_ceeada72-be36-4848-bdbe-c2e04a81fc1c
+ref table LocalDateTable_ab399244-0340-457e-9a3e-95064e6bf44c
+ref table LocalDateTable_1b242057-333c-4953-bc3d-489720cbd8c3
+ref table LocalDateTable_736e2e2f-44dd-4969-8d51-973dcadc3d2a
+ref table LocalDateTable_cefd6b54-4f0f-4d1e-9da4-ccf3d9a9a4ed
+ref table LocalDateTable_72a94729-fedf-446f-acb9-33855eb8807d
+ref table LocalDateTable_1ca05569-e62b-4cff-9c81-808a5503a231
+ref table LocalDateTable_cd8b3b62-7883-4bd2-9ca9-2884324d644c
+ref table LocalDateTable_2cb83304-439b-48f4-9fa2-5acc4ff771a4
+ref table LocalDateTable_2b1ce973-c85b-41c5-9b4d-4a74e0ea5763
+ref table LocalDateTable_42e251f4-b9df-45ec-a651-2b63fdbc8c02
+ref table LocalDateTable_f1b3ce3a-2a94-4936-929a-6ad8a36b8292
+ref table LocalDateTable_7d2203ca-6170-4e77-aef4-4c02a09d323e
+ref table LocalDateTable_1d37ed04-d531-4127-878d-db2302b76c05
+ref table LocalDateTable_9a27435d-c2bb-436d-b7e6-067768850de5
+ref table LocalDateTable_5d8da693-a3ba-4d46-b83b-7f315bc65e20
+ref table LocalDateTable_fc815b18-2d27-4234-bd0c-677ada47ce3b
+ref table LocalDateTable_1ce3b51f-822a-4208-9c75-e693f7723751
+ref table LocalDateTable_6b3493d9-7dee-4cca-be49-96fd75771451
+ref table LocalDateTable_f26b1b0f-0acc-4463-832c-01ae80e104e3
+ref table LocalDateTable_dbce03ef-6471-4d5c-bccf-2d16fe1e4c4c
+ref table LocalDateTable_6e7ae696-2177-4943-ba3c-e07737b27b04
+ref table LocalDateTable_549aab74-8933-4111-a617-50f38fe4d9a9
+ref table LocalDateTable_1b0ea89f-272d-4bcc-9f02-b375df2a9ebf
+ref table LocalDateTable_f1fb6bf9-6d1f-44cb-9a73-60360ad49e5b
+ref table LocalDateTable_9f075ec0-89c9-4a9d-9105-cbb5f720ef7a
+ref table LocalDateTable_6c015aac-1a19-44b0-b79b-525ef392cf5a
+ref table LocalDateTable_783efd5b-ee5d-4d42-872d-5ee0b7faad6a
+ref table LocalDateTable_8a636eb6-da25-4892-afd9-a6017d643673
+ref table LocalDateTable_310b0e48-bbed-4e50-a67b-37ee9fd78727
+ref table LocalDateTable_af2c66f1-74cc-4d3b-ba6a-48aeccd88b39
+ref table LocalDateTable_4edad926-2817-4669-b869-34748bb8f537
+ref table LocalDateTable_dde6048b-a6ea-4dd6-b455-79790b6a5efe
+ref table MAP_PRODUTOS_ESTEIRA_TAX
+ref table DIM_PRODUTOS_IMAGEM_TAX
+
+ref cultureInfo pt-BR
+

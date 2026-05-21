@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "skills": {
+    "find-skills": {
+      "source": "vercel-labs/skills",
+      "sourceType": "github",
+      "skillPath": "skills/find-skills/SKILL.md",
+      "computedHash": "9e1c8b3103f92fa8092568a44fe64858de7c5c9dc65ce4bea8f168080e889cfd"
+    },
+    "html-css-best-practices": {
+      "source": "hack23/homepage",
+      "sourceType": "github",
+      "skillPath": ".github/skills/quality/html-css-best-practices/SKILL.md",
+      "computedHash": "911ce724c313c8361bae4277ef414d555c27d356feeafb4f4ca2b91e16ab6c06"
+    },
+    "power-bi-dax-optimization": {
+      "source": "github/awesome-copilot",
+      "sourceType": "github",
+      "skillPath": "skills/power-bi-dax-optimization/SKILL.md",
+      "computedHash": "e98206e9864acfbfec475a1213c2687c293f0ed9e4903b6a9dc271ff313d0944"
+    },
+    "powerbi-expert": {
+      "source": "personamanagmentlayer/pcl",
+      "sourceType": "github",
+      "skillPath": "stdlib/data/powerbi-expert/SKILL.md",
+      "computedHash": "f196572be40da74433c0405601358f67166438aead1f6114d1c609407257207c"
+    }
+  }
+}
