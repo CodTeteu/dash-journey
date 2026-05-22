@@ -34,11 +34,6 @@ table CONTRATOS_OPORTUNIDADES
 		summarizeBy: none
 		sourceColumn: data_contrato
 
-		variation Variation
-			isDefault
-			relationship: d7d2785a-1ccf-4bbf-93fb-48936fbfc8b2
-			defaultHierarchy: LocalDateTable_8fc92519-9842-44fa-b636-c2435cd2ba48.'Hierarquia de datas'
-
 		annotation SummarizationSetBy = Automatic
 
 	column id_solucao
@@ -83,6 +78,32 @@ table CONTRATOS_OPORTUNIDADES
 		sourceColumn: cnpj
 
 		annotation SummarizationSetBy = Automatic
+
+	column CNPJ_JOIN =
+			VAR c0 = "" & CONTRATOS_OPORTUNIDADES[cnpj]
+			VAR c1 =
+			    SUBSTITUTE (
+			        SUBSTITUTE (
+			            SUBSTITUTE (
+			                SUBSTITUTE (
+			                    SUBSTITUTE ( TRIM ( c0 ), ".", "" ),
+			                    "/",
+			                    ""
+			                ),
+			                "-",
+			                ""
+			            ),
+			            " ",
+			            ""
+			        ),
+			        UNICHAR ( 160 ),
+			        ""
+			    )
+			RETURN
+			    RIGHT ( "00000000000000" & c1, 14 )
+		dataType: string
+		lineageTag: a29451f9-8bbf-45de-a21c-dcc65b62125f
+		summarizeBy: none
 
 	partition CONTRATOS_OPORTUNIDADES = m
 		mode: import

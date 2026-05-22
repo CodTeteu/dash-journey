@@ -23,11 +23,11 @@
                       "Entity": "medidas_html"
                     }
                   },
-                  "Property": "HTML_DETALHAMENTO_DIAGNOSTICO_JOURNEY_SEM_ESPACO_OCIOSO"
+                  "Property": "HTML Macro Oportunidades x Jobs | Aba Documentação"
                 }
               },
               "queryRef": "medidas_html.HTML_DETALHAMENTO_DIAGNOSTICO_JOURNEY",
-              "nativeQueryRef": "HTML_DETALHAMENTO_DIAGNOSTICO_JOURNEY_SEM_ESPACO_OCIOSO"
+              "nativeQueryRef": "HTML Macro Oportunidades x Jobs | Aba Documentação"
             }
           ]
         }

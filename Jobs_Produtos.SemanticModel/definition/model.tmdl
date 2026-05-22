@@ -8,32 +8,15 @@ model Model
 
 annotation __PBI_TimeIntelligenceEnabled = 1
 
-annotation PBI_QueryOrder = ["PROJECT_QBERT_JOBS","CONTRATOS_OPORTUNIDADES"]
+annotation PBI_QueryOrder = ["CONTRATOS_OPORTUNIDADES","JOBS_PRODUTO_AREA"]
 
 annotation PBI_ProTooling = ["MCP-PBIModeling","DevMode"]
 
 ref table medidas_html
 ref table dCalendar
-ref table PROJECT_QBERT_JOBS
-ref table DateTableTemplate_02ed78ad-26f0-4795-9e7e-2e6268bfd4b3
-ref table LocalDateTable_1b242057-333c-4953-bc3d-489720cbd8c3
-ref table LocalDateTable_736e2e2f-44dd-4969-8d51-973dcadc3d2a
-ref table LocalDateTable_cefd6b54-4f0f-4d1e-9da4-ccf3d9a9a4ed
-ref table LocalDateTable_72a94729-fedf-446f-acb9-33855eb8807d
-ref table LocalDateTable_1ca05569-e62b-4cff-9c81-808a5503a231
-ref table LocalDateTable_cd8b3b62-7883-4bd2-9ca9-2884324d644c
-ref table LocalDateTable_2cb83304-439b-48f4-9fa2-5acc4ff771a4
-ref table LocalDateTable_2b1ce973-c85b-41c5-9b4d-4a74e0ea5763
-ref table LocalDateTable_42e251f4-b9df-45ec-a651-2b63fdbc8c02
-ref table LocalDateTable_f1b3ce3a-2a94-4936-929a-6ad8a36b8292
-ref table LocalDateTable_7d2203ca-6170-4e77-aef4-4c02a09d323e
-ref table LocalDateTable_1d37ed04-d531-4127-878d-db2302b76c05
-ref table LocalDateTable_9a27435d-c2bb-436d-b7e6-067768850de5
-ref table LocalDateTable_5d8da693-a3ba-4d46-b83b-7f315bc65e20
-ref table LocalDateTable_fc815b18-2d27-4234-bd0c-677ada47ce3b
-ref table LocalDateTable_1ce3b51f-822a-4208-9c75-e693f7723751
 ref table CONTRATOS_OPORTUNIDADES
-ref table LocalDateTable_8fc92519-9842-44fa-b636-c2435cd2ba48
+ref table JOBS_PRODUTO_AREA
+ref table dCNPJ
 
 ref cultureInfo pt-BR
 

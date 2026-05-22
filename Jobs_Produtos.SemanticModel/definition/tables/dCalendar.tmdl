@@ -284,155 +284,144 @@ table dCalendar
 	partition dCalendar = calculated
 		mode: import
 		source = ```
-									VAR vMinAllowed = DATE ( 2000, 1, 1 )
 				
-									VAR vDateCandidates =
-									    UNION (
-									        SELECTCOLUMNS (
-									            FILTER ( ALL ( 'PROJECT_QBERT_JOBS' ), NOT ISBLANK ( 'PROJECT_QBERT_JOBS'[DATA_CADASTRO] ) && 'PROJECT_QBERT_JOBS'[DATA_CADASTRO] >= vMinAllowed ),
-									            "DateValue", DATE ( YEAR ( 'PROJECT_QBERT_JOBS'[DATA_CADASTRO] ), MONTH ( 'PROJECT_QBERT_JOBS'[DATA_CADASTRO] ), DAY ( 'PROJECT_QBERT_JOBS'[DATA_CADASTRO] ) )
-									        ),
-									        SELECTCOLUMNS (
-									            FILTER ( ALL ( 'PROJECT_QBERT_JOBS' ), NOT ISBLANK ( 'PROJECT_QBERT_JOBS'[DATA_PROC_ELETRONICA] ) && 'PROJECT_QBERT_JOBS'[DATA_PROC_ELETRONICA] >= vMinAllowed ),
-									            "DateValue", DATE ( YEAR ( 'PROJECT_QBERT_JOBS'[DATA_PROC_ELETRONICA] ), MONTH ( 'PROJECT_QBERT_JOBS'[DATA_PROC_ELETRONICA] ), DAY ( 'PROJECT_QBERT_JOBS'[DATA_PROC_ELETRONICA] ) )
-									        ),
-									        SELECTCOLUMNS (
-									            FILTER ( ALL ( 'PROJECT_QBERT_JOBS' ), NOT ISBLANK ( 'PROJECT_QBERT_JOBS'[CONTRATOCHECKLISTOK_DATA] ) && 'PROJECT_QBERT_JOBS'[CONTRATOCHECKLISTOK_DATA] >= vMinAllowed ),
-									            "DateValue", DATE ( YEAR ( 'PROJECT_QBERT_JOBS'[CONTRATOCHECKLISTOK_DATA] ), MONTH ( 'PROJECT_QBERT_JOBS'[CONTRATOCHECKLISTOK_DATA] ), DAY ( 'PROJECT_QBERT_JOBS'[CONTRATOCHECKLISTOK_DATA] ) )
-									        ),
-									        SELECTCOLUMNS (
-									            FILTER ( ALL ( 'PROJECT_QBERT_JOBS' ), NOT ISBLANK ( 'PROJECT_QBERT_JOBS'[PRAZO_ATA] ) && 'PROJECT_QBERT_JOBS'[PRAZO_ATA] >= vMinAllowed ),
-									            "DateValue", DATE ( YEAR ( 'PROJECT_QBERT_JOBS'[PRAZO_ATA] ), MONTH ( 'PROJECT_QBERT_JOBS'[PRAZO_ATA] ), DAY ( 'PROJECT_QBERT_JOBS'[PRAZO_ATA] ) )
-									        ),
-									        SELECTCOLUMNS (
-									            FILTER ( ALL ( 'PROJECT_QBERT_JOBS' ), NOT ISBLANK ( 'PROJECT_QBERT_JOBS'[DATA_ENTREGA] ) && 'PROJECT_QBERT_JOBS'[DATA_ENTREGA] >= vMinAllowed ),
-									            "DateValue", DATE ( YEAR ( 'PROJECT_QBERT_JOBS'[DATA_ENTREGA] ), MONTH ( 'PROJECT_QBERT_JOBS'[DATA_ENTREGA] ), DAY ( 'PROJECT_QBERT_JOBS'[DATA_ENTREGA] ) )
-									        ),
-									        SELECTCOLUMNS (
-									            FILTER ( ALL ( 'PROJECT_QBERT_JOBS' ), NOT ISBLANK ( 'PROJECT_QBERT_JOBS'[DATA_RECEBIMENTO] ) && 'PROJECT_QBERT_JOBS'[DATA_RECEBIMENTO] >= vMinAllowed ),
-									            "DateValue", DATE ( YEAR ( 'PROJECT_QBERT_JOBS'[DATA_RECEBIMENTO] ), MONTH ( 'PROJECT_QBERT_JOBS'[DATA_RECEBIMENTO] ), DAY ( 'PROJECT_QBERT_JOBS'[DATA_RECEBIMENTO] ) )
-									        )
-									    )
+				VAR vMinAllowed = DATE ( 2000, 1, 1 )
 				
-									VAR vMinBase = MINX ( vDateCandidates, [DateValue] )
-									VAR vMaxBase = MAXX ( vDateCandidates, [DateValue] )
+				-- O periodo do projeto deve nascer da tabela de oportunidades.
+				-- A operacao/JOBS_PRODUTO_AREA sera cruzada por CNPJ dentro das medidas.
+				VAR vDateCandidates =
+				    SELECTCOLUMNS (
+				        FILTER (
+				            ALL ( 'CONTRATOS_OPORTUNIDADES' ),
+				            NOT ISBLANK ( 'CONTRATOS_OPORTUNIDADES'[data_contrato] )
+				                && 'CONTRATOS_OPORTUNIDADES'[data_contrato] >= vMinAllowed
+				        ),
+				        "DateValue",
+				            DATE (
+				                YEAR ( 'CONTRATOS_OPORTUNIDADES'[data_contrato] ),
+				                MONTH ( 'CONTRATOS_OPORTUNIDADES'[data_contrato] ),
+				                DAY ( 'CONTRATOS_OPORTUNIDADES'[data_contrato] )
+				            )
+				    )
 				
-									VAR vStartDate =
-									    DATE ( YEAR ( COALESCE ( vMinBase, TODAY () ) ), 1, 1 )
+				VAR vMinBase = MINX ( vDateCandidates, [DateValue] )
+				VAR vMaxBase = MAXX ( vDateCandidates, [DateValue] )
 				
-									VAR vEndDate =
-									    EOMONTH ( COALESCE ( vMaxBase, TODAY () ), 0 )
+				VAR vStartDate =
+				    DATE ( YEAR ( COALESCE ( vMinBase, TODAY () ) ), 1, 1 )
 				
-									VAR vTodayEnd = EOMONTH ( TODAY (), 0 )
+				VAR vEndDate =
+				    EOMONTH ( COALESCE ( vMaxBase, TODAY () ), 0 )
 				
-								RETURN
-								    ADDCOLUMNS (
-								        CALENDAR ( vStartDate, MIN(vEndDate, vTodayEnd) ),
+				RETURN
+				    ADDCOLUMNS (
+				        CALENDAR ( vStartDate, vEndDate ),
 				
-								        "DateInt",
-								            YEAR ( [Date] ) * 10000
-								                + MONTH ( [Date] ) * 100
-								                + DAY ( [Date] ),
+				        "DateInt",
+				            YEAR ( [Date] ) * 10000
+				                + MONTH ( [Date] ) * 100
+				                + DAY ( [Date] ),
 				
-								        "Year",
-								            YEAR ( [Date] ),
+				        "Year",
+				            YEAR ( [Date] ),
 				
-								        "YearShort",
-								            FORMAT ( [Date], "yy" ),
+				        "YearShort",
+				            FORMAT ( [Date], "yy" ),
 				
-								        "MonthNumber",
-								            MONTH ( [Date] ),
+				        "MonthNumber",
+				            MONTH ( [Date] ),
 				
-								        "MonthName",
-								            FORMAT ( [Date], "[$-pt-BR]mmm" ),
+				        "MonthName",
+				            FORMAT ( [Date], "[$-pt-BR]mmm" ),
 				
-								        "MonthNameLong",
-								            FORMAT ( [Date], "[$-pt-BR]mmmm" ),
+				        "MonthNameLong",
+				            FORMAT ( [Date], "[$-pt-BR]mmmm" ),
 				
-								        "YearMonth",
-								            YEAR ( [Date] ) * 100
-								                + MONTH ( [Date] ),
+				        "YearMonth",
+				            YEAR ( [Date] ) * 100
+				                + MONTH ( [Date] ),
 				
-								        "YearMonthName",
-								            FORMAT ( [Date], "[$-pt-BR]mmm/yyyy" ),
+				        "YearMonthName",
+				            FORMAT ( [Date], "[$-pt-BR]mmm/yyyy" ),
 				
-								        "YearMonthLong",
-								            FORMAT ( [Date], "[$-pt-BR]mmmm/yyyy" ),
+				        "YearMonthLong",
+				            FORMAT ( [Date], "[$-pt-BR]mmmm/yyyy" ),
 				
-								        "MonthStart",
-								            DATE ( YEAR ( [Date] ), MONTH ( [Date] ), 1 ),
+				        "MonthStart",
+				            DATE ( YEAR ( [Date] ), MONTH ( [Date] ), 1 ),
 				
-								        "MonthEnd",
-								            EOMONTH ( [Date], 0 ),
+				        "MonthEnd",
+				            EOMONTH ( [Date], 0 ),
 				
-								        "Quarter",
-								            QUARTER ( [Date] ),
+				        "Quarter",
+				            QUARTER ( [Date] ),
 				
-								        "QuarterName",
-								            "T" & QUARTER ( [Date] ),
+				        "QuarterName",
+				            "T" & QUARTER ( [Date] ),
 				
-								        "YearQuarter",
-								            YEAR ( [Date] ) * 10
-								                + QUARTER ( [Date] ),
+				        "YearQuarter",
+				            YEAR ( [Date] ) * 10
+				                + QUARTER ( [Date] ),
 				
-								        "YearQuarterName",
-								            "T" & QUARTER ( [Date] )
-								                & "/"
-								                & FORMAT ( [Date], "yyyy" ),
+				        "YearQuarterName",
+				            "T" & QUARTER ( [Date] )
+				                & "/"
+				                & FORMAT ( [Date], "yyyy" ),
 				
-								        "Semester",
-								            IF ( MONTH ( [Date] ) <= 6, 1, 2 ),
+				        "Semester",
+				            IF ( MONTH ( [Date] ) <= 6, 1, 2 ),
 				
-								        "SemesterName",
-								            "S" & IF ( MONTH ( [Date] ) <= 6, 1, 2 ),
+				        "SemesterName",
+				            "S" & IF ( MONTH ( [Date] ) <= 6, 1, 2 ),
 				
-								        "YearSemester",
-								            YEAR ( [Date] ) * 10
-								                + IF ( MONTH ( [Date] ) <= 6, 1, 2 ),
+				        "YearSemester",
+				            YEAR ( [Date] ) * 10
+				                + IF ( MONTH ( [Date] ) <= 6, 1, 2 ),
 				
-								        "YearSemesterName",
-								            "S" & IF ( MONTH ( [Date] ) <= 6, 1, 2 )
-								                & "/"
-								                & FORMAT ( [Date], "yyyy" ),
+				        "YearSemesterName",
+				            "S" & IF ( MONTH ( [Date] ) <= 6, 1, 2 )
+				                & "/"
+				                & FORMAT ( [Date], "yyyy" ),
 				
-								        "Day",
-								            DAY ( [Date] ),
+				        "Day",
+				            DAY ( [Date] ),
 				
-								        "DayOfWeekNumber",
-								            WEEKDAY ( [Date], 2 ),
+				        "DayOfWeekNumber",
+				            WEEKDAY ( [Date], 2 ),
 				
-								        "DayOfWeekName",
-								            FORMAT ( [Date], "[$-pt-BR]dddd" ),
+				        "DayOfWeekName",
+				            FORMAT ( [Date], "[$-pt-BR]dddd" ),
 				
-								        "DayOfWeekShort",
-								            FORMAT ( [Date], "[$-pt-BR]ddd" ),
+				        "DayOfWeekShort",
+				            FORMAT ( [Date], "[$-pt-BR]ddd" ),
 				
-								        "IsWeekend",
-								            WEEKDAY ( [Date], 2 ) >= 6,
+				        "IsWeekend",
+				            WEEKDAY ( [Date], 2 ) >= 6,
 				
-								        "WeekStart",
-								            [Date] - WEEKDAY ( [Date], 2 ) + 1,
+				        "WeekStart",
+				            [Date] - WEEKDAY ( [Date], 2 ) + 1,
 				
-								        "WeekEnd",
-								            [Date] - WEEKDAY ( [Date], 2 ) + 7,
+				        "WeekEnd",
+				            [Date] - WEEKDAY ( [Date], 2 ) + 7,
 				
-								        "ISOWeekNumber",
-								            WEEKNUM ( [Date], 21 ),
+				        "ISOWeekNumber",
+				            WEEKNUM ( [Date], 21 ),
 				
-								        "ISOYear",
-								            YEAR ( [Date] - WEEKDAY ( [Date], 2 ) + 4 ),
+				        "ISOYear",
+				            YEAR ( [Date] - WEEKDAY ( [Date], 2 ) + 4 ),
 				
-								        "ISOYearWeek",
-								            YEAR ( [Date] - WEEKDAY ( [Date], 2 ) + 4 ) * 100
-								                + WEEKNUM ( [Date], 21 ),
+				        "ISOYearWeek",
+				            YEAR ( [Date] - WEEKDAY ( [Date], 2 ) + 4 ) * 100
+				                + WEEKNUM ( [Date], 21 ),
 				
-								        "ISOYearWeekName",
-								            FORMAT (
-								                YEAR ( [Date] - WEEKDAY ( [Date], 2 ) + 4 ),
-								                "0000"
-								            )
-								                & "-S"
-								                & FORMAT ( WEEKNUM ( [Date], 21 ), "00" )
-								    )
+				        "ISOYearWeekName",
+				            FORMAT (
+				                YEAR ( [Date] - WEEKDAY ( [Date], 2 ) + 4 ),
+				                "0000"
+				            )
+				                & "-S"
+				                & FORMAT ( WEEKNUM ( [Date], 21 ), "00" )
+				    )
+				
 				```
 

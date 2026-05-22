@@ -1,0 +1,234 @@
+table JOBS_PRODUTO_AREA
+	lineageTag: 76fd063f-d659-408b-9901-f3a98edfdaf5
+
+	column JOB
+		dataType: string
+		lineageTag: 485ce595-c7e6-4cab-b9fb-b9b581f482ee
+		summarizeBy: none
+		sourceColumn: JOB
+
+		annotation SummarizationSetBy = Automatic
+
+	column DATA_CADASTRO
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 2e1e8f25-9b34-4ddf-a8c1-4d7e508fe766
+		summarizeBy: none
+		sourceColumn: DATA_CADASTRO
+
+		annotation SummarizationSetBy = Automatic
+
+	column DATA_ASSINATURA
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 81695890-7cba-41a6-92b7-e0d0cf5d0a40
+		summarizeBy: none
+		sourceColumn: DATA_ASSINATURA
+
+		annotation SummarizationSetBy = Automatic
+
+	column NOME_CLIENTE
+		dataType: string
+		lineageTag: 554f09e2-24e3-412b-884e-84faae243676
+		summarizeBy: none
+		sourceColumn: NOME_CLIENTE
+
+		annotation SummarizationSetBy = Automatic
+
+	column CNPJ_CLIENTE
+		dataType: string
+		lineageTag: 627c2ade-bbba-40a9-9ed5-d3b9d83cfe76
+		summarizeBy: none
+		sourceColumn: CNPJ_CLIENTE
+
+		annotation SummarizationSetBy = Automatic
+
+	column CODIGO_PRODUTO
+		dataType: int64
+		formatString: 0
+		lineageTag: aaf69de4-d382-4105-b851-dd08707fdfdb
+		summarizeBy: sum
+		sourceColumn: CODIGO_PRODUTO
+
+		annotation SummarizationSetBy = Automatic
+
+	column NOME_PRODUTO
+		dataType: string
+		lineageTag: 7b2ef190-005d-466d-ae7f-bc58f633e5d1
+		summarizeBy: none
+		sourceColumn: NOME_PRODUTO
+
+		annotation SummarizationSetBy = Automatic
+
+	column COD_SUBPRODUTO
+		dataType: int64
+		formatString: 0
+		lineageTag: 4648024b-2224-44fe-8ebb-57db5c57a593
+		summarizeBy: sum
+		sourceColumn: COD_SUBPRODUTO
+
+		annotation SummarizationSetBy = Automatic
+
+	column NOME_SUBPRODUTO
+		dataType: string
+		lineageTag: 63475b8a-f862-4e6d-87e3-8ed4489b5416
+		summarizeBy: none
+		sourceColumn: NOME_SUBPRODUTO
+
+		annotation SummarizationSetBy = Automatic
+
+	column MODELO_PRODUTO
+		dataType: string
+		lineageTag: 59d7f9f4-86d4-4980-8f25-005d4ef39b94
+		summarizeBy: none
+		sourceColumn: MODELO_PRODUTO
+
+		annotation SummarizationSetBy = Automatic
+
+	column MODELO_NEGOCIO
+		dataType: string
+		lineageTag: 5b9e8c8d-5642-4f3e-ad27-573d3f7e0143
+		summarizeBy: none
+		sourceColumn: MODELO_NEGOCIO
+
+		annotation SummarizationSetBy = Automatic
+
+	column COD_TRIBUTO
+		dataType: int64
+		formatString: 0
+		lineageTag: 38e58cfc-704b-4615-95fb-33041537c220
+		summarizeBy: sum
+		sourceColumn: COD_TRIBUTO
+
+		annotation SummarizationSetBy = Automatic
+
+	column NOME_TRIBUTO
+		dataType: string
+		lineageTag: 374fa64e-a78b-4fd8-991b-068ccdf926b8
+		summarizeBy: none
+		sourceColumn: NOME_TRIBUTO
+
+		annotation SummarizationSetBy = Automatic
+
+	column TRIBUTO_DATA_ENTRADA
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 3eefed80-3d84-48ff-bdfa-5907aa74b56f
+		summarizeBy: none
+		sourceColumn: TRIBUTO_DATA_ENTRADA
+
+		annotation SummarizationSetBy = Automatic
+
+	column CODIGO_AREA
+		dataType: double
+		lineageTag: a7f29d33-725a-4440-a389-d32933ad8cdc
+		summarizeBy: sum
+		sourceColumn: CODIGO_AREA
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column NOME_AREA
+		dataType: string
+		lineageTag: fcca8a92-e775-4543-98c5-812d6719e24f
+		summarizeBy: none
+		sourceColumn: NOME_AREA
+
+		annotation SummarizationSetBy = Automatic
+
+	column DIAS
+		dataType: int64
+		formatString: 0
+		lineageTag: 93a8646a-2d41-47d8-a440-7c9eae9be971
+		summarizeBy: sum
+		sourceColumn: DIAS
+
+		annotation SummarizationSetBy = Automatic
+
+	column VALOR_TRIBUTO
+		dataType: double
+		lineageTag: 2d99e986-601d-415f-806d-d25c261f4066
+		summarizeBy: sum
+		sourceColumn: VALOR_TRIBUTO
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column JOB_HONORARIOS_ENCONTRADOS
+		dataType: double
+		lineageTag: afd9a40b-2aa8-4eef-8efe-600259030243
+		summarizeBy: sum
+		sourceColumn: JOB_HONORARIOS_ENCONTRADOS
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column JOB_HONORARIOS_AGENDADOS
+		dataType: double
+		lineageTag: ddafada2-9f3a-4764-9af7-881c8b5d72bc
+		summarizeBy: sum
+		sourceColumn: JOB_HONORARIOS_AGENDADOS
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column NOME_EQUIPE
+		dataType: string
+		lineageTag: 174a1b1e-4ee9-4b0c-915b-19a604b03f29
+		summarizeBy: none
+		sourceColumn: NOME_EQUIPE
+
+		annotation SummarizationSetBy = Automatic
+
+	column RESPONSAVEL
+		dataType: string
+		lineageTag: 2b0e41d6-1c2c-4a15-9a7a-19f4432d0824
+		summarizeBy: none
+		sourceColumn: RESPONSAVEL
+
+		annotation SummarizationSetBy = Automatic
+
+	column CNPJ_JOIN =
+			VAR c0 = "" & JOBS_PRODUTO_AREA[CNPJ_CLIENTE]
+			VAR c1 =
+			    SUBSTITUTE (
+			        SUBSTITUTE (
+			            SUBSTITUTE (
+			                SUBSTITUTE (
+			                    SUBSTITUTE ( TRIM ( c0 ), ".", "" ),
+			                    "/",
+			                    ""
+			                ),
+			                "-",
+			                ""
+			            ),
+			            " ",
+			            ""
+			        ),
+			        UNICHAR ( 160 ),
+			        ""
+			    )
+			RETURN
+			    RIGHT ( "00000000000000" & c1, 14 )
+		dataType: string
+		lineageTag: c0b972e2-3534-49dc-a6e3-4080943e927a
+		summarizeBy: none
+
+	partition JOBS_PRODUTO_AREA = m
+		mode: import
+		source =
+				let
+				    Fonte = Sql.Databases("192.168.2.34"),
+				    STUDIO_FISCAL = Fonte{[Name="STUDIO_FISCAL"]}[Data],
+				    dbo_vw_powerbi_jobs_produto_area = STUDIO_FISCAL{[Schema="dbo",Item="vw_powerbi_jobs_produto_area"]}[Data]
+				in
+				    dbo_vw_powerbi_jobs_produto_area
+
+	annotation PBI_NavigationStepName = Navegação
+
+	annotation PBI_ResultType = Table
+

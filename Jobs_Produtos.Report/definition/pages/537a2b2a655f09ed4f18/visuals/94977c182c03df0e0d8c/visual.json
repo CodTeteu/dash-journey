@@ -23,11 +23,11 @@
                       "Entity": "medidas_html"
                     }
                   },
-                  "Property": "HTML Diagnóstico Journey | Visual Principal"
+                  "Property": "HTML Macro Oportunidades x Jobs | Tela Principal"
                 }
               },
               "queryRef": "medidas_html.HTML Diagnóstico Journey | Visual Principal",
-              "nativeQueryRef": "HTML Diagnóstico Journey | Visual Principal"
+              "nativeQueryRef": "HTML Macro Oportunidades x Jobs | Tela Principal"
             }
           ]
         }

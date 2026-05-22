@@ -1,0 +1,28 @@
+table dCNPJ
+	lineageTag: f99afb1f-794e-49e2-ad4d-24f53a01a08c
+
+	column CNPJ_JOIN
+		lineageTag: 01ca6c41-4160-471a-bd5c-5cd562320dc2
+		isNameInferred
+		sourceColumn: [CNPJ_JOIN]
+
+	partition dCNPJ = calculated
+		mode: import
+		source =
+				DISTINCT (
+				    FILTER (
+				        UNION (
+				            SELECTCOLUMNS (
+				                CONTRATOS_OPORTUNIDADES,
+				                "CNPJ_JOIN", CONTRATOS_OPORTUNIDADES[CNPJ_JOIN]
+				            ),
+				            SELECTCOLUMNS (
+				                JOBS_PRODUTO_AREA,
+				                "CNPJ_JOIN", JOBS_PRODUTO_AREA[CNPJ_JOIN]
+				            )
+				        ),
+				        NOT ISBLANK ( [CNPJ_JOIN] )
+				            && LEN ( [CNPJ_JOIN] ) = 14
+				    )
+				)
+
