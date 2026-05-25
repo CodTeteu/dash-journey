@@ -1218,6 +1218,11 @@ table medidas_html
 			.metric.money b{font-size:20px!important;line-height:1.08!important}
 			.metric.money small{font-size:9.8px!important}
 			.det-head{font-size:11.5px!important}.det-row{font-size:13.5px!important}
+			.det-rows-scroll{max-height:240px;overflow-y:auto;overflow-x:hidden;padding-right:4px}
+			.det-rows-scroll::-webkit-scrollbar{width:6px}
+			.det-rows-scroll::-webkit-scrollbar-track{background:transparent}
+			.det-rows-scroll::-webkit-scrollbar-thumb{background:rgba(213,174,119,.3);border-radius:999px}
+			.det-rows-scroll::-webkit-scrollbar-thumb:hover{background:rgba(213,174,119,.5)}
 			
 			</style>
 			"
@@ -1419,8 +1424,8 @@ table medidas_html
 			                    & vMoneyCells
 			                & "</div></summary>"
 			                & "<div class='details'>"
-			                    & "<div class='card'><div class='card-title'>Primeiros jobs relacionados ao produto</div><div class='det-head'><div>Job</div><div>Cliente</div><div>Etapa</div><div>Área</div><div>Responsável</div><div>Mov.</div></div>" & IF ( ISBLANK ( vPrimeirosHTML ), "<div class='empty'>Nenhum job encontrado para os CNPJs deste produto.</div>", vPrimeirosHTML ) & "<div class='prod-tags' style='margin-top:14px'><span class='tag'>" & FORMAT ( vOpp, vIntFormat ) & " oportunidades</span><span class='tag'>" & FORMAT ( vEmp, vIntFormat ) & " empresas</span><span class='tag'>" & FORMAT ( vJobs, vIntFormat ) & " jobs encontrados</span><span class='tag good'>" & FORMAT ( vAtivos, vIntFormat ) & " ativos</span></div></div>"
-			                    & "<div class='card'><div class='card-title'>Últimos jobs relacionados ao produto</div><div class='det-head'><div>Job</div><div>Cliente</div><div>Etapa</div><div>Área</div><div>Responsável</div><div>Mov.</div></div>" & IF ( ISBLANK ( vDetalhesHTML ), "<div class='empty'>Nenhum job encontrado para os CNPJs deste produto.</div>", vDetalhesHTML ) & "</div>"
+			                    & "<div class='card'><div class='card-title'>Primeiros jobs relacionados ao produto</div><div class='det-head'><div>Job</div><div>Cliente</div><div>Etapa</div><div>Área</div><div>Responsável</div><div>Mov.</div></div>" & IF ( ISBLANK ( vPrimeirosHTML ), "<div class='empty'>Nenhum job encontrado para os CNPJs deste produto.</div>", "<div class='det-rows-scroll'>" & vPrimeirosHTML & "</div>" ) & "<div class='prod-tags' style='margin-top:14px'><span class='tag'>" & FORMAT ( vOpp, vIntFormat ) & " oportunidades</span><span class='tag'>" & FORMAT ( vEmp, vIntFormat ) & " empresas</span><span class='tag'>" & FORMAT ( vJobs, vIntFormat ) & " jobs encontrados</span><span class='tag good'>" & FORMAT ( vAtivos, vIntFormat ) & " ativos</span></div></div>"
+			                    & "<div class='card'><div class='card-title'>Últimos jobs relacionados ao produto</div><div class='det-head'><div>Job</div><div>Cliente</div><div>Etapa</div><div>Área</div><div>Responsável</div><div>Mov.</div></div>" & IF ( ISBLANK ( vDetalhesHTML ), "<div class='empty'>Nenhum job encontrado para os CNPJs deste produto.</div>", "<div class='det-rows-scroll'>" & vDetalhesHTML & "</div>" ) & "</div>"
 			                & "</div>"
 			            & "</details>",
 			        "",
