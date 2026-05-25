@@ -1317,13 +1317,11 @@ table medidas_html
 			        VAR vMoneyCells =
 			            "<div class='metric money' data-tip='<b>HONORÁRIOS ESTIMADOS COMERCIAL</b><br/>• <b>Valor Comercial:</b> " & vHonorEstimadoTxt & "<br/>• <b>Origem Comercial:</b> Soma da estimativa de crédito em <code>CONTRATOS_OPORTUNIDADES[estimativa]</code> para este produto comercial.<br/>• <b>Filtro:</b> Filtrado pela data de contrato das oportunidades selecionadas no slicer de período.'><b>" & vHonorEstimadoTxt & "</b><small>hon. est.</small></div>"
 			                & "<div class='metric money' data-tip='<b>HONORÁRIOS ENCONTRADOS OPERACIONAL</b><br/>• <b>Valor Operacional apurado:</b> " & vHonorEncontradoTxt & "<br/>• <b>Origem Operacional:</b> Soma de <code>JOBS_PRODUTO_AREA[JOB_HONORARIOS_ENCONTRADOS]</code>.<br/>• <b>Regra de Vinculação:</b> Considera somente os jobs operacionais vinculados ao CNPJ e ID deste produto para evitar mistura com outros serviços.'><b>" & vHonorEncontradoTxt & "</b><small>hon. enc.</small></div>"
-			        VAR cnpjs = DISTINCT ( SELECTCOLUMNS ( FILTER ( vCO_Base, [__Produto] = p ), "__CNPJ", [__CNPJ] ) )
-			        VAR baseJobs = DISTINCT ( SELECTCOLUMNS ( FILTER ( vCO_Base, [__Produto] = p ), "__JobCO", [__JobCO] ) )
+			        VAR vProductKeys = DISTINCT ( SELECTCOLUMNS ( FILTER ( vCO_Base, [__Produto] = p ), "__Key", [__CNPJ] & "|" & [__JobCO] ) )
 			        VAR vJobsProduto =
 			            FILTER (
 			                vJobs_Status,
-			                [__CNPJ] IN cnpjs
-			                    && [__BaseJob] IN baseJobs
+			                [__CNPJ] & "|" & [__BaseJob] IN vProductKeys
 			            )
 			        VAR vDetalhesPrimeiros =
 			            TOPN (
