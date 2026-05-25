@@ -20,14 +20,14 @@
                 "Column": {
                   "Expression": {
                     "SourceRef": {
-                      "Entity": "DIM_PRODUTOS_IMAGEM_TAX"
+                      "Entity": "CONTRATOS_OPORTUNIDADES"
                     }
                   },
-                  "Property": "ProdutoImagem"
+                  "Property": "oportunidade"
                 }
               },
-              "queryRef": "DIM_PRODUTOS_IMAGEM_TAX.ProdutoImagem",
-              "nativeQueryRef": "Produto",
+              "queryRef": "CONTRATOS_OPORTUNIDADES.oportunidade",
+              "nativeQueryRef": "oportunidade",
               "active": true
             }
           ]
@@ -224,7 +224,7 @@
       ]
     },
     "syncGroup": {
-      "groupName": "PRODUTOS_IMAGEM_TAX",
+      "groupName": "oportunidade",
       "fieldChanges": true,
       "filterChanges": true
     },

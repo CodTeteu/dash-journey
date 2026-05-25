@@ -20,14 +20,14 @@
                 "Column": {
                   "Expression": {
                     "SourceRef": {
-                      "Entity": "JOBS_Produto"
+                      "Entity": "CONTRATOS_OPORTUNIDADES"
                     }
                   },
-                  "Property": "NOME_CLIENTE"
+                  "Property": "razao_social"
                 }
               },
-              "queryRef": "JOBS_Produto.NOME_CLIENTE",
-              "nativeQueryRef": "NOME_CLIENTE",
+              "queryRef": "CONTRATOS_OPORTUNIDADES.razao_social",
+              "nativeQueryRef": "razao_social",
               "active": true
             }
           ]
@@ -224,7 +224,7 @@
       ]
     },
     "syncGroup": {
-      "groupName": "NOME_CLIENTE",
+      "groupName": "razao_social",
       "fieldChanges": true,
       "filterChanges": true
     },

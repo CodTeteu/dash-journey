@@ -20,13 +20,13 @@
                 "Column": {
                   "Expression": {
                     "SourceRef": {
-                      "Entity": "JOBS_Produto"
+                      "Entity": "JOBS_PRODUTO_AREA"
                     }
                   },
                   "Property": "NOME_AREA"
                 }
               },
-              "queryRef": "JOBS_Produto.NOME_AREA",
+              "queryRef": "JOBS_PRODUTO_AREA.NOME_AREA",
               "nativeQueryRef": "NOME_AREA",
               "active": true
             }
@@ -222,6 +222,11 @@
           }
         }
       ]
+    },
+    "syncGroup": {
+      "groupName": "NOME_AREA",
+      "fieldChanges": true,
+      "filterChanges": true
     },
     "drillFilterOtherVisuals": true
   },

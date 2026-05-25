@@ -47,7 +47,7 @@ table JOBS_PRODUTO_AREA
 		dataType: int64
 		formatString: 0
 		lineageTag: aaf69de4-d382-4105-b851-dd08707fdfdb
-		summarizeBy: sum
+		summarizeBy: none
 		sourceColumn: CODIGO_PRODUTO
 
 		annotation SummarizationSetBy = Automatic
@@ -64,7 +64,7 @@ table JOBS_PRODUTO_AREA
 		dataType: int64
 		formatString: 0
 		lineageTag: 4648024b-2224-44fe-8ebb-57db5c57a593
-		summarizeBy: sum
+		summarizeBy: none
 		sourceColumn: COD_SUBPRODUTO
 
 		annotation SummarizationSetBy = Automatic
@@ -97,7 +97,7 @@ table JOBS_PRODUTO_AREA
 		dataType: int64
 		formatString: 0
 		lineageTag: 38e58cfc-704b-4615-95fb-33041537c220
-		summarizeBy: sum
+		summarizeBy: none
 		sourceColumn: COD_TRIBUTO
 
 		annotation SummarizationSetBy = Automatic
@@ -122,7 +122,7 @@ table JOBS_PRODUTO_AREA
 	column CODIGO_AREA
 		dataType: double
 		lineageTag: a7f29d33-725a-4440-a389-d32933ad8cdc
-		summarizeBy: sum
+		summarizeBy: none
 		sourceColumn: CODIGO_AREA
 
 		annotation SummarizationSetBy = Automatic
@@ -212,10 +212,72 @@ table JOBS_PRODUTO_AREA
 			        UNICHAR ( 160 ),
 			        ""
 			    )
+			VAR c2 = RIGHT ( "00000000000000" & c1, 14 )
+			VAR cNonDigits =
+			    SUBSTITUTE (
+			        SUBSTITUTE (
+			            SUBSTITUTE (
+			                SUBSTITUTE (
+			                    SUBSTITUTE (
+			                        SUBSTITUTE (
+			                            SUBSTITUTE (
+			                                SUBSTITUTE (
+			                                    SUBSTITUTE (
+			                                        SUBSTITUTE ( c1, "0", "" ),
+			                                        "1", ""
+			                                    ),
+			                                    "2", ""
+			                                ),
+			                                "3", ""
+			                            ),
+			                            "4", ""
+			                        ),
+			                        "5", ""
+			                    ),
+			                    "6", ""
+			                ),
+			                "7", ""
+			            ),
+			            "8", ""
+			        ),
+			        "9", ""
+			    )
 			RETURN
-			    RIGHT ( "00000000000000" & c1, 14 )
+			    IF (
+			        LEN ( c1 ) > 0
+			            && LEN ( c1 ) <= 14
+			            && LEN ( cNonDigits ) = 0
+			            && c2 <> "00000000000000",
+			        c2
+			    )
 		dataType: string
 		lineageTag: c0b972e2-3534-49dc-a6e3-4080943e927a
+		summarizeBy: none
+
+	column CODIGO
+		dataType: int64
+		formatString: 0
+		lineageTag: 8a77530c-89d4-498f-9c54-66f09464ab1d
+		summarizeBy: sum
+		sourceColumn: CODIGO
+
+		annotation SummarizationSetBy = Automatic
+
+	column PAI
+		dataType: int64
+		formatString: 0
+		lineageTag: 184bc46e-6ff4-4ede-9aeb-63dc0e88444d
+		summarizeBy: sum
+		sourceColumn: PAI
+
+		annotation SummarizationSetBy = Automatic
+
+	column BASE_JOB_ID =
+			VAR txt = JOBS_PRODUTO_AREA[JOB]
+			VAR hyphenPos = SEARCH ( "-", txt, 1, 0 )
+			RETURN IF ( hyphenPos > 1, LEFT ( txt, hyphenPos - 1 ), txt )
+		dataType: string
+		lineageTag: f254124e-b5c3-4d7a-b9c1-5cd562320dc2
 		summarizeBy: none
 
 	partition JOBS_PRODUTO_AREA = m

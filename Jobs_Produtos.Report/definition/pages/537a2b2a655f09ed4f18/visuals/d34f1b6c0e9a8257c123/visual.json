@@ -220,6 +220,11 @@
         }
       ]
     },
+    "syncGroup": {
+      "groupName": "CNPJ_JOIN",
+      "fieldChanges": true,
+      "filterChanges": true
+    },
     "drillFilterOtherVisuals": true
   }
 }

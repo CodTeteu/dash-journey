@@ -13,7 +13,7 @@ table CONTRATOS_OPORTUNIDADES
 		dataType: int64
 		formatString: 0
 		lineageTag: bb324dc0-d3be-4bde-b3db-aafb3a2b608f
-		summarizeBy: sum
+		summarizeBy: none
 		sourceColumn: id_contrato
 
 		annotation SummarizationSetBy = Automatic
@@ -22,7 +22,7 @@ table CONTRATOS_OPORTUNIDADES
 		dataType: int64
 		formatString: 0
 		lineageTag: bd05e8e9-a3e5-475f-a76e-c87377fffea9
-		summarizeBy: sum
+		summarizeBy: none
 		sourceColumn: id_diagnostico
 
 		annotation SummarizationSetBy = Automatic
@@ -40,7 +40,7 @@ table CONTRATOS_OPORTUNIDADES
 		dataType: int64
 		formatString: 0
 		lineageTag: e6faf695-c963-43c7-9950-6531b41ce7b9
-		summarizeBy: sum
+		summarizeBy: none
 		sourceColumn: id_solucao
 
 		annotation SummarizationSetBy = Automatic
@@ -99,8 +99,44 @@ table CONTRATOS_OPORTUNIDADES
 			        UNICHAR ( 160 ),
 			        ""
 			    )
+			VAR c2 = RIGHT ( "00000000000000" & c1, 14 )
+			VAR cNonDigits =
+			    SUBSTITUTE (
+			        SUBSTITUTE (
+			            SUBSTITUTE (
+			                SUBSTITUTE (
+			                    SUBSTITUTE (
+			                        SUBSTITUTE (
+			                            SUBSTITUTE (
+			                                SUBSTITUTE (
+			                                    SUBSTITUTE (
+			                                        SUBSTITUTE ( c1, "0", "" ),
+			                                        "1", ""
+			                                    ),
+			                                    "2", ""
+			                                ),
+			                                "3", ""
+			                            ),
+			                            "4", ""
+			                        ),
+			                        "5", ""
+			                    ),
+			                    "6", ""
+			                ),
+			                "7", ""
+			            ),
+			            "8", ""
+			        ),
+			        "9", ""
+			    )
 			RETURN
-			    RIGHT ( "00000000000000" & c1, 14 )
+			    IF (
+			        LEN ( c1 ) > 0
+			            && LEN ( c1 ) <= 14
+			            && LEN ( cNonDigits ) = 0
+			            && c2 <> "00000000000000",
+			        c2
+			    )
 		dataType: string
 		lineageTag: a29451f9-8bbf-45de-a21c-dcc65b62125f
 		summarizeBy: none

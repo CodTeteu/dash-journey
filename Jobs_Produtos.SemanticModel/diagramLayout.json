@@ -39,10 +39,36 @@
             "x": 0,
             "y": 0
           },
-          "nodeIndex": "JOBS_Produto",
-          "nodeLineageTag": "158fe7f9-dd3a-437e-8f71-29e16f3d09b9",
+          "nodeIndex": "CONTRATOS_OPORTUNIDADES",
+          "nodeLineageTag": "bd2c0838-bc63-49a4-a5f4-5ce99e556ff6",
           "size": {
             "height": 725,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 0,
+            "y": 780
+          },
+          "nodeIndex": "JOBS_PRODUTO_AREA",
+          "nodeLineageTag": "76fd063f-d659-408b-9901-f3a98edfdaf5",
+          "size": {
+            "height": 725,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 421.25,
+            "y": 920
+          },
+          "nodeIndex": "dCNPJ",
+          "nodeLineageTag": "f99afb1f-794e-49e2-ad4d-24f53a01a08c",
+          "size": {
+            "height": 180,
             "width": 234
           },
           "zIndex": 0

@@ -68,8 +68,17 @@ table medidas_html
 	measure DOCUMENTACAO_DIAGNOSTICO_JOURNEY_HTML_V4_FORMAL_TODO_PERIODO = ```
 					VAR vTotalProdutos = DISTINCTCOUNT ( CONTRATOS_OPORTUNIDADES[oportunidade] )
 					VAR vTotalOportunidades = COUNTROWS ( CONTRATOS_OPORTUNIDADES )
-					VAR vTotalCNPJs = DISTINCTCOUNT ( dCNPJ[CNPJ_JOIN] )
-					VAR vTotalJobs = DISTINCTCOUNT ( JOBS_PRODUTO_AREA[JOB] )
+					VAR vCNPJsRecorte =
+						FILTER (
+							VALUES ( CONTRATOS_OPORTUNIDADES[CNPJ_JOIN] ),
+							NOT ISBLANK ( CONTRATOS_OPORTUNIDADES[CNPJ_JOIN] )
+						)
+					VAR vTotalCNPJs = COUNTROWS ( vCNPJsRecorte )
+					VAR vTotalJobs =
+						CALCULATE (
+							DISTINCTCOUNT ( JOBS_PRODUTO_AREA[JOB] ),
+							TREATAS ( vCNPJsRecorte, JOBS_PRODUTO_AREA[CNPJ_JOIN] )
+						)
 					VAR vTotalEstimativa = SUM ( CONTRATOS_OPORTUNIDADES[estimativa] )
 					VAR vPeriodoInicial = MINX ( CONTRATOS_OPORTUNIDADES, CONTRATOS_OPORTUNIDADES[data_contrato] )
 					VAR vPeriodoFinal = MAXX ( CONTRATOS_OPORTUNIDADES, CONTRATOS_OPORTUNIDADES[data_contrato] )
@@ -134,27 +143,23 @@ table medidas_html
 
 	/// Detalhamento operacional com CONTRATOS_OPORTUNIDADES como fonte de jobs e etapas via PQBJ.
 	measure 'HTML Macro Oportunidades x Jobs | Aba Documentação' = ```
-
+			
 			VAR vIntFormat = "#,##0"
 			VAR vMoneyFormat = "R$ #,##0"
-			VAR vLimiteLinhas = 1500
-
+			VAR vLimiteLinhas = 3000
+			
 			VAR vCalendarStart = MIN ( 'dCalendar'[Date] )
 			VAR vCalendarEnd = MAX ( 'dCalendar'[Date] )
 			VAR vHasCalendarFilter =
-			    ISFILTERED ( 'dCalendar'[Date] )
-			        || ISFILTERED ( 'dCalendar'[YearMonthName] )
-			        || ISFILTERED ( 'dCalendar'[YearMonth] )
-			        || ISFILTERED ( 'dCalendar'[MonthNumber] )
-			        || ISFILTERED ( 'dCalendar'[Year] )
-
+			    COUNTROWS ( 'dCalendar' ) < COUNTROWS ( ALL ( 'dCalendar' ) )
+			
 			VAR vPeriodo =
 			    IF (
 			        vHasCalendarFilter,
 			        FORMAT ( vCalendarStart, "dd/MM/yyyy" ) & " a " & FORMAT ( vCalendarEnd, "dd/MM/yyyy" ),
 			        "Todo o período"
 			    )
-
+			
 			/* =========================================================================
 			   1) OPORTUNIDADES
 			   ========================================================================= */
@@ -167,7 +172,7 @@ table medidas_html
 			                    && CONTRATOS_OPORTUNIDADES[data_contrato] < vCalendarEnd + 1
 			            )
 			    )
-
+			
 			VAR vCO_Select =
 			    SELECTCOLUMNS (
 			        vCO_Raw,
@@ -179,7 +184,7 @@ table medidas_html
 			        "__DataContrato", CONTRATOS_OPORTUNIDADES[data_contrato],
 			        "__Estimativa", COALESCE ( CONTRATOS_OPORTUNIDADES[estimativa], 0 )
 			    )
-
+			
 			VAR vCO_Base =
 			    ADDCOLUMNS (
 			        SUMMARIZE ( vCO_Select, [__JobCO], [__IdSolucao], [__CNPJ] ),
@@ -204,16 +209,16 @@ table medidas_html
 			            VAR c = [__CNPJ]
 			            RETURN MAXX ( FILTER ( vCO_Select, [__JobCO] = j && [__IdSolucao] = s && [__CNPJ] = c ), [__Estimativa] )
 			    )
-
+			
 			VAR vCNPJsOportunidade =
 			    DISTINCT ( SELECTCOLUMNS ( vCO_Base, "__CNPJ", [__CNPJ] ) )
-
+			
 			/* =========================================================================
 			   2) JOBS ATUAIS
 			   ========================================================================= */
 			VAR vHasAreaFilter = ISFILTERED ( 'JOBS_PRODUTO_AREA'[NOME_AREA] )
 			VAR vAreasSelecionadas = VALUES ( 'JOBS_PRODUTO_AREA'[NOME_AREA] )
-
+			
 			VAR vJobs_Select =
 			    SELECTCOLUMNS (
 			        FILTER (
@@ -224,6 +229,7 @@ table medidas_html
 			            NOT ISBLANK ( 'JOBS_PRODUTO_AREA'[JOB] )
 			        ),
 			        "__JOB", 'JOBS_PRODUTO_AREA'[JOB],
+			        "__BaseJob", 'JOBS_PRODUTO_AREA'[BASE_JOB_ID],
 			        "__CNPJ", 'JOBS_PRODUTO_AREA'[CNPJ_JOIN],
 			        "__Cliente", COALESCE ( 'JOBS_PRODUTO_AREA'[NOME_CLIENTE], "Sem cliente" ),
 			        "__Area", COALESCE ( 'JOBS_PRODUTO_AREA'[NOME_AREA], "Sem área" ),
@@ -238,22 +244,23 @@ table medidas_html
 			        "__HonorEnc", COALESCE ( 'JOBS_PRODUTO_AREA'[JOB_HONORARIOS_ENCONTRADOS], 0 ),
 			        "__HonorAge", COALESCE ( 'JOBS_PRODUTO_AREA'[JOB_HONORARIOS_AGENDADOS], 0 )
 			    )
-
+			
 			VAR vJobs_LastMove =
 			    GROUPBY (
 			        vJobs_Select,
 			        [__JOB],
 			        "__Mov", MAXX ( CURRENTGROUP (), [__Mov] )
 			    )
-
+			
 			VAR vJobs_LatestRows =
 			    NATURALINNERJOIN ( vJobs_LastMove, vJobs_Select )
-
+			
 			VAR vJobs_Atual =
 			    GROUPBY (
 			        vJobs_LatestRows,
 			        [__JOB],
 			        "__CNPJ", MAXX ( CURRENTGROUP (), [__CNPJ] ),
+			        "__BaseJob", MAXX ( CURRENTGROUP (), [__BaseJob] ),
 			        "__Cliente", MAXX ( CURRENTGROUP (), [__Cliente] ),
 			        "__Area", MAXX ( CURRENTGROUP (), [__Area] ),
 			        "__ProdutoOp", MAXX ( CURRENTGROUP (), [__ProdutoOp] ),
@@ -267,474 +274,7 @@ table medidas_html
 			        "__HonorEnc", SUMX ( CURRENTGROUP (), [__HonorEnc] ),
 			        "__HonorAge", SUMX ( CURRENTGROUP (), [__HonorAge] )
 			    )
-
-			VAR vJobs_Status0 =
-			    ADDCOLUMNS (
-			        vJobs_Atual,
-			        "__Etapa",
-			            VAR a = UPPER ( COALESCE ( [__Area], "" ) )
-			            RETURN
-			                SWITCH (
-			                    TRUE (),
-			                    CONTAINSSTRING ( a, "DISTRATO" )
-			                        || CONTAINSSTRING ( a, "NÃO FATURADO" )
-			                        || CONTAINSSTRING ( a, "NAO FATURADO" )
-			                        || CONTAINSSTRING ( a, "NÃO APROVADO" )
-			                        || CONTAINSSTRING ( a, "NAO APROVADO" )
-			                        || CONTAINSSTRING ( a, "NÃO APRESENTADO" )
-			                        || CONTAINSSTRING ( a, "NAO APRESENTADO" ), "CANCELADO / PERDIDO",
-			                    CONTAINSSTRING ( a, "FIM" )
-			                        || CONTAINSSTRING ( a, "FATUR" )
-			                        || CONTAINSSTRING ( a, "COMPENSA" )
-			                        || CONTAINSSTRING ( a, "LIQUID" ), "CRÉDITOS",
-			                    CONTAINSSTRING ( a, "DIAGN" )
-			                        || CONTAINSSTRING ( a, "ENTREGA" ), "DIAGNÓSTICO",
-			                    CONTAINSSTRING ( a, "REUNIÃO" )
-			                        || CONTAINSSTRING ( a, "REUNIAO" ), "REUNIÃO TEC",
-			                    CONTAINSSTRING ( a, "OPER" )
-			                        || CONTAINSSTRING ( a, "PLANILH" )
-			                        || CONTAINSSTRING ( a, "RETIFIC" )
-			                        || CONTAINSSTRING ( a, "REVISÃO" )
-			                        || CONTAINSSTRING ( a, "REVISAO" )
-			                        || CONTAINSSTRING ( a, "JURÍD" )
-			                        || CONTAINSSTRING ( a, "JURID" )
-			                        || CONTAINSSTRING ( a, "MANIPULA" ), "OPERAÇÃO",
-			                    CONTAINSSTRING ( a, "CHECKLIST" )
-			                        || CONTAINSSTRING ( a, "QUALIDADE" )
-			                        || CONTAINSSTRING ( a, "VALIDA" ), "CHECKLIST",
-			                    CONTAINSSTRING ( a, "PROCURA" ), "PROCURAÇÃO",
-			                    "CADASTRO / OUTROS"
-			                )
-			    )
-
-			VAR vJobs_StatusBase =
-			    ADDCOLUMNS (
-			        vJobs_Status0,
-			        "__Ativo", IF ( [__Etapa] = "CRÉDITOS" || [__Etapa] = "CANCELADO / PERDIDO", 0, 1 )
-			    )
-
-			VAR vJobs_Status =
-			    FILTER (
-			        vJobs_StatusBase,
-			        [__CNPJ] IN vCNPJsOportunidade
-			            && (
-			                NOT vHasAreaFilter
-			                    || [__Area] IN vAreasSelecionadas
-			                    || [__Etapa] IN vAreasSelecionadas
-			            )
-			    )
-
-			VAR vCNPJsComJob =
-			    DISTINCT ( SELECTCOLUMNS ( vJobs_Status, "__CNPJ", [__CNPJ] ) )
-
-			/* =========================================================================
-			   3) DETALHE: OPORTUNIDADE x JOBS DO CNPJ
-			   ========================================================================= */
-			VAR vRowsComJobRaw =
-			    GENERATE (
-			        vCO_Base,
-			        VAR c = [__CNPJ]
-			        RETURN
-			            SELECTCOLUMNS (
-			                FILTER ( vJobs_Status, [__CNPJ] = c ),
-			                "__JOB_OP", [__JOB],
-			                "__ClienteJob_OP", [__Cliente],
-			                "__Etapa_OP", [__Etapa],
-			                "__Area_OP", [__Area],
-			                "__Responsavel_OP", [__Responsavel],
-			                "__Equipe_OP", [__Equipe],
-			                "__UltMov_OP", [__UltMov],
-			                "__ValorTributo_OP", [__ValorTributo],
-			                "__HonorEnc_OP", [__HonorEnc],
-			                "__HonorAge_OP", [__HonorAge],
-			                "__StatusMatch_OP", "Com job",
-			                "__Falha_OP",
-			                    SWITCH (
-			                        [__Etapa],
-			                        "PROCURAÇÃO", "Cobrar procuração",
-			                        "CHECKLIST", "Cobrar checklist",
-			                        "OPERAÇÃO", "Cobrar operação",
-			                        "REUNIÃO TEC", "Cobrar reunião técnica",
-			                        "DIAGNÓSTICO", "Cobrar diagnóstico",
-			                        "CRÉDITOS", "Acompanhar créditos",
-			                        "CANCELADO / PERDIDO", "Validar cancelado/perdido",
-			                        "Verificar cadastro/outros"
-			                    )
-			            )
-			    )
-
-			VAR vRowsComJob =
-			    SELECTCOLUMNS (
-			        vRowsComJobRaw,
-			        "__Produto", [__Produto],
-			        "__ClienteCO", [__ClienteCO],
-			        "__CNPJ", [__CNPJ],
-			        "__JobCO", [__JobCO],
-			        "__DataContrato", [__DataContrato],
-			        "__Estimativa", [__Estimativa],
-			        "__JOB", [__JOB_OP],
-			        "__ClienteJob", [__ClienteJob_OP],
-			        "__Etapa", [__Etapa_OP],
-			        "__Area", [__Area_OP],
-			        "__Responsavel", [__Responsavel_OP],
-			        "__Equipe", [__Equipe_OP],
-			        "__UltMov", [__UltMov_OP],
-			        "__ValorTributo", [__ValorTributo_OP],
-			        "__HonorEnc", [__HonorEnc_OP],
-			        "__HonorAge", [__HonorAge_OP],
-			        "__StatusMatch", [__StatusMatch_OP],
-			        "__Falha", [__Falha_OP]
-			    )
-
-			VAR vRowsSemJob =
-			    SELECTCOLUMNS (
-			        FILTER ( vCO_Base, NOT [__CNPJ] IN vCNPJsComJob ),
-			        "__Produto", [__Produto],
-			        "__ClienteCO", [__ClienteCO],
-			        "__CNPJ", [__CNPJ],
-			        "__JobCO", [__JobCO],
-			        "__DataContrato", [__DataContrato],
-			        "__Estimativa", [__Estimativa],
-			        "__JOB", BLANK (),
-			        "__ClienteJob", BLANK (),
-			        "__Etapa", "SEM JOB",
-			        "__Area", "Sem job encontrado",
-			        "__Responsavel", "Sem responsável",
-			        "__Equipe", "Sem equipe",
-			        "__UltMov", BLANK (),
-			        "__ValorTributo", 0,
-			        "__HonorEnc", 0,
-			        "__HonorAge", 0,
-			        "__StatusMatch", "Sem job",
-			        "__Falha", "Sem job para o CNPJ da oportunidade"
-			    )
-
-			VAR vDetalheAll =
-			    UNION ( vRowsComJob, vRowsSemJob )
-
-			VAR vDetalheTop =
-			    TOPN (
-			        vLimiteLinhas,
-			        vDetalheAll,
-			        [__Produto], ASC,
-			        [__Etapa], ASC,
-			        [__UltMov], DESC,
-			        [__ClienteCO], ASC
-			    )
-
-			VAR vTotalRows = COUNTROWS ( vDetalheAll )
-			VAR vRowsVisiveis = COUNTROWS ( vDetalheTop )
-			VAR vEmpresas = COUNTROWS ( DISTINCT ( SELECTCOLUMNS ( vDetalheAll, "__CNPJ", [__CNPJ] ) ) )
-			VAR vOportunidades = COUNTROWS ( vCO_Base )
-			VAR vJobs = COUNTROWS ( DISTINCT ( SELECTCOLUMNS ( FILTER ( vDetalheAll, NOT ISBLANK ( [__JOB] ) ), "__JOB", [__JOB] ) ) )
-			VAR vSemJob = COUNTROWS ( FILTER ( vDetalheAll, [__Etapa] = "SEM JOB" ) )
-
-			/* =========================================================================
-			   4) HTML
-			   ========================================================================= */
-			VAR vCSS =
-			"
-			<style>
-			:root{--bg:#050A0F;--panel:#0E1720;--panel2:#111D27;--line:rgba(255,255,255,.075);--gold:#F4D9A9;--gold2:#D5AE77;--teal:#8BE0D1;--text:#F4F7FA;--muted:#A8B4C0;--dim:#6D7A86;--red:#FF9C93;--green:#7BEEA6;--blue:#9CCBFF}
-			html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-serif;overflow:hidden}
-			.wrap{height:calc(100vh - 2px);box-sizing:border-box;padding:16px;border-radius:20px;border:1px solid rgba(213,174,119,.28);background:radial-gradient(circle at 0 0,rgba(213,174,119,.15),transparent 30%),radial-gradient(circle at 100% 0,rgba(139,224,209,.09),transparent 28%),linear-gradient(135deg,#101A24,#050A0F);box-shadow:0 22px 60px rgba(0,0,0,.45);display:flex;flex-direction:column}
-			.head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:12px}.title{color:var(--gold);font-size:24px;font-weight:1000;letter-spacing:.07em;text-transform:uppercase}.subtitle{color:var(--muted);font-size:12.5px;font-weight:850;margin-top:5px}.period{color:var(--teal);font-size:12.5px;font-weight:1000;border:1px solid rgba(139,224,209,.32);background:rgba(139,224,209,.08);border-radius:999px;padding:8px 12px;white-space:nowrap}
-			.kpis{display:grid;grid-template-columns:repeat(5,minmax(145px,1fr));gap:10px;margin-bottom:12px}.kpi{position:relative;padding:13px 13px 12px;border-radius:15px;background:linear-gradient(155deg,rgba(18,31,42,.98),rgba(9,15,21,.96));border:1px solid rgba(255,255,255,.10);box-shadow:0 12px 24px rgba(0,0,0,.24);overflow:hidden;transition:transform .15s ease,border-color .15s ease,box-shadow .15s ease}.kpi:before{content:'';position:absolute;left:14px;top:0;width:42px;height:4px;border-radius:0 0 10px 10px;background:linear-gradient(90deg,var(--gold),var(--teal))}.kpi:hover{transform:translateY(-3px);border-color:rgba(244,217,169,.42);box-shadow:0 18px 34px rgba(0,0,0,.32)}.kpi span{display:block;color:var(--muted);font-size:10.5px;font-weight:1000;text-transform:uppercase;letter-spacing:.08em}.kpi b{display:block;color:var(--gold);font-size:27px;font-weight:1000;margin-top:5px;line-height:1}
-			.controls{display:flex;gap:10px;margin-bottom:12px}.search{flex:1;border:1px solid rgba(213,174,119,.24);background:#071018;color:#fff;border-radius:12px;padding:11px 14px;font-size:14px;font-weight:800;outline:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.04);transition:border-color .15s ease,box-shadow .15s ease}.search:focus{border-color:rgba(139,224,209,.62);box-shadow:0 0 0 3px rgba(139,224,209,.08),inset 0 1px 0 rgba(255,255,255,.06)}.btn{border:1px solid rgba(213,174,119,.34);background:rgba(213,174,119,.10);color:var(--gold);border-radius:12px;padding:10px 15px;font-size:12px;font-weight:1000;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:transform .15s ease,background .15s ease}.btn:hover{transform:translateY(-2px);background:rgba(213,174,119,.18)}
-			.table-wrap{flex:1;min-height:0;overflow:auto;border:1px solid rgba(213,174,119,.16);border-radius:16px;background:rgba(255,255,255,.022);box-shadow:inset 0 1px 0 rgba(255,255,255,.035)}.table-wrap::-webkit-scrollbar{width:12px;height:12px}.table-wrap::-webkit-scrollbar-track{background:#071018}.table-wrap::-webkit-scrollbar-thumb{background:linear-gradient(180deg,rgba(244,217,169,.78),rgba(139,224,209,.44));border:3px solid #071018;border-radius:999px}
-			table{border-collapse:collapse;width:100%;min-width:1120px;table-layout:fixed}th{position:sticky;top:0;z-index:4;background:linear-gradient(180deg,#111D27,#0B141D);color:var(--gold2);font-size:11px;font-weight:1000;text-transform:uppercase;letter-spacing:.075em;padding:12px 10px;text-align:left;border-bottom:1px solid rgba(213,174,119,.25);white-space:nowrap}th:nth-child(1){width:27%}th:nth-child(2){width:25%}th:nth-child(3){width:13%}th:nth-child(4){width:10%}th:nth-child(5){width:12%}th:nth-child(6){width:13%}
-			td{font-size:12.5px;font-weight:820;color:#EEF3F8;padding:11px 10px;border-bottom:1px solid rgba(255,255,255,.055);vertical-align:middle;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}tr{transition:background .14s ease,transform .14s ease}tr:hover td{background:rgba(213,174,119,.075)}tr:hover{transform:translateX(2px)}td.prod{font-weight:1000;color:#FFF2DE}td.client{color:#E8EEF5}td.cnpj{font-family:Consolas,'Courier New',monospace;color:#B9C7D5;font-size:12px}td.job{font-weight:1000;color:var(--gold);text-align:center}td.area{color:#CAD4DF}.chip{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;padding:6px 10px;font-size:10.5px;font-weight:1000;text-transform:uppercase;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.055);min-width:94px}.proc{color:#9CCBFF;border-color:rgba(156,203,255,.22)}.check{color:#F4D9A9;border-color:rgba(244,217,169,.25)}.oper{color:#FFCF87;border-color:rgba(255,207,135,.23)}.reu{color:#8BE0D1;border-color:rgba(139,224,209,.25)}.diag{color:#B9F0FF;border-color:rgba(185,240,255,.22)}.cred{color:#7BEEA6;border-color:rgba(123,238,166,.24)}.bad{color:var(--red);border-color:rgba(255,156,147,.25)}.foot{margin-top:9px;color:var(--dim);font-size:11.5px;font-weight:850}
-
-			/* v4 - fontes maiores para melhor leitura */
-			.wrap{padding:18px!important}
-			.title{font-size:30px!important}
-			.subtitle{font-size:16px!important;line-height:1.25!important}
-			.period{font-size:15px!important;padding:10px 14px!important}
-			.kpis{gap:12px!important;margin-bottom:14px!important}
-			.kpi{padding:16px 16px 15px!important;border-radius:17px!important}
-			.kpi span{font-size:13px!important}
-			.kpi b{font-size:36px!important;margin-top:7px!important}
-			.controls{margin-bottom:14px!important}
-			.search{font-size:17px!important;height:46px!important;padding:0 16px!important}
-			.btn{font-size:15px!important;height:46px!important;padding:0 18px!important}
-			table{min-width:1280px!important}
-			th{font-size:14px!important;padding:15px 13px!important;letter-spacing:.07em!important}
-			td{font-size:16px!important;padding:15px 13px!important;line-height:1.25!important}
-			td.cnpj{font-size:15px!important}
-			td.job{font-size:16px!important}
-			.chip{font-size:13px!important;padding:8px 12px!important;min-width:120px!important}
-			.foot{font-size:14px!important;margin-top:11px!important}
-			.table-wrap{border-radius:18px!important}
-
-			/* v5 - filtros por coluna e sem rolagem horizontal */
-			.controls.doc-filters{display:grid!important;grid-template-columns:1.25fr repeat(6,minmax(0,1fr)) auto!important;gap:9px!important;margin-bottom:12px!important;align-items:end!important}
-			.doc-filter{display:flex;flex-direction:column;gap:5px;min-width:0}.doc-filter label{color:var(--gold2);font-size:11px;font-weight:1000;letter-spacing:.075em;text-transform:uppercase}.doc-filter input,.doc-filter select{height:42px;width:100%;box-sizing:border-box;border:1px solid rgba(213,174,119,.28);background:#071018;color:#F4F7FA;border-radius:11px;padding:0 11px;font-size:13px;font-weight:850;outline:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}.doc-filter input:focus,.doc-filter select:focus{border-color:rgba(139,224,209,.62);box-shadow:0 0 0 3px rgba(139,224,209,.08),inset 0 1px 0 rgba(255,255,255,.06)}.doc-actions{display:flex;gap:8px;align-items:end;justify-content:flex-end}.doc-actions .btn{height:42px!important;font-size:12px!important;padding:0 13px!important;white-space:nowrap}
-			.table-wrap{overflow-y:auto!important;overflow-x:hidden!important}
-			table{width:100%!important;min-width:0!important;table-layout:fixed!important}
-			th:nth-child(1){width:22%!important}th:nth-child(2){width:22%!important}th:nth-child(3){width:14%!important}th:nth-child(4){width:12%!important}th:nth-child(5){width:14%!important}th:nth-child(6){width:16%!important}
-			th,td{box-sizing:border-box!important}.table-wrap::-webkit-scrollbar:horizontal{height:0!important;display:none!important}
-			@media(max-width:1200px){.controls.doc-filters{grid-template-columns:repeat(4,minmax(0,1fr))!important}.doc-actions{justify-content:flex-start}}
-
-			</style>
-			<script>
-			function normDoc(s){
-			 try{return (s||'').toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');}
-			 catch(e){return (s||'').toString().toLowerCase();}
-			}
-			function valDoc(id){var el=document.getElementById(id);return el?normDoc(el.value):'';}
-			function filtrarDoc(){
-			 var q=valDoc('q');
-			 var fProd=valDoc('fDocProduto');
-			 var fCliente=valDoc('fDocCliente');
-			 var fCnpj=valDoc('fDocCnpj');
-			 var fJob=valDoc('fDocJob');
-			 var fEtapa=valDoc('fDocEtapa');
-			 var fArea=valDoc('fDocArea');
-			 var rows=document.querySelectorAll('.linha');
-			 var n=0;
-			 rows.forEach(function(r){
-			   var ok=true;
-			   var txt=normDoc(r.textContent);
-			   if(q && txt.indexOf(q)===-1) ok=false;
-			   if(fProd && normDoc(r.getAttribute('data-prod')).indexOf(fProd)===-1) ok=false;
-			   if(fCliente && normDoc(r.getAttribute('data-cliente')).indexOf(fCliente)===-1) ok=false;
-			   if(fCnpj && normDoc(r.getAttribute('data-cnpj')).indexOf(fCnpj)===-1) ok=false;
-			   if(fJob && normDoc(r.getAttribute('data-job')).indexOf(fJob)===-1) ok=false;
-			   if(fEtapa && normDoc(r.getAttribute('data-etapa')).indexOf(fEtapa)===-1) ok=false;
-			   if(fArea && normDoc(r.getAttribute('data-area')).indexOf(fArea)===-1) ok=false;
-			   r.style.display=ok?'':'none';
-			   if(ok)n++;
-			 });
-			 var el=document.getElementById('vis'); if(el) el.textContent=n;
-			 var empty=document.getElementById('docNoMatch'); if(empty) empty.style.display=n===0?'block':'none';
-			}
-			function limparFiltrosDoc(){
-			 ['q','fDocProduto','fDocCliente','fDocCnpj','fDocJob','fDocEtapa','fDocArea'].forEach(function(id){var el=document.getElementById(id); if(el) el.value='';});
-			 filtrarDoc();
-			}
-			function copiarTabela(){
-			 var rows=document.querySelectorAll('tr');
-			 var out=[];
-			 rows.forEach(function(r){
-			   if(r.className==='linha' && r.style.display==='none') return;
-			   var cells=r.querySelectorAll('th,td');
-			   var vals=[];
-			   cells.forEach(function(c){ vals.push(c.textContent.trim().replace(/\\s+/g,' ')); });
-			   out.push(vals.join('\\t'));
-			 });
-			 var ta=document.createElement('textarea'); ta.value=out.join('\\n'); document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
-			 var b=document.getElementById('copy'); var old=b.innerHTML; b.innerHTML='Copiado'; setTimeout(function(){b.innerHTML=old},1800);
-			}
-			setTimeout(filtrarDoc,100);
-			</script>
-			"
-
-			VAR vRowsHTML =
-			    CONCATENATEX (
-			        vDetalheTop,
-			        VAR cls =
-			            SWITCH (
-			                [__Etapa],
-			                "PROCURAÇÃO", "proc",
-			                "CHECKLIST", "check",
-			                "OPERAÇÃO", "oper",
-			                "REUNIÃO TEC", "reu",
-			                "DIAGNÓSTICO", "diag",
-			                "CRÉDITOS", "cred",
-			                "SEM JOB", "bad",
-			                "bad"
-			            )
-			        VAR vJobTxt = IF ( ISBLANK ( [__JOB] ), "-", [__JOB] )
-			        VAR vProdAttr = SUBSTITUTE ( [__Produto], "'", "&#39;" )
-			        VAR vClienteAttr = SUBSTITUTE ( [__ClienteCO], "'", "&#39;" )
-			        VAR vCnpjAttr = SUBSTITUTE ( [__CNPJ], "'", "&#39;" )
-			        VAR vJobAttr = SUBSTITUTE ( vJobTxt, "'", "&#39;" )
-			        VAR vEtapaAttr = SUBSTITUTE ( [__Etapa], "'", "&#39;" )
-			        VAR vAreaAttr = SUBSTITUTE ( [__Area], "'", "&#39;" )
-			        RETURN
-			            "<tr class='linha' data-prod='" & vProdAttr & "' data-cliente='" & vClienteAttr & "' data-cnpj='" & vCnpjAttr & "' data-job='" & vJobAttr & "' data-etapa='" & vEtapaAttr & "' data-area='" & vAreaAttr & "'>"
-			                & "<td class='prod' title='" & [__Produto] & "'>" & [__Produto] & "</td>"
-			                & "<td class='client' title='" & [__ClienteCO] & "'>" & [__ClienteCO] & "</td>"
-			                & "<td class='cnpj'>" & [__CNPJ] & "</td>"
-			                & "<td class='job'>" & vJobTxt & "</td>"
-			                & "<td><span class='chip " & cls & "'>" & [__Etapa] & "</span></td>"
-			                & "<td class='area' title='" & [__Area] & "'>" & [__Area] & "</td>"
-			            & "</tr>",
-			        "",
-			        [__Produto], ASC,
-			        [__Etapa], ASC,
-			        [__ClienteCO], ASC
-			    )
-
-			RETURN
-			    vCSS
-			        & "<div class='wrap'>"
-			            & "<div class='head'><div><div class='title'>Documentação Oportunidades x Jobs</div><div class='subtitle'>Detalhamento enxuto por oportunidade, CNPJ, job operacional e etapa atual.</div></div><div class='period'>" & vPeriodo & "</div></div>"
-			            & "<div class='kpis'><div class='kpi'><span>Empresas</span><b>" & FORMAT ( vEmpresas, vIntFormat ) & "</b></div><div class='kpi'><span>Oportunidades</span><b>" & FORMAT ( vOportunidades, vIntFormat ) & "</b></div><div class='kpi'><span>Jobs</span><b>" & FORMAT ( vJobs, vIntFormat ) & "</b></div><div class='kpi'><span>Sem Job</span><b>" & FORMAT ( vSemJob, vIntFormat ) & "</b></div><div class='kpi'><span>Linhas</span><b><span id='vis'>" & FORMAT ( vRowsVisiveis, vIntFormat ) & "</span></b></div></div>"
-			            & "<div class='controls doc-filters'><div class='doc-filter'><label>Busca geral</label><input id='q' class='search' oninput='filtrarDoc()' placeholder='Buscar em todas as colunas'></div><div class='doc-filter'><label>Produto</label><input id='fDocProduto' oninput='filtrarDoc()' placeholder='Produto'></div><div class='doc-filter'><label>Cliente</label><input id='fDocCliente' oninput='filtrarDoc()' placeholder='Cliente'></div><div class='doc-filter'><label>CNPJ</label><input id='fDocCnpj' oninput='filtrarDoc()' placeholder='CNPJ'></div><div class='doc-filter'><label>Job</label><input id='fDocJob' oninput='filtrarDoc()' placeholder='Job'></div><div class='doc-filter'><label>Etapa</label><select id='fDocEtapa' onchange='filtrarDoc()'><option value=''>Todas</option><option value='PROCURAÇÃO'>Procuração</option><option value='CHECKLIST'>Checklist</option><option value='OPERAÇÃO'>Operação</option><option value='REUNIÃO TEC'>Reunião Tec</option><option value='DIAGNÓSTICO'>Diagnóstico</option><option value='CRÉDITOS'>Créditos</option><option value='SEM JOB'>Sem Job</option></select></div><div class='doc-filter'><label>Área</label><input id='fDocArea' oninput='filtrarDoc()' placeholder='Área atual'></div><div class='doc-actions'><button class='btn' onclick='limparFiltrosDoc()'>Limpar</button><button id='copy' class='btn' onclick='copiarTabela()'>Copiar</button></div></div>"
-			            & "<div class='table-wrap'><table><thead><tr>"
-			                & "<th>Produto</th><th>Cliente</th><th>CNPJ</th><th>Job Oper.</th><th>Etapa</th><th>Área Atual</th>"
-			            & "</tr></thead><tbody>" & IF ( ISBLANK ( vRowsHTML ), "<tr><td colspan='6'>Nenhum registro encontrado.</td></tr>", vRowsHTML ) & "</tbody></table><div id='docNoMatch' class='empty' style='display:none'>Nenhum registro encontrado para os filtros internos.</div></div>"
-			            & "<div class='foot'>Exibindo " & FORMAT ( vRowsVisiveis, vIntFormat ) & " de " & FORMAT ( vTotalRows, vIntFormat ) & " linhas. Se o total for maior que o limite, use slicers para reduzir o recorte.</div>"
-			        & "</div>"
-
-			```
-		displayFolder: HTML
-		lineageTag: 7cc4cf4f-59eb-4360-8f7e-9a14c4534d03
-
-	/// Visual principal com 8 colunas: PRODUTOS + 7 etapas. Journey 360 como base para stages e cards.
-	measure 'HTML Macro Oportunidades x Jobs | Tela Principal' = ```
-
-			VAR vIntFormat = "#,##0"
-			VAR vPctFormat = "0.0%"
-			VAR vMoneyFormat = "R$ #,##0"
-			VAR vTopProdutos = 40
-			VAR vTopDetalhes = 12
-
-			VAR vCalendarStart = MIN ( 'dCalendar'[Date] )
-			VAR vCalendarEnd = MAX ( 'dCalendar'[Date] )
-			VAR vHasCalendarFilter =
-			    ISFILTERED ( 'dCalendar'[Date] )
-			        || ISFILTERED ( 'dCalendar'[YearMonthName] )
-			        || ISFILTERED ( 'dCalendar'[YearMonth] )
-			        || ISFILTERED ( 'dCalendar'[MonthNumber] )
-			        || ISFILTERED ( 'dCalendar'[Year] )
-
-			VAR vPeriodo =
-			    IF (
-			        vHasCalendarFilter,
-			        FORMAT ( vCalendarStart, "dd/MM/yyyy" ) & " a " & FORMAT ( vCalendarEnd, "dd/MM/yyyy" ),
-			        "Todo o período"
-			    )
-
-			/* =========================================================================
-			   1) BASE DE OPORTUNIDADES
-			   Fonte: CONTRATOS_OPORTUNIDADES
-			   Produto da tela: CONTRATOS_OPORTUNIDADES[oportunidade]
-			   ========================================================================= */
-			VAR vCO_Raw =
-			    FILTER (
-			        ALLSELECTED ( CONTRATOS_OPORTUNIDADES ),
-			        NOT vHasCalendarFilter
-			            || (
-			                CONTRATOS_OPORTUNIDADES[data_contrato] >= vCalendarStart
-			                    && CONTRATOS_OPORTUNIDADES[data_contrato] < vCalendarEnd + 1
-			            )
-			    )
-
-			VAR vCO_Select =
-			    SELECTCOLUMNS (
-			        vCO_Raw,
-			        "__JobCO", CONTRATOS_OPORTUNIDADES[job],
-			        "__IdSolucao", CONTRATOS_OPORTUNIDADES[id_solucao],
-			        "__CNPJ", CONTRATOS_OPORTUNIDADES[CNPJ_JOIN],
-			        "__ClienteCO", COALESCE ( CONTRATOS_OPORTUNIDADES[razao_social], "Sem cliente" ),
-			        "__Produto", TRIM ( SUBSTITUTE ( COALESCE ( CONTRATOS_OPORTUNIDADES[oportunidade], "Sem produto" ), "_", " " ) ),
-			        "__DataContrato", CONTRATOS_OPORTUNIDADES[data_contrato],
-			        "__Estimativa", COALESCE ( CONTRATOS_OPORTUNIDADES[estimativa], 0 )
-			    )
-
-			/* Uma oportunidade = job + id_solucao + CNPJ */
-			VAR vCO_Base =
-			    ADDCOLUMNS (
-			        SUMMARIZE ( vCO_Select, [__JobCO], [__IdSolucao], [__CNPJ] ),
-			        "__Produto",
-			            VAR j = [__JobCO]
-			            VAR s = [__IdSolucao]
-			            VAR c = [__CNPJ]
-			            RETURN MAXX ( FILTER ( vCO_Select, [__JobCO] = j && [__IdSolucao] = s && [__CNPJ] = c ), [__Produto] ),
-			        "__ClienteCO",
-			            VAR j = [__JobCO]
-			            VAR s = [__IdSolucao]
-			            VAR c = [__CNPJ]
-			            RETURN MAXX ( FILTER ( vCO_Select, [__JobCO] = j && [__IdSolucao] = s && [__CNPJ] = c ), [__ClienteCO] ),
-			        "__DataContrato",
-			            VAR j = [__JobCO]
-			            VAR s = [__IdSolucao]
-			            VAR c = [__CNPJ]
-			            RETURN MINX ( FILTER ( vCO_Select, [__JobCO] = j && [__IdSolucao] = s && [__CNPJ] = c ), [__DataContrato] ),
-			        "__Estimativa",
-			            VAR j = [__JobCO]
-			            VAR s = [__IdSolucao]
-			            VAR c = [__CNPJ]
-			            RETURN MAXX ( FILTER ( vCO_Select, [__JobCO] = j && [__IdSolucao] = s && [__CNPJ] = c ), [__Estimativa] )
-			    )
-
-			VAR vCNPJsOportunidade =
-			    DISTINCT ( SELECTCOLUMNS ( vCO_Base, "__CNPJ", [__CNPJ] ) )
-
-			VAR vHasCOFilter =
-			    vHasCalendarFilter
-			        || ISFILTERED ( CONTRATOS_OPORTUNIDADES[oportunidade] )
-			        || ISFILTERED ( CONTRATOS_OPORTUNIDADES[razao_social] )
-			        || ISFILTERED ( CONTRATOS_OPORTUNIDADES[cnpj] )
-			        || ISFILTERED ( CONTRATOS_OPORTUNIDADES[job] )
-			        || ISFILTERED ( CONTRATOS_OPORTUNIDADES[id_solucao] )
-			        || ISFILTERED ( dCNPJ[CNPJ_JOIN] )
-			        || ISFILTERED ( CONTRATOS_OPORTUNIDADES[CNPJ_JOIN] )
-
-			/* =========================================================================
-			   2) BASE DE JOBS COMPLETA
-			   Fonte: JOBS_PRODUTO_AREA
-			   Regra: status atual = última linha por JOB
-			   ========================================================================= */
-			VAR vHasAreaFilter = ISFILTERED ( 'JOBS_PRODUTO_AREA'[NOME_AREA] )
-			VAR vAreasSelecionadas = VALUES ( 'JOBS_PRODUTO_AREA'[NOME_AREA] )
-
-			VAR vJobs_Select =
-			    SELECTCOLUMNS (
-			        FILTER (
-			            CALCULATETABLE (
-			                ALLSELECTED ( 'JOBS_PRODUTO_AREA' ),
-			                REMOVEFILTERS ( 'JOBS_PRODUTO_AREA'[NOME_AREA] )
-			            ),
-			            NOT ISBLANK ( 'JOBS_PRODUTO_AREA'[JOB] )
-			        ),
-			        "__JOB", 'JOBS_PRODUTO_AREA'[JOB],
-			        "__CNPJ", 'JOBS_PRODUTO_AREA'[CNPJ_JOIN],
-			        "__Cliente", COALESCE ( 'JOBS_PRODUTO_AREA'[NOME_CLIENTE], "Sem cliente" ),
-			        "__Area", COALESCE ( 'JOBS_PRODUTO_AREA'[NOME_AREA], "Sem área" ),
-			        "__ProdutoOp", COALESCE ( 'JOBS_PRODUTO_AREA'[NOME_PRODUTO], "Sem produto operacional" ),
-			        "__SubprodutoOp", COALESCE ( 'JOBS_PRODUTO_AREA'[NOME_SUBPRODUTO], "Sem subproduto" ),
-			        "__TributoOp", COALESCE ( 'JOBS_PRODUTO_AREA'[NOME_TRIBUTO], "Sem tributo" ),
-			        "__Responsavel", COALESCE ( 'JOBS_PRODUTO_AREA'[RESPONSAVEL], "Sem responsável" ),
-			        "__Equipe", COALESCE ( 'JOBS_PRODUTO_AREA'[NOME_EQUIPE], "Sem equipe" ),
-			        "__DataCadastro", 'JOBS_PRODUTO_AREA'[DATA_CADASTRO],
-			        "__Mov", COALESCE ( 'JOBS_PRODUTO_AREA'[TRIBUTO_DATA_ENTRADA], 'JOBS_PRODUTO_AREA'[DATA_CADASTRO] ),
-			        "__ValorTributo", COALESCE ( 'JOBS_PRODUTO_AREA'[VALOR_TRIBUTO], 0 ),
-			        "__HonorEnc", COALESCE ( 'JOBS_PRODUTO_AREA'[JOB_HONORARIOS_ENCONTRADOS], 0 ),
-			        "__HonorAge", COALESCE ( 'JOBS_PRODUTO_AREA'[JOB_HONORARIOS_AGENDADOS], 0 )
-			    )
-
-			VAR vJobs_LastMove =
-			    GROUPBY (
-			        vJobs_Select,
-			        [__JOB],
-			        "__Mov", MAXX ( CURRENTGROUP (), [__Mov] )
-			    )
-
-			VAR vJobs_LatestRows =
-			    NATURALINNERJOIN ( vJobs_LastMove, vJobs_Select )
-
-			VAR vJobs_Atual =
-			    GROUPBY (
-			        vJobs_LatestRows,
-			        [__JOB],
-			        "__CNPJ", MAXX ( CURRENTGROUP (), [__CNPJ] ),
-			        "__Cliente", MAXX ( CURRENTGROUP (), [__Cliente] ),
-			        "__Area", MAXX ( CURRENTGROUP (), [__Area] ),
-			        "__ProdutoOp", MAXX ( CURRENTGROUP (), [__ProdutoOp] ),
-			        "__SubprodutoOp", MAXX ( CURRENTGROUP (), [__SubprodutoOp] ),
-			        "__TributoOp", MAXX ( CURRENTGROUP (), [__TributoOp] ),
-			        "__Responsavel", MAXX ( CURRENTGROUP (), [__Responsavel] ),
-			        "__Equipe", MAXX ( CURRENTGROUP (), [__Equipe] ),
-			        "__DataCadastro", MAXX ( CURRENTGROUP (), [__DataCadastro] ),
-			        "__UltMov", MAXX ( CURRENTGROUP (), [__Mov] ),
-			        "__ValorTributo", SUMX ( CURRENTGROUP (), [__ValorTributo] ),
-			        "__HonorEnc", SUMX ( CURRENTGROUP (), [__HonorEnc] ),
-			        "__HonorAge", SUMX ( CURRENTGROUP (), [__HonorAge] )
-			    )
-
+			
 			VAR vJobs_Status0 =
 			    ADDCOLUMNS (
 			        vJobs_Atual,
@@ -775,7 +315,7 @@ table medidas_html
 			                    "CADASTRO / OUTROS"
 			                )
 			    )
-
+			
 			VAR vJobs_StatusBase =
 			    ADDCOLUMNS (
 			        vJobs_Status0,
@@ -788,7 +328,506 @@ table medidas_html
 			                1
 			            )
 			    )
+			
+			VAR vCO_Keys = DISTINCT ( SELECTCOLUMNS ( vCO_Base, "__Key", [__CNPJ] & "|" & [__JobCO] ) )
+			VAR vJobs_Status =
+			    FILTER (
+			        vJobs_StatusBase,
+			        [__CNPJ] & "|" & [__BaseJob] IN vCO_Keys
+			            && (
+			                NOT vHasAreaFilter
+			                    || [__Area] IN vAreasSelecionadas
+			                    || [__Etapa] IN vAreasSelecionadas
+			            )
+			    )
+			
+			VAR vJobs_UnfilteredForArea =
+			    FILTER (
+			        vJobs_StatusBase,
+			        [__CNPJ] & "|" & [__BaseJob] IN vCO_Keys
+			    )
+			
+			VAR vJobsKeys =
+			    DISTINCT ( SELECTCOLUMNS ( vJobs_UnfilteredForArea, "__Key", [__CNPJ] & "|" & [__BaseJob] ) )
+			
+			/* =========================================================================
+			   3) DETALHE: OPORTUNIDADE x JOBS DO CNPJ
+			   ========================================================================= */
+			VAR vRowsComJob =
+			    SELECTCOLUMNS (
+			        ADDCOLUMNS (
+			            vJobs_Status,
+			            "__Produto",
+			                VAR c = [__CNPJ]
+			                VAR j = [__BaseJob]
+			                RETURN COALESCE ( MAXX ( FILTER ( vCO_Base, [__CNPJ] = c && [__JobCO] = j ), [__Produto] ), [__ProdutoOp] ),
+			            "__ClienteCO",
+			                VAR c = [__CNPJ]
+			                VAR j = [__BaseJob]
+			                RETURN COALESCE ( MAXX ( FILTER ( vCO_Base, [__CNPJ] = c && [__JobCO] = j ), [__ClienteCO] ), [__Cliente] ),
+			            "__JobCO", [__BaseJob],
+			            "__DataContrato",
+			                VAR c = [__CNPJ]
+			                VAR j = [__BaseJob]
+			                RETURN MINX ( FILTER ( vCO_Base, [__CNPJ] = c && [__JobCO] = j ), [__DataContrato] ),
+			            "__Estimativa",
+			                VAR c = [__CNPJ]
+			                VAR j = [__BaseJob]
+			                RETURN COALESCE ( SUMX ( FILTER ( vCO_Base, [__CNPJ] = c && [__JobCO] = j ), [__Estimativa] ), 0 ),
+			            "__StatusMatch", "Com job",
+			            "__Falha",
+			                SWITCH (
+			                    [__Etapa],
+			                    "PROCURAÇÃO", "Cobrar procuração",
+			                    "CHECKLIST", "Cobrar checklist",
+			                    "OPERAÇÃO", "Cobrar operação",
+			                    "REUNIÃO TEC", "Cobrar reunião técnica",
+			                    "DIAGNÓSTICO", "Cobrar diagnóstico",
+			                    "CRÉDITOS", "Acompanhar créditos",
+			                    "FINALIZADO / FATURADO", "Acompanhar faturamento",
+			                    "CANCELADO / PERDIDO", "Validar cancelado/perdido",
+			                    "Verificar cadastro/outros"
+			                )
+			        ),
+			        "__Produto", [__Produto],
+			        "__ClienteCO", [__ClienteCO],
+			        "__CNPJ", [__CNPJ],
+			        "__JobCO", [__JobCO],
+			        "__DataContrato", [__DataContrato],
+			        "__Estimativa", [__Estimativa],
+			        "__JOB", [__JOB],
+			        "__ClienteJob", [__Cliente],
+			        "__Etapa", [__Etapa],
+			        "__Area", [__Area],
+			        "__Responsavel", [__Responsavel],
+			        "__Equipe", [__Equipe],
+			        "__UltMov", [__UltMov],
+			        "__ValorTributo", [__ValorTributo],
+			        "__HonorEnc", [__HonorEnc],
+			        "__HonorAge", [__HonorAge],
+			        "__StatusMatch", [__StatusMatch],
+			        "__Falha", [__Falha]
+			    )
+			
+			VAR vRowsSemJob =
+			    SELECTCOLUMNS (
+			        FILTER ( vCO_Base, NOT [__CNPJ] & "|" & [__JobCO] IN vJobsKeys ),
+			        "__Produto", [__Produto],
+			        "__ClienteCO", [__ClienteCO],
+			        "__CNPJ", [__CNPJ],
+			        "__JobCO", [__JobCO],
+			        "__DataContrato", [__DataContrato],
+			        "__Estimativa", [__Estimativa],
+			        "__JOB", BLANK (),
+			        "__ClienteJob", BLANK (),
+			        "__Etapa", "SEM JOB",
+			        "__Area", "Sem job encontrado",
+			        "__Responsavel", "Sem responsável",
+			        "__Equipe", "Sem equipe",
+			        "__UltMov", BLANK (),
+			        "__ValorTributo", 0,
+			        "__HonorEnc", 0,
+			        "__HonorAge", 0,
+			        "__StatusMatch", "Sem job",
+			        "__Falha", "Sem job para o CNPJ da oportunidade"
+			    )
+			
+			VAR vDetalheAll =
+			    UNION ( vRowsComJob, vRowsSemJob )
+			
+			VAR vDetalheTop =
+			    TOPN (
+			        vLimiteLinhas,
+			        vDetalheAll,
+			        [__DataContrato], ASC,
+			        [__Produto], ASC,
+			        [__Etapa], ASC,
+			        [__ClienteCO], ASC
+			    )
+			
+			VAR vTotalRows = COUNTROWS ( vDetalheAll )
+			VAR vRowsVisiveis = COUNTROWS ( vDetalheTop )
+			VAR vEmpresas = COUNTROWS ( DISTINCT ( SELECTCOLUMNS ( vDetalheAll, "__CNPJ", [__CNPJ] ) ) )
+			VAR vOportunidades = COUNTROWS ( vCO_Base )
+			VAR vJobs = COUNTROWS ( DISTINCT ( SELECTCOLUMNS ( FILTER ( vDetalheAll, NOT ISBLANK ( [__JOB] ) ), "__JOB", [__JOB] ) ) )
+			VAR vSemJob = COUNTROWS ( FILTER ( vDetalheAll, [__Etapa] = "SEM JOB" ) )
+			
+			/* =========================================================================
+			   4) HTML
+			   ========================================================================= */
+			VAR vCSS =
+			"
+			<style>
+			:root{--bg:#050A0F;--panel:#0E1720;--panel2:#111D27;--line:rgba(255,255,255,.075);--gold:#F4D9A9;--gold2:#D5AE77;--teal:#8BE0D1;--text:#F4F7FA;--muted:#A8B4C0;--dim:#6D7A86;--red:#FF9C93;--green:#7BEEA6;--blue:#9CCBFF}
+			html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-serif;overflow:hidden}
+			.wrap{height:calc(100vh - 2px);box-sizing:border-box;padding:16px;border-radius:20px;border:1px solid rgba(213,174,119,.28);background:radial-gradient(circle at 0 0,rgba(213,174,119,.15),transparent 30%),radial-gradient(circle at 100% 0,rgba(139,224,209,.09),transparent 28%),linear-gradient(135deg,#101A24,#050A0F);box-shadow:0 22px 60px rgba(0,0,0,.45);display:flex;flex-direction:column}
+			.head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:12px}.title{color:var(--gold);font-size:24px;font-weight:1000;letter-spacing:.07em;text-transform:uppercase}.subtitle{color:var(--muted);font-size:12.5px;font-weight:850;margin-top:5px}.period{color:var(--teal);font-size:12.5px;font-weight:1000;border:1px solid rgba(139,224,209,.32);background:rgba(139,224,209,.08);border-radius:999px;padding:8px 12px;white-space:nowrap}
+			.kpis{display:grid;grid-template-columns:repeat(5,minmax(145px,1fr));gap:10px;margin-bottom:12px}.kpi{position:relative;padding:13px 13px 12px;border-radius:15px;background:linear-gradient(155deg,rgba(18,31,42,.98),rgba(9,15,21,.96));border:1px solid rgba(255,255,255,.10);box-shadow:0 12px 24px rgba(0,0,0,.24);overflow:hidden;transition:transform .15s ease,border-color .15s ease,box-shadow .15s ease}.kpi:before{content:'';position:absolute;left:14px;top:0;width:42px;height:4px;border-radius:0 0 10px 10px;background:linear-gradient(90deg,var(--gold),var(--teal))}.kpi:hover{transform:translateY(-3px);border-color:rgba(244,217,169,.42);box-shadow:0 18px 34px rgba(0,0,0,.32)}.kpi span{display:block;color:var(--muted);font-size:10.5px;font-weight:1000;text-transform:uppercase;letter-spacing:.08em}.kpi b{display:block;color:var(--gold);font-size:27px;font-weight:1000;margin-top:5px;line-height:1}
+			.controls{display:flex;gap:10px;margin-bottom:12px}.search{flex:1;border:1px solid rgba(213,174,119,.24);background:#071018;color:#fff;border-radius:12px;padding:11px 14px;font-size:14px;font-weight:800;outline:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.04);transition:border-color .15s ease,box-shadow .15s ease}.search:focus{border-color:rgba(139,224,209,.62);box-shadow:0 0 0 3px rgba(139,224,209,.08),inset 0 1px 0 rgba(255,255,255,.06)}.btn{border:1px solid rgba(213,174,119,.34);background:rgba(213,174,119,.10);color:var(--gold);border-radius:12px;padding:10px 15px;font-size:12px;font-weight:1000;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:transform .15s ease,background .15s ease}.btn:hover{transform:translateY(-2px);background:rgba(213,174,119,.18)}
+			.table-wrap{flex:1;min-height:0;overflow:auto;border:1px solid rgba(213,174,119,.16);border-radius:16px;background:rgba(255,255,255,.022);box-shadow:inset 0 1px 0 rgba(255,255,255,.035)}.table-wrap::-webkit-scrollbar{width:12px;height:12px}.table-wrap::-webkit-scrollbar-track{background:#071018}.table-wrap::-webkit-scrollbar-thumb{background:linear-gradient(180deg,rgba(244,217,169,.78),rgba(139,224,209,.44));border:3px solid #071018;border-radius:999px}
+			table{border-collapse:collapse;width:100%;min-width:1120px;table-layout:fixed}th{position:sticky;top:0;z-index:4;background:linear-gradient(180deg,#111D27,#0B141D);color:var(--gold2);font-size:11px;font-weight:1000;text-transform:uppercase;letter-spacing:.075em;padding:12px 10px;text-align:left;border-bottom:1px solid rgba(213,174,119,.25);white-space:nowrap}th:nth-child(1){width:27%}th:nth-child(2){width:25%}th:nth-child(3){width:13%}th:nth-child(4){width:10%}th:nth-child(5){width:12%}th:nth-child(6){width:13%}
+			td{font-size:12.5px;font-weight:820;color:#EEF3F8;padding:11px 10px;border-bottom:1px solid rgba(255,255,255,.055);vertical-align:middle;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}tr{transition:background .14s ease,transform .14s ease}tr:hover td{background:rgba(213,174,119,.075)}tr:hover{transform:translateX(2px)}td.prod{font-weight:1000;color:#FFF2DE}td.client{color:#E8EEF5}td.cnpj{font-family:Consolas,'Courier New',monospace;color:#B9C7D5;font-size:12px}td.date{font-family:Consolas,'Courier New',monospace;color:#B9C7D5;font-size:12px;text-align:center}td.job{font-weight:1000;color:var(--gold);text-align:center}td.area{color:#CAD4DF}.chip{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;padding:6px 10px;font-size:10.5px;font-weight:1000;text-transform:uppercase;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.055);min-width:94px}.proc{color:#9CCBFF;border-color:rgba(156,203,255,.22)}.check{color:#F4D9A9;border-color:rgba(244,217,169,.25)}.oper{color:#FFCF87;border-color:rgba(255,207,135,.23)}.reu{color:#8BE0D1;border-color:rgba(139,224,209,.25)}.diag{color:#B9F0FF;border-color:rgba(185,240,255,.22)}			.cred{color:#7BEEA6;border-color:rgba(123,238,166,.24)}.fim{color:#B4BBC4;border-color:rgba(180,187,196,.22)}.bad{color:var(--red);border-color:rgba(255,156,147,.25)}.foot{margin-top:9px;color:var(--dim);font-size:11.5px;font-weight:850}
+			
+			/* v4 - fontes maiores para melhor leitura */
+			.wrap{padding:18px!important}
+			.title{font-size:30px!important}
+			.subtitle{font-size:16px!important;line-height:1.25!important}
+			.period{font-size:15px!important;padding:10px 14px!important}
+			.kpis{gap:12px!important;margin-bottom:14px!important}
+			.kpi{padding:16px 16px 15px!important;border-radius:17px!important}
+			.kpi span{font-size:13px!important}
+			.kpi b{font-size:36px!important;margin-top:7px!important}
+			.controls{margin-bottom:14px!important}
+			.search{font-size:17px!important;height:46px!important;padding:0 16px!important}
+			.btn{font-size:15px!important;height:46px!important;padding:0 18px!important}
+			table{min-width:1280px!important}
+			th{font-size:14px!important;padding:15px 13px!important;letter-spacing:.07em!important}
+			td{font-size:16px!important;padding:15px 13px!important;line-height:1.25!important}
+			td.cnpj,td.date{font-size:15px!important}
+			td.job{font-size:16px!important}
+			.chip{font-size:13px!important;padding:8px 12px!important;min-width:120px!important}
+			.foot{font-size:14px!important;margin-top:11px!important}
+			.table-wrap{border-radius:18px!important}
+			
+			/* v5 - filtros por coluna e sem rolagem horizontal */
+			.controls.doc-filters{display:grid!important;grid-template-columns:1.25fr repeat(6,minmax(0,1fr)) auto!important;gap:9px!important;margin-bottom:12px!important;align-items:end!important}
+			.doc-filter{display:flex;flex-direction:column;gap:5px;min-width:0}.doc-filter label{color:var(--gold2);font-size:11px;font-weight:1000;letter-spacing:.075em;text-transform:uppercase}.doc-filter input,.doc-filter select{height:42px;width:100%;box-sizing:border-box;border:1px solid rgba(213,174,119,.28);background:#071018;color:#F4F7FA;border-radius:11px;padding:0 11px;font-size:13px;font-weight:850;outline:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}.doc-filter input:focus,.doc-filter select:focus{border-color:rgba(139,224,209,.62);box-shadow:0 0 0 3px rgba(139,224,209,.08),inset 0 1px 0 rgba(255,255,255,.06)}.doc-actions{display:flex;gap:8px;align-items:end;justify-content:flex-end}.doc-actions .btn{height:42px!important;font-size:12px!important;padding:0 13px!important;white-space:nowrap}
+			.table-wrap{overflow-y:auto!important;overflow-x:hidden!important}
+			table{width:100%!important;min-width:0!important;table-layout:fixed!important}
+			th:nth-child(1){width:18%!important}th:nth-child(2){width:18%!important}th:nth-child(3){width:13%!important}th:nth-child(4){width:11%!important}th:nth-child(5){width:12%!important}th:nth-child(6){width:14%!important}th:nth-child(7){width:14%!important}
+			th,td{box-sizing:border-box!important}.table-wrap::-webkit-scrollbar:horizontal{height:0!important;display:none!important}
+			@media(max-width:1200px){.controls.doc-filters{grid-template-columns:repeat(4,minmax(0,1fr))!important}.doc-actions{justify-content:flex-start}}
+			
+			</style>
+			<script>
+			function normDoc(s){
+			 try{return (s||'').toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');}
+			 catch(e){return (s||'').toString().toLowerCase();}
+			}
+			function valDoc(id){var el=document.getElementById(id);return el?normDoc(el.value):'';}
+			function filtrarDoc(){
+			 var q=valDoc('q');
+			 var fProd=valDoc('fDocProduto');
+			 var fCliente=valDoc('fDocCliente');
+			 var fCnpj=valDoc('fDocCnpj');
+			 var fJob=valDoc('fDocJob');
+			 var fEtapa=valDoc('fDocEtapa');
+			 var fArea=valDoc('fDocArea');
+			 var rows=document.querySelectorAll('.linha');
+			 var n=0;
+			 rows.forEach(function(r){
+			   var ok=true;
+			   var txt=normDoc(r.textContent);
+			   if(q && txt.indexOf(q)===-1) ok=false;
+			   if(fProd && normDoc(r.getAttribute('data-prod')).indexOf(fProd)===-1) ok=false;
+			   if(fCliente && normDoc(r.getAttribute('data-cliente')).indexOf(fCliente)===-1) ok=false;
+			   if(fCnpj && normDoc(r.getAttribute('data-cnpj')).indexOf(fCnpj)===-1) ok=false;
+			   if(fJob && normDoc(r.getAttribute('data-job')).indexOf(fJob)===-1) ok=false;
+			   if(fEtapa && normDoc(r.getAttribute('data-etapa')).indexOf(fEtapa)===-1) ok=false;
+			   if(fArea && normDoc(r.getAttribute('data-area')).indexOf(fArea)===-1) ok=false;
+			   r.style.display=ok?'':'none';
+			   if(ok)n++;
+			 });
+			 var hasFilter = (q || fProd || fCliente || fCnpj || fJob || fEtapa || fArea);
+			 var el=document.getElementById('vis');
+			 if(el) el.textContent = hasFilter ? n : el.getAttribute('data-total');
+			 var empty=document.getElementById('docNoMatch'); if(empty) empty.style.display=n===0?'block':'none';
+			}
+			function limparFiltrosDoc(){
+			 ['q','fDocProduto','fDocCliente','fDocCnpj','fDocJob','fDocEtapa','fDocArea'].forEach(function(id){var el=document.getElementById(id); if(el) el.value='';});
+			 filtrarDoc();
+			}
+			function copiarTabela(){
+			 var rows=document.querySelectorAll('tr');
+			 var out=[];
+			 rows.forEach(function(r){
+			   if(r.className==='linha' && r.style.display==='none') return;
+			   var cells=r.querySelectorAll('th,td');
+			   var vals=[];
+			   cells.forEach(function(c){
+			     var val = c.textContent.trim().replace(/\s+/g,' ');
+			     if ((c.classList && c.classList.contains('cnpj')) || c.className === 'cnpj') {
+			       var clean = val.replace(/\D/g, '');
+			       if (clean.length > 0) {
+			         if (clean.length < 14) {
+			           clean = clean.padStart(14, '0');
+			         }
+			         val = clean.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
+			       }
+			     }
+			     vals.push(val);
+			   });
+			   out.push(vals.join('\t'));
+			 });
+			 var ta=document.createElement('textarea'); ta.value=out.join('\r\n'); document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+			 var b=document.getElementById('copy'); var old=b.innerHTML; b.innerHTML='Copiado'; setTimeout(function(){b.innerHTML=old},1800);
+			}
+			setTimeout(filtrarDoc,100);
+			</script>
+			"
+			
+			VAR vRowsHTML =
+			    CONCATENATEX (
+			        vDetalheTop,
+			        VAR cls =
+			            SWITCH (
+			                [__Etapa],
+			                "PROCURAÇÃO", "proc",
+			                "CHECKLIST", "check",
+			                "OPERAÇÃO", "oper",
+			                "REUNIÃO TEC", "reu",
+			                "DIAGNÓSTICO", "diag",
+			                "CRÉDITOS", "cred",
+			                "FINALIZADO / FATURADO", "fim",
+			                "SEM JOB", "bad",
+			                "bad"
+			            )
+			        VAR vJobTxt = IF ( ISBLANK ( [__JOB] ), "-", [__JOB] )
+			        VAR vDataTxt = IF ( ISBLANK ( [__DataContrato] ), "-", FORMAT ( [__DataContrato], "dd/MM/yyyy" ) )
+			        VAR vProdAttr = SUBSTITUTE ( [__Produto], "'", "&#39;" )
+			        VAR vClienteAttr = SUBSTITUTE ( [__ClienteCO], "'", "&#39;" )
+			        VAR vCnpjAttr = SUBSTITUTE ( [__CNPJ], "'", "&#39;" )
+			        VAR vJobAttr = SUBSTITUTE ( vJobTxt, "'", "&#39;" )
+			        VAR vEtapaAttr = SUBSTITUTE ( [__Etapa], "'", "&#39;" )
+			        VAR vAreaAttr = SUBSTITUTE ( [__Area], "'", "&#39;" )
+			        RETURN
+			            "<tr class='linha' data-prod='" & vProdAttr & "' data-cliente='" & vClienteAttr & "' data-cnpj='" & vCnpjAttr & "' data-job='" & vJobAttr & "' data-etapa='" & vEtapaAttr & "' data-area='" & vAreaAttr & "'>"
+			                & "<td class='prod' title='" & [__Produto] & "'>" & [__Produto] & "</td>"
+			                & "<td class='client' title='" & [__ClienteCO] & "'>" & [__ClienteCO] & "</td>"
+			                & "<td class='cnpj'>" & [__CNPJ] & "</td>"
+			                & "<td class='date'>" & vDataTxt & "</td>"
+			                & "<td class='job'>" & vJobTxt & "</td>"
+			                & "<td><span class='chip " & cls & "'>" & [__Etapa] & "</span></td>"
+			                & "<td class='area' title='" & [__Area] & "'>" & [__Area] & "</td>"
+			            & "</tr>",
+			        "",
+			        [__DataContrato], ASC,
+			        [__Produto], ASC,
+			        [__Etapa], ASC,
+			        [__ClienteCO], ASC
+			    )
+			
+			RETURN
+			    vCSS
+			        & "<div class='wrap'>"
+			            & "<div class='head'><div><div class='title'>Documentação Oportunidades x Jobs</div><div class='subtitle'>Detalhamento enxuto por oportunidade, CNPJ, job operacional e etapa atual.</div></div><div class='period'>" & vPeriodo & "</div></div>"
+			            & "<div class='kpis'><div class='kpi'><span>Empresas</span><b>" & FORMAT ( vEmpresas, vIntFormat ) & "</b></div><div class='kpi'><span>Oportunidades</span><b>" & FORMAT ( vOportunidades, vIntFormat ) & "</b></div><div class='kpi'><span>Jobs</span><b>" & FORMAT ( vJobs, vIntFormat ) & "</b></div><div class='kpi'><span>Sem Job</span><b>" & FORMAT ( vSemJob, vIntFormat ) & "</b></div><div class='kpi'><span>Linhas</span><b><span id='vis' data-total='" & FORMAT ( vTotalRows, vIntFormat ) & "'>" & FORMAT ( vTotalRows, vIntFormat ) & "</span></b></div></div>"
+			            & "<div class='controls doc-filters'><div class='doc-filter'><label>Busca geral</label><input id='q' class='search' oninput='filtrarDoc()' placeholder='Buscar em todas as colunas'></div><div class='doc-filter'><label>Produto</label><input id='fDocProduto' oninput='filtrarDoc()' placeholder='Produto'></div><div class='doc-filter'><label>Cliente</label><input id='fDocCliente' oninput='filtrarDoc()' placeholder='Cliente'></div><div class='doc-filter'><label>CNPJ</label><input id='fDocCnpj' oninput='filtrarDoc()' placeholder='CNPJ'></div><div class='doc-filter'><label>Job</label><input id='fDocJob' oninput='filtrarDoc()' placeholder='Job'></div><div class='doc-filter'><label>Etapa</label><select id='fDocEtapa' onchange='filtrarDoc()'><option value=''>Todas</option><option value='PROCURAÇÃO'>Procuração</option><option value='CHECKLIST'>Checklist</option><option value='OPERAÇÃO'>Operação</option><option value='REUNIÃO TEC'>Reunião Tec</option><option value='DIAGNÓSTICO'>Diagnóstico</option><option value='CRÉDITOS'>Créditos</option><option value='FINALIZADO / FATURADO'>Finalizado</option><option value='SEM JOB'>Sem Job</option></select></div><div class='doc-filter'><label>Área</label><input id='fDocArea' oninput='filtrarDoc()' placeholder='Área atual'></div><div class='doc-actions'><button class='btn' onclick='limparFiltrosDoc()'>Limpar</button><button id='copy' class='btn' onclick='copiarTabela()'>Copiar</button></div></div>"
+			            & "<div class='table-wrap'><table><thead><tr>"
+			                & "<th>Produto</th><th>Cliente</th><th>CNPJ</th><th>Data</th><th>Job Oper.</th><th>Etapa</th><th>Área Atual</th>"
+			            & "</tr></thead><tbody>" & IF ( ISBLANK ( vRowsHTML ), "<tr><td colspan='7'>Nenhum registro encontrado.</td></tr>", vRowsHTML ) & "</tbody></table><div id='docNoMatch' class='empty' style='display:none'>Nenhum registro encontrado para os filtros internos.</div></div>"
+			            & "<div class='foot'>Exibindo " & FORMAT ( vRowsVisiveis, vIntFormat ) & " de " & FORMAT ( vTotalRows, vIntFormat ) & " linhas. Se o total for maior que o limite, use slicers para reduzir o recorte.</div>"
+			        & "</div>"
+			
+			```
+		displayFolder: HTML
+		lineageTag: 7cc4cf4f-59eb-4360-8f7e-9a14c4534d03
 
+	/// Visual principal com 8 colunas: PRODUTOS + 7 etapas. Journey 360 como base para stages e cards.
+	measure 'HTML Macro Oportunidades x Jobs | Tela Principal' = ```
+			
+			VAR vIntFormat = "#,##0"
+			VAR vPctFormat = "0.0%"
+			VAR vMoneyFormat = "R$ #,##0"
+			VAR vTopProdutos = 40
+			VAR vTopDetalhes = 12
+			
+			VAR vCalendarStart = MIN ( 'dCalendar'[Date] )
+			VAR vCalendarEnd = MAX ( 'dCalendar'[Date] )
+			VAR vHasCalendarFilter =
+			    COUNTROWS ( 'dCalendar' ) < COUNTROWS ( ALL ( 'dCalendar' ) )
+			
+			VAR vPeriodo =
+			    IF (
+			        vHasCalendarFilter,
+			        FORMAT ( vCalendarStart, "dd/MM/yyyy" ) & " a " & FORMAT ( vCalendarEnd, "dd/MM/yyyy" ),
+			        "Todo o período"
+			    )
+			
+			/* =========================================================================
+			   1) BASE DE OPORTUNIDADES
+			   Fonte: CONTRATOS_OPORTUNIDADES
+			   Produto da tela: CONTRATOS_OPORTUNIDADES[oportunidade]
+			   ========================================================================= */
+			VAR vCO_Raw =
+			    FILTER (
+			        ALLSELECTED ( CONTRATOS_OPORTUNIDADES ),
+			        NOT vHasCalendarFilter
+			            || (
+			                CONTRATOS_OPORTUNIDADES[data_contrato] >= vCalendarStart
+			                    && CONTRATOS_OPORTUNIDADES[data_contrato] < vCalendarEnd + 1
+			            )
+			    )
+			
+			VAR vCO_Select =
+			    SELECTCOLUMNS (
+			        vCO_Raw,
+			        "__JobCO", CONTRATOS_OPORTUNIDADES[job],
+			        "__IdSolucao", CONTRATOS_OPORTUNIDADES[id_solucao],
+			        "__CNPJ", CONTRATOS_OPORTUNIDADES[CNPJ_JOIN],
+			        "__ClienteCO", COALESCE ( CONTRATOS_OPORTUNIDADES[razao_social], "Sem cliente" ),
+			        "__Produto", TRIM ( SUBSTITUTE ( COALESCE ( CONTRATOS_OPORTUNIDADES[oportunidade], "Sem produto" ), "_", " " ) ),
+			        "__DataContrato", CONTRATOS_OPORTUNIDADES[data_contrato],
+			        "__Estimativa", COALESCE ( CONTRATOS_OPORTUNIDADES[estimativa], 0 )
+			    )
+			
+			/* Uma oportunidade = job + id_solucao + CNPJ */
+			VAR vCO_Base =
+			    ADDCOLUMNS (
+			        SUMMARIZE ( vCO_Select, [__JobCO], [__IdSolucao], [__CNPJ] ),
+			        "__Produto",
+			            VAR j = [__JobCO]
+			            VAR s = [__IdSolucao]
+			            VAR c = [__CNPJ]
+			            RETURN MAXX ( FILTER ( vCO_Select, [__JobCO] = j && [__IdSolucao] = s && [__CNPJ] = c ), [__Produto] ),
+			        "__ClienteCO",
+			            VAR j = [__JobCO]
+			            VAR s = [__IdSolucao]
+			            VAR c = [__CNPJ]
+			            RETURN MAXX ( FILTER ( vCO_Select, [__JobCO] = j && [__IdSolucao] = s && [__CNPJ] = c ), [__ClienteCO] ),
+			        "__DataContrato",
+			            VAR j = [__JobCO]
+			            VAR s = [__IdSolucao]
+			            VAR c = [__CNPJ]
+			            RETURN MINX ( FILTER ( vCO_Select, [__JobCO] = j && [__IdSolucao] = s && [__CNPJ] = c ), [__DataContrato] ),
+			        "__Estimativa",
+			            VAR j = [__JobCO]
+			            VAR s = [__IdSolucao]
+			            VAR c = [__CNPJ]
+			            RETURN MAXX ( FILTER ( vCO_Select, [__JobCO] = j && [__IdSolucao] = s && [__CNPJ] = c ), [__Estimativa] )
+			    )
+			
+			VAR vCNPJsOportunidade =
+			    DISTINCT ( SELECTCOLUMNS ( vCO_Base, "__CNPJ", [__CNPJ] ) )
+			
+			VAR vHasCOFilter =
+			    vHasCalendarFilter
+			        || ISFILTERED ( CONTRATOS_OPORTUNIDADES[oportunidade] )
+			        || ISFILTERED ( CONTRATOS_OPORTUNIDADES[razao_social] )
+			        || ISFILTERED ( CONTRATOS_OPORTUNIDADES[cnpj] )
+			        || ISFILTERED ( CONTRATOS_OPORTUNIDADES[job] )
+			        || ISFILTERED ( CONTRATOS_OPORTUNIDADES[id_solucao] )
+			        || ISFILTERED ( dCNPJ[CNPJ_JOIN] )
+			        || ISFILTERED ( CONTRATOS_OPORTUNIDADES[CNPJ_JOIN] )
+			
+			/* =========================================================================
+			   2) BASE DE JOBS COMPLETA
+			   Fonte: JOBS_PRODUTO_AREA
+			   Regra: status atual = última linha por JOB
+			   ========================================================================= */
+			VAR vHasAreaFilter = ISFILTERED ( 'JOBS_PRODUTO_AREA'[NOME_AREA] )
+			VAR vAreasSelecionadas = VALUES ( 'JOBS_PRODUTO_AREA'[NOME_AREA] )
+			
+			VAR vJobs_Select =
+			    SELECTCOLUMNS (
+			        FILTER (
+			            CALCULATETABLE (
+			                ALLSELECTED ( 'JOBS_PRODUTO_AREA' ),
+			                REMOVEFILTERS ( 'JOBS_PRODUTO_AREA'[NOME_AREA] )
+			            ),
+			            NOT ISBLANK ( 'JOBS_PRODUTO_AREA'[JOB] )
+			        ),
+			        "__JOB", 'JOBS_PRODUTO_AREA'[JOB],
+			        "__BaseJob", 'JOBS_PRODUTO_AREA'[BASE_JOB_ID],
+			        "__CNPJ", 'JOBS_PRODUTO_AREA'[CNPJ_JOIN],
+			        "__Cliente", COALESCE ( 'JOBS_PRODUTO_AREA'[NOME_CLIENTE], "Sem cliente" ),
+			        "__Area", COALESCE ( 'JOBS_PRODUTO_AREA'[NOME_AREA], "Sem área" ),
+			        "__ProdutoOp", COALESCE ( 'JOBS_PRODUTO_AREA'[NOME_PRODUTO], "Sem produto operacional" ),
+			        "__SubprodutoOp", COALESCE ( 'JOBS_PRODUTO_AREA'[NOME_SUBPRODUTO], "Sem subproduto" ),
+			        "__TributoOp", COALESCE ( 'JOBS_PRODUTO_AREA'[NOME_TRIBUTO], "Sem tributo" ),
+			        "__Responsavel", COALESCE ( 'JOBS_PRODUTO_AREA'[RESPONSAVEL], "Sem responsável" ),
+			        "__Equipe", COALESCE ( 'JOBS_PRODUTO_AREA'[NOME_EQUIPE], "Sem equipe" ),
+			        "__DataCadastro", 'JOBS_PRODUTO_AREA'[DATA_CADASTRO],
+			        "__Mov", COALESCE ( 'JOBS_PRODUTO_AREA'[TRIBUTO_DATA_ENTRADA], 'JOBS_PRODUTO_AREA'[DATA_CADASTRO] ),
+			        "__ValorTributo", COALESCE ( 'JOBS_PRODUTO_AREA'[VALOR_TRIBUTO], 0 ),
+			        "__HonorEnc", COALESCE ( 'JOBS_PRODUTO_AREA'[JOB_HONORARIOS_ENCONTRADOS], 0 ),
+			        "__HonorAge", COALESCE ( 'JOBS_PRODUTO_AREA'[JOB_HONORARIOS_AGENDADOS], 0 )
+			    )
+			
+			VAR vJobs_LastMove =
+			    GROUPBY (
+			        vJobs_Select,
+			        [__JOB],
+			        "__Mov", MAXX ( CURRENTGROUP (), [__Mov] )
+			    )
+			
+			VAR vJobs_LatestRows =
+			    NATURALINNERJOIN ( vJobs_LastMove, vJobs_Select )
+			
+			VAR vJobs_Atual =
+			    GROUPBY (
+			        vJobs_LatestRows,
+			        [__JOB],
+			        "__CNPJ", MAXX ( CURRENTGROUP (), [__CNPJ] ),
+			        "__BaseJob", MAXX ( CURRENTGROUP (), [__BaseJob] ),
+			        "__Cliente", MAXX ( CURRENTGROUP (), [__Cliente] ),
+			        "__Area", MAXX ( CURRENTGROUP (), [__Area] ),
+			        "__ProdutoOp", MAXX ( CURRENTGROUP (), [__ProdutoOp] ),
+			        "__SubprodutoOp", MAXX ( CURRENTGROUP (), [__SubprodutoOp] ),
+			        "__TributoOp", MAXX ( CURRENTGROUP (), [__TributoOp] ),
+			        "__Responsavel", MAXX ( CURRENTGROUP (), [__Responsavel] ),
+			        "__Equipe", MAXX ( CURRENTGROUP (), [__Equipe] ),
+			        "__DataCadastro", MAXX ( CURRENTGROUP (), [__DataCadastro] ),
+			        "__UltMov", MAXX ( CURRENTGROUP (), [__Mov] ),
+			        "__ValorTributo", SUMX ( CURRENTGROUP (), [__ValorTributo] ),
+			        "__HonorEnc", SUMX ( CURRENTGROUP (), [__HonorEnc] ),
+			        "__HonorAge", SUMX ( CURRENTGROUP (), [__HonorAge] )
+			    )
+			
+			VAR vJobs_Status0 =
+			    ADDCOLUMNS (
+			        vJobs_Atual,
+			        "__Etapa",
+			            VAR a = UPPER ( COALESCE ( [__Area], "" ) )
+			            RETURN
+			                SWITCH (
+			                    TRUE (),
+			                    CONTAINSSTRING ( a, "DISTRATO" )
+			                        || CONTAINSSTRING ( a, "NÃO FATURADO" )
+			                        || CONTAINSSTRING ( a, "NAO FATURADO" )
+			                        || CONTAINSSTRING ( a, "NÃO APROVADO" )
+			                        || CONTAINSSTRING ( a, "NAO APROVADO" )
+			                        || CONTAINSSTRING ( a, "NÃO APRESENTADO" )
+			                        || CONTAINSSTRING ( a, "NAO APRESENTADO" ), "CANCELADO / PERDIDO",
+			                    CONTAINSSTRING ( a, "CRÉDIT" )
+			                        || CONTAINSSTRING ( a, "CREDIT" )
+			                        || CONTAINSSTRING ( a, "COMPENSA" )
+			                        || CONTAINSSTRING ( a, "LIQUID" ), "CRÉDITOS",
+			                    CONTAINSSTRING ( a, "FIM" )
+			                        || CONTAINSSTRING ( a, "FATUR" ), "FINALIZADO / FATURADO",
+			                    CONTAINSSTRING ( a, "DIAGN" )
+			                        || CONTAINSSTRING ( a, "ENTREGA" ), "DIAGNÓSTICO",
+			                    CONTAINSSTRING ( a, "REUNIÃO" )
+			                        || CONTAINSSTRING ( a, "REUNIAO" ), "REUNIÃO TEC",
+			                    CONTAINSSTRING ( a, "OPER" )
+			                        || CONTAINSSTRING ( a, "PLANILH" )
+			                        || CONTAINSSTRING ( a, "RETIFIC" )
+			                        || CONTAINSSTRING ( a, "REVISÃO" )
+			                        || CONTAINSSTRING ( a, "REVISAO" )
+			                        || CONTAINSSTRING ( a, "JURÍD" )
+			                        || CONTAINSSTRING ( a, "JURID" )
+			                        || CONTAINSSTRING ( a, "MANIPULA" ), "OPERAÇÃO",
+			                    CONTAINSSTRING ( a, "CHECKLIST" )
+			                        || CONTAINSSTRING ( a, "QUALIDADE" )
+			                        || CONTAINSSTRING ( a, "VALIDA" ), "CHECKLIST",
+			                    CONTAINSSTRING ( a, "PROCURA" ), "PROCURAÇÃO",
+			                    "CADASTRO / OUTROS"
+			                )
+			    )
+			
+			VAR vJobs_StatusBase =
+			    ADDCOLUMNS (
+			        vJobs_Status0,
+			        "__Ativo",
+			            IF (
+			                [__Etapa] = "CRÉDITOS"
+			                    || [__Etapa] = "FINALIZADO / FATURADO"
+			                    || [__Etapa] = "CANCELADO / PERDIDO",
+			                0,
+			                1
+			            )
+			    )
+			
 			VAR vJobs_Status =
 			    FILTER (
 			        vJobs_StatusBase,
@@ -796,26 +835,26 @@ table medidas_html
 			            || [__Area] IN vAreasSelecionadas
 			            || [__Etapa] IN vAreasSelecionadas
 			    )
-
-			/* Cards: JOBS vêm da base completa, mas respeitam filtros de oportunidade quando houver recorte em CO */
+			
+			/* Cards: JOBS partem sempre dos CNPJs das oportunidades no recorte atual. */
+			VAR vCO_Keys = DISTINCT ( SELECTCOLUMNS ( vCO_Base, "__Key", [__CNPJ] & "|" & [__JobCO] ) )
 			VAR vJobs_Cards =
 			    FILTER (
 			        vJobs_Status,
-			        NOT vHasCOFilter
-			            || [__CNPJ] IN vCNPJsOportunidade
+			        [__CNPJ] & "|" & [__BaseJob] IN vCO_Keys
 			    )
-
-			VAR vEmpresas = COUNTROWS ( DISTINCT ( SELECTCOLUMNS ( vJobs_Cards, "__CNPJ", [__CNPJ] ) ) )
+			
+			VAR vEmpresas = COUNTROWS ( DISTINCT ( SELECTCOLUMNS ( vCO_Base, "__CNPJ", [__CNPJ] ) ) )
 			VAR vJobsTotais = COUNTROWS ( vJobs_Cards )
 			VAR vJobsAtivos = COUNTROWS ( FILTER ( vJobs_Cards, [__Ativo] = 1 ) )
 			VAR vOportunidades = COUNTROWS ( vCO_Base )
-
+			
 			/* =========================================================================
 			   3) RESUMO POR PRODUTO / OPORTUNIDADE
 			   ========================================================================= */
 			VAR vProdutos =
 			    SUMMARIZE ( vCO_Base, [__Produto] )
-
+			
 			VAR vProductSummary =
 			    ADDCOLUMNS (
 			        vProdutos,
@@ -830,66 +869,66 @@ table medidas_html
 			            RETURN SUMX ( FILTER ( vCO_Base, [__Produto] = p ), [__Estimativa] ),
 			        "__Jobs",
 			            VAR p = [__Produto]
-			            VAR cnpjs = DISTINCT ( SELECTCOLUMNS ( FILTER ( vCO_Base, [__Produto] = p ), "__CNPJ", [__CNPJ] ) )
-			            RETURN COUNTROWS ( FILTER ( vJobs_Status, [__CNPJ] IN cnpjs ) ),
+			            VAR keys = DISTINCT ( SELECTCOLUMNS ( FILTER ( vCO_Base, [__Produto] = p ), "__Key", [__CNPJ] & "|" & [__JobCO] ) )
+			            RETURN COUNTROWS ( FILTER ( vJobs_Status, [__CNPJ] & "|" & [__BaseJob] IN keys ) ),
 			        "__Ativos",
 			            VAR p = [__Produto]
-			            VAR cnpjs = DISTINCT ( SELECTCOLUMNS ( FILTER ( vCO_Base, [__Produto] = p ), "__CNPJ", [__CNPJ] ) )
-			            RETURN COUNTROWS ( FILTER ( vJobs_Status, [__CNPJ] IN cnpjs && [__Ativo] = 1 ) ),
+			            VAR keys = DISTINCT ( SELECTCOLUMNS ( FILTER ( vCO_Base, [__Produto] = p ), "__Key", [__CNPJ] & "|" & [__JobCO] ) )
+			            RETURN COUNTROWS ( FILTER ( vJobs_Status, [__CNPJ] & "|" & [__BaseJob] IN keys && [__Ativo] = 1 ) ),
 			        "__CadastroOutros",
 			            VAR p = [__Produto]
-			            VAR cnpjs = DISTINCT ( SELECTCOLUMNS ( FILTER ( vCO_Base, [__Produto] = p ), "__CNPJ", [__CNPJ] ) )
-			            RETURN COUNTROWS ( FILTER ( vJobs_Status, [__CNPJ] IN cnpjs && [__Etapa] = "CADASTRO / OUTROS" ) ),
+			            VAR keys = DISTINCT ( SELECTCOLUMNS ( FILTER ( vCO_Base, [__Produto] = p ), "__Key", [__CNPJ] & "|" & [__JobCO] ) )
+			            RETURN COUNTROWS ( FILTER ( vJobs_Status, [__CNPJ] & "|" & [__BaseJob] IN keys && [__Etapa] = "CADASTRO / OUTROS" ) ),
 			        "__Procuracao",
 			            VAR p = [__Produto]
-			            VAR cnpjs = DISTINCT ( SELECTCOLUMNS ( FILTER ( vCO_Base, [__Produto] = p ), "__CNPJ", [__CNPJ] ) )
-			            RETURN COUNTROWS ( FILTER ( vJobs_Status, [__CNPJ] IN cnpjs && [__Etapa] = "PROCURAÇÃO" ) ),
+			            VAR keys = DISTINCT ( SELECTCOLUMNS ( FILTER ( vCO_Base, [__Produto] = p ), "__Key", [__CNPJ] & "|" & [__JobCO] ) )
+			            RETURN COUNTROWS ( FILTER ( vJobs_Status, [__CNPJ] & "|" & [__BaseJob] IN keys && [__Etapa] = "PROCURAÇÃO" ) ),
 			        "__Checklist",
 			            VAR p = [__Produto]
-			            VAR cnpjs = DISTINCT ( SELECTCOLUMNS ( FILTER ( vCO_Base, [__Produto] = p ), "__CNPJ", [__CNPJ] ) )
-			            RETURN COUNTROWS ( FILTER ( vJobs_Status, [__CNPJ] IN cnpjs && [__Etapa] = "CHECKLIST" ) ),
+			            VAR keys = DISTINCT ( SELECTCOLUMNS ( FILTER ( vCO_Base, [__Produto] = p ), "__Key", [__CNPJ] & "|" & [__JobCO] ) )
+			            RETURN COUNTROWS ( FILTER ( vJobs_Status, [__CNPJ] & "|" & [__BaseJob] IN keys && [__Etapa] = "CHECKLIST" ) ),
 			        "__Operacao",
 			            VAR p = [__Produto]
-			            VAR cnpjs = DISTINCT ( SELECTCOLUMNS ( FILTER ( vCO_Base, [__Produto] = p ), "__CNPJ", [__CNPJ] ) )
-			            RETURN COUNTROWS ( FILTER ( vJobs_Status, [__CNPJ] IN cnpjs && [__Etapa] = "OPERAÇÃO" ) ),
+			            VAR keys = DISTINCT ( SELECTCOLUMNS ( FILTER ( vCO_Base, [__Produto] = p ), "__Key", [__CNPJ] & "|" & [__JobCO] ) )
+			            RETURN COUNTROWS ( FILTER ( vJobs_Status, [__CNPJ] & "|" & [__BaseJob] IN keys && [__Etapa] = "OPERAÇÃO" ) ),
 			        "__Reuniao",
 			            VAR p = [__Produto]
-			            VAR cnpjs = DISTINCT ( SELECTCOLUMNS ( FILTER ( vCO_Base, [__Produto] = p ), "__CNPJ", [__CNPJ] ) )
-			            RETURN COUNTROWS ( FILTER ( vJobs_Status, [__CNPJ] IN cnpjs && [__Etapa] = "REUNIÃO TEC" ) ),
+			            VAR keys = DISTINCT ( SELECTCOLUMNS ( FILTER ( vCO_Base, [__Produto] = p ), "__Key", [__CNPJ] & "|" & [__JobCO] ) )
+			            RETURN COUNTROWS ( FILTER ( vJobs_Status, [__CNPJ] & "|" & [__BaseJob] IN keys && [__Etapa] = "REUNIÃO TEC" ) ),
 			        "__Diagnostico",
 			            VAR p = [__Produto]
-			            VAR cnpjs = DISTINCT ( SELECTCOLUMNS ( FILTER ( vCO_Base, [__Produto] = p ), "__CNPJ", [__CNPJ] ) )
-			            RETURN COUNTROWS ( FILTER ( vJobs_Status, [__CNPJ] IN cnpjs && [__Etapa] = "DIAGNÓSTICO" ) ),
+			            VAR keys = DISTINCT ( SELECTCOLUMNS ( FILTER ( vCO_Base, [__Produto] = p ), "__Key", [__CNPJ] & "|" & [__JobCO] ) )
+			            RETURN COUNTROWS ( FILTER ( vJobs_Status, [__CNPJ] & "|" & [__BaseJob] IN keys && [__Etapa] = "DIAGNÓSTICO" ) ),
 			        "__Creditos",
 			            VAR p = [__Produto]
-			            VAR cnpjs = DISTINCT ( SELECTCOLUMNS ( FILTER ( vCO_Base, [__Produto] = p ), "__CNPJ", [__CNPJ] ) )
-			            RETURN COUNTROWS ( FILTER ( vJobs_Status, [__CNPJ] IN cnpjs && [__Etapa] = "CRÉDITOS" ) ),
+			            VAR keys = DISTINCT ( SELECTCOLUMNS ( FILTER ( vCO_Base, [__Produto] = p ), "__Key", [__CNPJ] & "|" & [__JobCO] ) )
+			            RETURN COUNTROWS ( FILTER ( vJobs_Status, [__CNPJ] & "|" & [__BaseJob] IN keys && [__Etapa] = "CRÉDITOS" ) ),
 			        "__Finalizado",
 			            VAR p = [__Produto]
-			            VAR cnpjs = DISTINCT ( SELECTCOLUMNS ( FILTER ( vCO_Base, [__Produto] = p ), "__CNPJ", [__CNPJ] ) )
-			            RETURN COUNTROWS ( FILTER ( vJobs_Status, [__CNPJ] IN cnpjs && [__Etapa] = "FINALIZADO / FATURADO" ) ),
+			            VAR keys = DISTINCT ( SELECTCOLUMNS ( FILTER ( vCO_Base, [__Produto] = p ), "__Key", [__CNPJ] & "|" & [__JobCO] ) )
+			            RETURN COUNTROWS ( FILTER ( vJobs_Status, [__CNPJ] & "|" & [__BaseJob] IN keys && [__Etapa] = "FINALIZADO / FATURADO" ) ),
 			        "__Cancelado",
 			            VAR p = [__Produto]
-			            VAR cnpjs = DISTINCT ( SELECTCOLUMNS ( FILTER ( vCO_Base, [__Produto] = p ), "__CNPJ", [__CNPJ] ) )
-			            RETURN COUNTROWS ( FILTER ( vJobs_Status, [__CNPJ] IN cnpjs && [__Etapa] = "CANCELADO / PERDIDO" ) ),
+			            VAR keys = DISTINCT ( SELECTCOLUMNS ( FILTER ( vCO_Base, [__Produto] = p ), "__Key", [__CNPJ] & "|" & [__JobCO] ) )
+			            RETURN COUNTROWS ( FILTER ( vJobs_Status, [__CNPJ] & "|" & [__BaseJob] IN keys && [__Etapa] = "CANCELADO / PERDIDO" ) ),
 			        "__CreditosValor",
 			            VAR p = [__Produto]
-			            VAR cnpjs = DISTINCT ( SELECTCOLUMNS ( FILTER ( vCO_Base, [__Produto] = p ), "__CNPJ", [__CNPJ] ) )
-			            RETURN SUMX ( FILTER ( vJobs_Status, [__CNPJ] IN cnpjs ), [__ValorTributo] ),
+			            VAR keys = DISTINCT ( SELECTCOLUMNS ( FILTER ( vCO_Base, [__Produto] = p ), "__Key", [__CNPJ] & "|" & [__JobCO] ) )
+			            RETURN SUMX ( FILTER ( vJobs_Status, [__CNPJ] & "|" & [__BaseJob] IN keys ), [__ValorTributo] ),
 			        "__HonorEstimado",
 			            VAR p = [__Produto]
 			            RETURN SUMX ( FILTER ( vCO_Base, [__Produto] = p ), [__Estimativa] ),
 			        "__HonorEncontrado",
 			            VAR p = [__Produto]
-			            VAR cnpjs = DISTINCT ( SELECTCOLUMNS ( FILTER ( vCO_Base, [__Produto] = p ), "__CNPJ", [__CNPJ] ) )
-			            RETURN SUMX ( FILTER ( vJobs_Status, [__CNPJ] IN cnpjs ), [__HonorEnc] ),
+			            VAR keys = DISTINCT ( SELECTCOLUMNS ( FILTER ( vCO_Base, [__Produto] = p ), "__Key", [__CNPJ] & "|" & [__JobCO] ) )
+			            RETURN SUMX ( FILTER ( vJobs_Status, [__CNPJ] & "|" & [__BaseJob] IN keys ), [__HonorEnc] ),
 			        "__SemJob",
 			            VAR p = [__Produto]
-			            VAR cnpjs = DISTINCT ( SELECTCOLUMNS ( FILTER ( vCO_Base, [__Produto] = p ), "__CNPJ", [__CNPJ] ) )
-			            VAR cnpjsJobs = DISTINCT ( SELECTCOLUMNS ( FILTER ( vJobs_Status, [__CNPJ] IN cnpjs ), "__CNPJ", [__CNPJ] ) )
-			            RETURN COUNTROWS ( EXCEPT ( cnpjs, cnpjsJobs ) )
+			            VAR keys = DISTINCT ( SELECTCOLUMNS ( FILTER ( vCO_Base, [__Produto] = p ), "__Key", [__CNPJ] & "|" & [__JobCO] ) )
+			            VAR keysJobs = DISTINCT ( SELECTCOLUMNS ( FILTER ( vJobs_Status, [__CNPJ] & "|" & [__BaseJob] IN keys ), "__Key", [__CNPJ] & "|" & [__BaseJob] ) )
+			            RETURN COUNTROWS ( FILTER ( FILTER ( vCO_Base, [__Produto] = p ), NOT [__CNPJ] & "|" & [__JobCO] IN keysJobs ) )
 			    )
-
+			
 			VAR vProductTop =
 			    TOPN (
 			        vTopProdutos,
@@ -899,8 +938,8 @@ table medidas_html
 			        [__Jobs], DESC,
 			        [__Produto], ASC
 			    )
-
-
+			
+			
 			/* =========================================================================
 			   4) FILTROS INTERNOS DO HTML
 			   ========================================================================= */
@@ -911,7 +950,7 @@ table medidas_html
 			        "",
 			        [__Produto], ASC
 			    )
-
+			
 			VAR vPeriodTable =
 			    DISTINCT (
 			        SELECTCOLUMNS (
@@ -920,7 +959,7 @@ table medidas_html
 			            "__Label", FORMAT ( [__DataContrato], "[$-pt-BR]mmm/yyyy" )
 			        )
 			    )
-
+			
 			VAR vPeriodOptions =
 			    CONCATENATEX (
 			        vPeriodTable,
@@ -928,7 +967,7 @@ table medidas_html
 			        "",
 			        [__YM], ASC
 			    )
-
+			
 			/* =========================================================================
 			   5) HTML / ESTILO
 			   ========================================================================= */
@@ -948,7 +987,7 @@ table medidas_html
 			.metric{position:relative;display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:82px;text-align:center;padding:9px 6px;border-left:1px solid rgba(255,255,255,.06);transition:transform .18s ease,background .18s ease,box-shadow .18s ease}.metric:hover{transform:translateY(-4px);background:rgba(255,255,255,.045);box-shadow:inset 0 0 0 1px rgba(255,255,255,.055),0 18px 30px rgba(0,0,0,.20)}.metric b{color:var(--text);font-size:28px;font-weight:1000;line-height:1;transition:transform .18s ease,text-shadow .18s ease}.metric:hover b{transform:scale(1.08);text-shadow:0 0 14px rgba(139,224,209,.18)}.metric small{margin-top:7px;color:var(--muted);font-size:10.5px;font-weight:950;text-transform:uppercase;letter-spacing:.055em}.metric .pct{margin-top:6px;width:78%;height:6px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden}.metric .pct span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--gold2),var(--teal));transition:filter .18s ease}.metric:hover .pct span{filter:drop-shadow(0 0 8px rgba(139,224,209,.55))}.metric.cad b{color:#A8B4C0}.metric.proc b{color:#9CCBFF}.metric.check b{color:#F4D9A9}.metric.oper b{color:#FFCF87}.metric.reu b{color:#8BE0D1}.metric.diag b{color:#B9F0FF}.metric.cred b{color:#7BEEA6}.metric.fim b{color:#B4BBC4}.metric.canc b{color:#FF9C93}.metric.money b{color:#F4D9A9;font-size:19px;line-height:1.08;white-space:normal;word-break:keep-all}.metric.money{padding-left:5px;padding-right:5px}.metric.money small{font-size:9px}
 			.details{display:grid;grid-template-columns:1fr 1.25fr;gap:18px;padding:12px 16px 24px;background:rgba(2,7,12,.44);border-top:1px solid rgba(213,174,119,.16);animation:openFade .22s ease-out}@keyframes openFade{from{opacity:.25;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}.card{border:1px solid rgba(213,174,119,.18);background:rgba(255,255,255,.04);border-radius:18px;padding:16px;min-width:0;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}.card:hover{transform:translateY(-3px);border-color:rgba(244,217,169,.34);box-shadow:0 16px 32px rgba(0,0,0,.25)}.card-title{color:var(--gold);font-size:15px;font-weight:1000;letter-spacing:.06em;text-transform:uppercase;margin-bottom:13px}.stage-line{position:relative;display:grid;grid-template-columns:135px 1fr 70px 68px;align-items:center;gap:10px;min-height:36px;border-bottom:1px solid rgba(255,255,255,.055);font-size:14px;font-weight:850;transition:background .16s ease,padding-left .16s ease}.stage-line:hover{background:rgba(213,174,119,.07);padding-left:8px}.stage-line:last-child{border-bottom:none}.bar{height:9px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden}.bar span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--gold2),var(--teal))}.num{text-align:right;font-weight:1000;color:#fff}.pcttxt{text-align:right;color:var(--muted);font-size:10.5px;font-weight:950}
 			.det-head,.det-row{display:grid;grid-template-columns:.75fr 1.25fr .9fr 1fr 1fr .8fr;gap:9px;align-items:center}.det-head{color:var(--gold2);font-size:12px;font-weight:1000;text-transform:uppercase;letter-spacing:.055em;padding-bottom:9px;border-bottom:1px solid rgba(213,174,119,.18)}.det-row{min-height:38px;color:#E8EEF5;font-size:13px;font-weight:820;border-bottom:1px solid rgba(255,255,255,.05);transition:background .16s ease,transform .16s ease}.det-row:hover{background:rgba(139,224,209,.06);transform:translateX(3px)}.det-row div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.chip{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;padding:5px 9px;font-size:11px;font-weight:1000;text-transform:uppercase;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05)}.chip.proc{color:#9CCBFF}.chip.check{color:#F4D9A9}.chip.oper{color:#FFCF87}.chip.reu{color:#8BE0D1}.chip.diag{color:#B9F0FF}.chip.cred{color:#7BEEA6}.chip.outros{color:#A8B4C0}.empty{margin:24px;padding:34px;border:1px dashed rgba(213,174,119,.30);border-radius:18px;color:var(--muted);text-align:center;font-size:18px;font-weight:900}.foot{padding:12px 24px 26px;color:var(--dim);font-size:13px;font-weight:800}
-
+			
 			/* Força fundo sólido nos tooltips internos da tabela */
 			.rows,.row-grid,.prod-cell,.metric,.table-head,.table-head div,.details,.card,.stage-line,.tag{overflow:visible!important}
 			.metric[data-tip]:hover:after,
@@ -989,8 +1028,8 @@ table medidas_html
 			    left:34px;
 			    transform:rotate(45deg);
 			}
-
-
+			
+			
 			/* Correção final: tooltip da tabela acima das células vizinhas, com fundo 100% sólido */
 			.row-grid{position:relative;z-index:1;overflow:visible!important}
 			.diag-row{position:relative;z-index:1;overflow:visible!important}
@@ -1033,15 +1072,15 @@ table medidas_html
 			    opacity:1!important;
 			    z-index:999998!important;
 			}
-
-
+			
+			
 			/* Faixa limpa: os filtros ativos são somente os slicers nativos do relatório */
 			.slicer-space{height:auto;min-height:76px;margin-bottom:14px;border-radius:18px;border:0;background:transparent;box-shadow:none;padding:12px 0;display:flex;justify-content:flex-end;align-items:center}
 			.detailbar{width:430px;display:flex;justify-content:stretch;align-items:center}
 			.detail-pill{height:38px;width:100%;display:flex;align-items:center;justify-content:center;border-radius:11px;border:1px solid rgba(213,174,119,.42);background:linear-gradient(135deg,rgba(213,174,119,.16),rgba(139,224,209,.08));color:var(--gold);font-size:12px;font-weight:1000;letter-spacing:.08em;text-transform:uppercase;box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 10px 20px rgba(0,0,0,.16)}.detail-pill span{color:var(--teal);margin-left:7px}
 			.no-match{margin:22px 24px;padding:24px;border:1px dashed rgba(213,174,119,.28);border-radius:16px;color:var(--muted);font-size:17px;font-weight:900;text-align:center;display:none}
-
-
+			
+			
 			/* Tooltips flutuantes: não cortam nas bordas do visual */
 			[data-tip]:hover:after,
 			[data-tip]:hover:before{
@@ -1050,18 +1089,18 @@ table medidas_html
 			.float-tip{
 			    position:fixed;
 			    z-index:2147483647;
-			    max-width:430px;
+			    max-width:520px;
 			    min-width:260px;
-			    padding:15px 16px;
+			    padding:16px 18px;
 			    border-radius:15px;
 			    background:#06111A;
 			    color:#F7FAFC;
 			    border:1px solid rgba(244,217,169,.70);
 			    outline:1px solid rgba(139,224,209,.14);
 			    box-shadow:0 26px 54px rgba(0,0,0,.86),0 0 0 2px rgba(6,17,26,.98),inset 0 1px 0 rgba(255,255,255,.08);
-			    font-size:14px;
+			    font-size:16px;
 			    font-weight:850;
-			    line-height:1.36;
+			    line-height:1.45;
 			    pointer-events:none;
 			    opacity:0;
 			    transform:translate3d(0,0,0) scale(.98);
@@ -1087,13 +1126,13 @@ table medidas_html
 			    left:var(--arrow-x,22px);
 			    top:-7px;
 			}
-
-
+			
+			
 			/* Apenas o cabeçalho das colunas fica fixo na rolagem */
 			.sticky{position:relative!important;top:auto!important}
 			.table-head{position:sticky!important;top:0!important}
-
-
+			
+			
 			/* Compactacao visual v12 */
 			.table-head div{line-height:1.12;white-space:nowrap;word-break:normal}
 			.prod-cell{min-height:82px!important;padding:12px 16px!important}
@@ -1110,14 +1149,14 @@ table medidas_html
 			.kpi-value{font-size:34px}
 			.kpi-note{font-size:12px}
 			.kpi-label{font-size:11.5px}
-
-
+			
+			
 			/* Override final largura/altura */
 			.table-head,.row-grid{grid-template-columns:285px repeat(9,minmax(98px,.85fr)) minmax(138px,1fr) minmax(138px,1fr)!important;min-width:1580px!important}
 			.rows{min-width:1580px!important}
-
+			
 			@media(max-width:1000px){.kpis{grid-template-columns:repeat(4,minmax(210px,1fr));overflow-x:auto}.details{grid-template-columns:1fr}.table-head{top:0}.detailbar{width:360px}.slicer-space{min-height:96px}}
-
+			
 			/* Estilo v13: tabela mais proxima do exemplo enviado */
 			.table-head,.row-grid{grid-template-columns:340px repeat(10,minmax(88px,.74fr)) minmax(132px,.95fr) minmax(132px,.95fr)!important;min-width:1740px!important}
 			.rows{min-width:1620px!important}
@@ -1146,8 +1185,8 @@ table medidas_html
 			.kpi{border-radius:18px!important}
 			.kpi-value{font-size:34px!important}
 			@media(max-width:1000px){.table-head,.row-grid{grid-template-columns:300px repeat(10,minmax(84px,.75fr)) minmax(118px,.95fr) minmax(118px,.95fr)!important;min-width:1580px!important}.rows{min-width:1480px!important}}
-
-
+			
+			
 			/* Correção v13.1: grade alinhada com 13 colunas reais */
 			.table-head,
 			.row-grid{
@@ -1169,7 +1208,7 @@ table medidas_html
 			    }
 				.rows{min-width:1580px!important}
 			}
-
+			
 			/* v14 - leitura ampliada da grade principal */
 			.table-head div{font-size:12.8px!important;line-height:1.16!important;padding:13px 10px!important}
 			.prod-title{font-size:18px!important;line-height:1.16!important;margin-bottom:7px!important}
@@ -1179,34 +1218,34 @@ table medidas_html
 			.metric.money b{font-size:20px!important;line-height:1.08!important}
 			.metric.money small{font-size:9.8px!important}
 			.det-head{font-size:11.5px!important}.det-row{font-size:13.5px!important}
-
+			
 			</style>
 			"
 			VAR vCards =
 			    "<div class='kpis'>"
-			        & "<div class='kpi primary' data-tip='Empresas: quantidade de CNPJs distintos existentes na base completa JOBS_PRODUTO_AREA. Quando houver filtros de oportunidade, o card considera apenas os CNPJs ligados às oportunidades filtradas.'><div class='kpi-label'>Empresas</div><div class='kpi-value'>" & FORMAT ( vEmpresas, vIntFormat ) & "</div><div class='kpi-note'>CNPJs na base completa de jobs</div></div>"
-			        & "<div class='kpi primary' data-tip='Jobs Totais: quantidade de jobs atuais encontrados na JOBS_PRODUTO_AREA. A base histórica é reduzida para a última movimentação de cada JOB antes da contagem.'><div class='kpi-label'>Jobs Totais</div><div class='kpi-value'>" & FORMAT ( vJobsTotais, vIntFormat ) & "</div><div class='kpi-note'>Jobs atuais da JOBS_PRODUTO_AREA</div></div>"
-			        & "<div class='kpi attention' data-tip='Jobs Ativos: jobs cuja etapa atual não é terminal. São considerados ativos: Cadastro/Outros, Procuração, Checklist, Operação, Reunião Tec e Diagnóstico. Créditos e Cancelado/Perdido ficam fora.'><div class='kpi-label'>Jobs Ativos</div><div class='kpi-value'>" & FORMAT ( vJobsAtivos, vIntFormat ) & "</div><div class='kpi-note'>Sem créditos/cancelados</div></div>"
-			        & "<div class='kpi' data-tip='Oportunidades: contagem única da base CONTRATOS_OPORTUNIDADES usando a chave job + id_solucao + CNPJ. Essa base define os produtos analisados na tabela abaixo.'><div class='kpi-label'>Oportunidades</div><div class='kpi-value'>" & FORMAT ( vOportunidades, vIntFormat ) & "</div><div class='kpi-note'>job + id_solução + CNPJ</div></div>"
+			        & "<div class='kpi primary' data-tip='<b>EMPRESAS</b><br/>• <b>O que é:</b> Quantidade de CNPJs únicos com oportunidades selecionadas no período comercial.<br/>• <b>Origem Comercial:</b> Tabela <code>CONTRATOS_OPORTUNIDADES</code>, coluna <code>[CNPJ_JOIN]</code>.<br/>• <b>Filtros:</b> O slicer de data de contrato filtra as oportunidades. Exibe todas as empresas sob análise comercial, independente de já possuírem ou não jobs operacionais correspondentes.'><div class='kpi-label'>Empresas</div><div class='kpi-value'>" & FORMAT ( vEmpresas, vIntFormat ) & "</div><div class='kpi-note'>CNPJs analisados no período</div></div>"
+			        & "<div class='kpi primary' data-tip='<b>JOBS TOTAIS (ISOLAMENTO DE STATUS)</b><br/>• <b>O que é:</b> Quantidade total de jobs operacionais únicos vinculados ao recorte de oportunidades comerciais no período.<br/>• <b>Origem Operacional:</b> Tabela <code>JOBS_PRODUTO_AREA</code>, coluna <code>[JOB]</code>.<br/>• <b>Cruzamento de Dados:</b> Vinculado pelo <code>[CNPJ_JOIN]</code> do cliente e pelo prefixo numérico <code>[BASE_JOB_ID]</code> para isolar estritamente os jobs deste produto comercial.<br/>• <b>Última Movimentação:</b> Como a tabela operacional é histórica, agrupa-se por <code>[JOB]</code> e obtém-se o status mais recente com base na maior data entre Entrada de Tributo (<code>[TRIBUTO_DATA_ENTRADA]</code>) e Cadastro (<code>[DATA_CADASTRO]</code>) antes da contagem.'><div class='kpi-label'>Jobs Totais</div><div class='kpi-value'>" & FORMAT ( vJobsTotais, vIntFormat ) & "</div><div class='kpi-note'>Jobs atuais do recorte</div></div>"
+			        & "<div class='kpi attention' data-tip='<b>JOBS ATIVOS (FILTRO DO FUNIL)</b><br/>• <b>O que é:</b> Subconjunto de jobs operacionais que estão em andamento técnico (não finalizados).<br/>• <b>Fases Ativas:</b> Jobs cujas etapas atuais estão classificadas como Cadastro/Outros, Procuração, Checklist, Operação, Reunião Técnica e Diagnóstico.<br/>• <b>Fases Excluídas:</b> Não considera as etapas terminais: Créditos (liquidação/compensação), Finalizado/Faturado e Cancelado/Perdido.<br/>• <b>Lógica:</b> Permite monitorar o volume em produção que requer esforço operacional.'><div class='kpi-label'>Jobs Ativos</div><div class='kpi-value'>" & FORMAT ( vJobsAtivos, vIntFormat ) & "</div><div class='kpi-note'>Sem créditos/cancelados</div></div>"
+			        & "<div class='kpi' data-tip='<b>OPORTUNIDADES (BASE COMERCIAL)</b><br/>• <b>O que é:</b> Quantidade total de oportunidades de negócios registradas no período.<br/>• <b>Origem Comercial:</b> Tabela <code>CONTRATOS_OPORTUNIDADES</code>.<br/>• <b>Chave de Unicidade:</b> Contagem distinta baseada na chave composta <code>[job]</code> (ID do Job) + <code>[id_solucao]</code> (ID do Serviço) + <code>[CNPJ_JOIN]</code>.<br/>• <b>Lógica:</b> Define o universo comercial âncora do relatório, sobre o qual é analisada a evolução para a esteira operacional de jobs.'><div class='kpi-label'>Oportunidades</div><div class='kpi-value'>" & FORMAT ( vOportunidades, vIntFormat ) & "</div><div class='kpi-note'>job + id_solução + CNPJ</div></div>"
 			    & "</div>"
-
+			
 			VAR vHead =
 			    "<div class='table-head'>"
-			        & "<div data-tip='Produto: vem de CONTRATOS_OPORTUNIDADES[oportunidade]. Cada linha mostra os CNPJs que possuem essa oportunidade e os jobs encontrados na base JOBS_PRODUTO_AREA por CNPJ.'>Produto</div>"
-			        & "<div data-tip='Jobs ativos encontrados para este produto.'>Ativos</div>"
-			        & "<div data-tip='Cadastro/Outros: jobs dos CNPJs deste produto cuja área atual não caiu nas etapas principais. Ajuda a fechar o total de jobs ativos.'>Cadastro</div>"
-			        & "<div data-tip='Procuração: jobs cuja última área atual contém PROCURA. Indica oportunidades que precisam de cobrança de procuração.'>Procur.</div>"
-			        & "<div data-tip='Checklist: jobs cuja última área atual contém CHECKLIST, QUALIDADE ou VALIDA. Indica itens parados na preparação/conferência.'>Checklist</div>"
-			        & "<div data-tip='Operação: jobs cuja última área atual contém OPER, PLANILH, RETIFIC, REVISÃO, JURÍD ou MANIPULA. Indica cobrança para área operacional.'>Operação</div>"
-			        & "<div data-tip='Reunião Tec: jobs cuja última área atual contém REUNIÃO ou REUNIAO. Indica etapa de reunião técnica pendente ou em andamento.'>Reunião</div>"
-			        & "<div data-tip='Diagnóstico: jobs cuja última área atual contém DIAGN ou ENTREGA. Indica diagnóstico/entrega em andamento antes da etapa final.'>Diagn.</div>"
-			        & "<div data-tip='Créditos: agora considera somente área atual com CRÉDIT/CREDIT, COMPENSA ou LIQUID. FIM/FATURADO foi separado para não inflar créditos.'>Créditos</div>"
-			        & "<div data-tip='Finalizado/Faturado: jobs cuja área atual contém FIM ou FATUR. É etapa terminal, mas não entra mais como Créditos.'>Finaliz.</div>"
-			        & "<div data-tip='Cancelado/Perdido: jobs cuja área atual contém DISTRATO, NÃO FATURADO, NÃO APROVADO ou NÃO APRESENTADO. Não conta como ativo.'>Cancel.</div>"
-			        & "<div data-tip='Honorários Estimados: soma do campo de estimativa da CONTRATOS_OPORTUNIDADES para o produto no recorte atual. Se o nome correto da coluna for outro, trocar no bloco vCO_Select.'>Hon. Est.</div>"
-			        & "<div data-tip='Honorários Encontrados: soma de JOBS_PRODUTO_AREA[JOB_HONORARIOS_ENCONTRADOS] dos jobs ligados aos CNPJs deste produto.'>Hon. Enc.</div>"
+			        & "<div data-tip='<b>PRODUTO COMERCIAL (ÂNCORA)</b><br/>• <b>O que é:</b> Nome do produto comercial agrupado.<br/>• <b>Origem Comercial:</b> Tabela <code>CONTRATOS_OPORTUNIDADES</code>, coluna <code>[oportunidade]</code>.<br/>• <b>Prevenção de Vazamento:</b> Os jobs operacionais exibidos nas etapas de cada linha são filtrados de forma estrita pelo <code>[CNPJ_JOIN]</code> do cliente e pelo prefixo do ID do Job (<code>[BASE_JOB_ID]</code>). Isso impede que sub-jobs de outros produtos (ex: Previdenciária) vazem para a linha deste produto (ex: Tributária).'>Produto</div>"
+			        & "<div data-tip='<b>JOBS ATIVOS DO PRODUTO</b><br/>• <b>O que é:</b> Soma de todos os jobs em andamento vinculados a este produto comercial.<br/>• <b>Lógica de cálculo:</b> Jobs cuja etapa atual (última movimentação registrada) está em uma das 6 fases operacionais ativas (Cadastro, Procuração, Checklist, Operação, Reunião Técnica e Diagnóstico).'>Ativos</div>"
+			        & "<div data-tip='<b>ETAPA CADASTRO / OUTROS (ATIVA)</b><br/>• <b>O que é:</b> Jobs operacionais vinculados ao produto em fase inicial de recepção ou cadastramento.<br/>• <b>Regra de Mapeamento:</b> Jobs cujo <code>[NOME_AREA]</code> na última movimentação não corresponde a nenhuma palavra-chave das etapas principais do funil.<br/>• <b>Exemplos de áreas:</b> Triagem inicial, área cadastral, setor de recepção e áreas não mapeadas.'>Cadastro</div>"
+			        & "<div data-tip='<b>FASE DE PROCURAÇÃO (ATIVA)</b><br/>• <b>O que é:</b> Jobs retidos na etapa de procurações eletrônicas do cliente.<br/>• <b>Regra de Mapeamento:</b> O <code>[NOME_AREA]</code> da última movimentação do job contém a palavra-chave <b>&quot;PROCURA&quot;</b>.<br/>• <b>Significado:</b> Indica pendência de assinatura, envio ou deferimento das procurações digitais junto à Receita Federal/e-CAC.'>Procur.</div>"
+			        & "<div data-tip='<b>FASE DE CHECKLIST (ATIVA)</b><br/>• <b>O que é:</b> Jobs em fase de conferência e saneamento de documentos fiscais.<br/>• <b>Regra de Mapeamento:</b> O <code>[NOME_AREA]</code> da última movimentação do job contém <b>&quot;CHECKLIST&quot;</b>, <b>&quot;QUALIDADE&quot;</b> ou <b>&quot;VALIDA&quot;</b>.<br/>• <b>Significado:</b> Conferência de documentos enviados pelo cliente e validação inicial de arquivos fiscais.'>Checklist</div>"
+			        & "<div data-tip='<b>FASE DE OPERAÇÃO (ATIVA)</b><br/>• <b>O que é:</b> Jobs na principal fila de execução e cálculo técnico.<br/>• <b>Regra de Mapeamento:</b> O <code>[NOME_AREA]</code> da última movimentação do job contém <b>&quot;OPER&quot;</b>, <b>&quot;PLANILH&quot;</b>, <b>&quot;RETIFIC&quot;</b>, <b>&quot;REVISÃO&quot;</b>, <b>&quot;JURÍD&quot;</b> ou <b>&quot;MANIPULA&quot;</b>.<br/>• <b>Significado:</b> Elaboração de planilhas de cálculo, revisão fiscal de arquivos SPED e retificações acessórias.'>Operação</div>"
+			        & "<div data-tip='<b>FASE DE REUNIÃO TÉCNICA (ATIVA)</b><br/>• <b>O que é:</b> Projetos operacionalmente finalizados aguardando validação.<br/>• <b>Regra de Mapeamento:</b> O <code>[NOME_AREA]</code> da última movimentação do job contém <b>&quot;REUNIÃO&quot;</b> ou <b>&quot;REUNIAO&quot;</b>.<br/>• <b>Significado:</b> Reuniões técnicas de alinhamento com o cliente para validação dos resultados calculados antes do protocolo.'>Reunião</div>"
+			        & "<div data-tip='<b>FASE DE DIAGNÓSTICO (ATIVA)</b><br/>• <b>O que é:</b> Fase final de formalização técnica do projeto.<br/>• <b>Regra de Mapeamento:</b> O <code>[NOME_AREA]</code> da última movimentação do job contém <b>&quot;DIAGN&quot;</b> ou <b>&quot;ENTREGA&quot;</b>.<br/>• <b>Significado:</b> Confecção do laudo de diagnóstico consolidado e montagem do dossiê de entrega para o cliente.'>Diagn.</div>"
+			        & "<div data-tip='<b>FASE DE CRÉDITOS (TERMINAL)</b><br/>• <b>O que é:</b> Jobs concluídos operacionalmente que atingiram a fase de créditos.<br/>• <b>Regra de Mapeamento:</b> O <code>[NOME_AREA]</code> da última movimentação do job contém <b>&quot;CRÉDIT&quot;</b>, <b>&quot;CREDIT&quot;</b>, <b>&quot;COMPENSA&quot;</b> ou <b>&quot;LIQUID&quot;</b>.<br/>• <b>Significado:</b> Fase de compensações administrativas ou homologação fiscal do direito creditório apurado.'>Créditos</div>"
+			        & "<div data-tip='<b>FASE FINALIZADO / FATURADO (TERMINAL)</b><br/>• <b>O que é:</b> Jobs concluídos operacionalmente com sucesso e faturados comercialmente.<br/>• <b>Regra de Mapeamento:</b> O <code>[NOME_AREA]</code> da última movimentação do job contém <b>&quot;FIM&quot;</b> ou <b>&quot;FATUR&quot;</b>.<br/>• <b>Significado:</b> Projetos concluídos com sucesso e faturamento liquidado. Não conta no funil ativo de pendências técnicas.'>Finaliz.</div>"
+			        & "<div data-tip='<b>FASE CANCELADO / PERDIDO (TERMINAL)</b><br/>• <b>O que é:</b> Jobs suspensos, distratados ou perdidos comercialmente.<br/>• <b>Regra de Mapeamento:</b> O <code>[NOME_AREA]</code> da última movimentação do job contém <b>&quot;DISTRATO&quot;</b>, <b>&quot;NÃO FATURADO&quot;</b>, <b>&quot;NÃO APROVADO&quot;</b> ou <b>&quot;NÃO APRESENTADO&quot;</b>.<br/>• <b>Significado:</b> Projetos formalmente cancelados, suspensos ou com perda de proposta técnica.'>Cancel.</div>"
+			        & "<div data-tip='<b>HONORÁRIOS ESTIMADOS COMERCIAL</b><br/>• <b>O que é:</b> Soma da estimativa de crédito comercial contratada.<br/>• <b>Origem Comercial:</b> Tabela <code>CONTRATOS_OPORTUNIDADES</code>, coluna <code>[estimativa]</code>.<br/>• <b>Filtro:</b> Calculado diretamente sobre as oportunidades comerciais ativas no período selecionado no slicer de calendário.'>Hon. Est.</div>"
+			        & "<div data-tip='<b>HONORÁRIOS ENCONTRADOS OPERACIONAL</b><br/>• <b>O que é:</b> Soma dos honorários de sucesso encontrados na base operacional de jobs.<br/>• <b>Origem Operacional:</b> Tabela <code>JOBS_PRODUTO_AREA</code>, coluna <code>[JOB_HONORARIOS_ENCONTRADOS]</code>.<br/>• <b>Lógica:</b> Vinculado estritamente por CNPJ e pelo ID base do job (prefixo) correspondentes à oportunidade comercial da linha.'>Hon. Enc.</div>"
 			    & "</div>"
-
+			
 			VAR vRows =
 			    CONCATENATEX (
 			        vProductTop,
@@ -1247,15 +1286,15 @@ table medidas_html
 			        VAR vTotalEtapas = vCadOutros + vProc + vCheck + vOper + vReu + vDiag + vCred + vFinalizado + vCancelado
 			        VAR vStageTable =
 			            UNION (
-			                ROW ( "Ordem", 1, "Etapa", "Cadastro/Outros", "Qtd", vCadOutros, "Class", "cad", "Tip", "Cadastro/Outros: jobs ligados por CNPJ a este produto que não caíram nas etapas principais. Normalmente são áreas iniciais, contatos, cadastros ou nomes de área ainda não mapeados." ),
-			                ROW ( "Ordem", 2, "Etapa", "Procuração", "Qtd", vProc, "Class", "proc", "Tip", "Procuração: jobs cuja última área atual contém PROCURA. Use este número para cobrar a pessoa/área responsável pela emissão ou conclusão da procuração." ),
-			                ROW ( "Ordem", 3, "Etapa", "Checklist", "Qtd", vCheck, "Class", "check", "Tip", "Checklist: jobs cuja última área atual contém CHECKLIST, QUALIDADE ou VALIDA. Indica que a oportunidade já entrou na conferência/preparação." ),
-			                ROW ( "Ordem", 4, "Etapa", "Operação", "Qtd", vOper, "Class", "oper", "Tip", "Operação: jobs cuja última área atual contém OPER, PLANILH, RETIFIC, REVISÃO, JURÍD ou MANIPULA. É a principal fila operacional para cobrança." ),
-			                ROW ( "Ordem", 5, "Etapa", "Reunião Tec", "Qtd", vReu, "Class", "reu", "Tip", "Reunião Tec: jobs cuja última área atual contém REUNIÃO ou REUNIAO. Use para acompanhar pendências de alinhamento técnico." ),
-			                ROW ( "Ordem", 6, "Etapa", "Diagnóstico", "Qtd", vDiag, "Class", "diag", "Tip", "Diagnóstico: jobs cuja última área atual contém DIAGN ou ENTREGA. Indica diagnóstico/entrega em andamento antes da etapa final." ),
-			                ROW ( "Ordem", 7, "Etapa", "Créditos", "Qtd", vCred, "Class", "cred", "Tip", "Créditos: jobs cuja última área atual contém CRÉDIT/CREDIT, COMPENSA ou LIQUID. FIM/FATURADO não entra mais aqui." ),
-			                ROW ( "Ordem", 8, "Etapa", "Finalizado/Faturado", "Qtd", vFinalizado, "Class", "fim", "Tip", "Finalizado/Faturado: jobs cuja última área atual contém FIM ou FATUR. É terminal, mas separado de Créditos para não distorcer o funil." ),
-			                ROW ( "Ordem", 9, "Etapa", "Cancelado/Perdido", "Qtd", vCancelado, "Class", "canc", "Tip", "Cancelado/Perdido: jobs cuja última área atual contém DISTRATO, NÃO FATURADO, NÃO APROVADO ou NÃO APRESENTADO." )
+			                ROW ( "Ordem", 1, "Etapa", "Cadastro/Outros", "Qtd", vCadOutros, "Class", "cad", "Tip", "<b>FASE CADASTRO / OUTROS (ATIVA)</b><br/>• <b>Significado:</b> Jobs operacionais vinculados ao produto em fase inicial de recepção ou cadastramento.<br/>• <b>Regra de Mapeamento:</b> Jobs cujo <code>[NOME_AREA]</code> na última movimentação não corresponde a nenhuma palavra-chave das etapas principais do funil.<br/>• <b>Áreas comuns:</b> Triagem inicial, cadastral, administrativo ou não mapeados." ),
+			                ROW ( "Ordem", 2, "Etapa", "Procuração", "Qtd", vProc, "Class", "proc", "Tip", "<b>FASE DE PROCURAÇÃO (ATIVA)</b><br/>• <b>Significado:</b> Jobs retidos na etapa de procurações eletrônicas do cliente.<br/>• <b>Regra de Mapeamento:</b> O <code>[NOME_AREA]</code> da última movimentação do job contém a palavra-chave <b>&quot;PROCURA&quot;</b>.<br/>• <b>Uso prático:</b> Cobrar a assinatura, envio ou deferimento das procurações digitais no e-CAC da Receita Federal." ),
+			                ROW ( "Ordem", 3, "Etapa", "Checklist", "Qtd", vCheck, "Class", "check", "Tip", "<b>FASE DE CHECKLIST (ATIVA)</b><br/>• <b>Significado:</b> Jobs em fase de conferência e saneamento de documentos fiscais.<br/>• <b>Regra de Mapeamento:</b> O <code>[NOME_AREA]</code> da última movimentação do job contém <b>&quot;CHECKLIST&quot;</b>, <b>&quot;QUALIDADE&quot;</b> ou <b>&quot;VALIDA&quot;</b>.<br/>• <b>Uso prático:</b> Cobrar o saneamento de documentos fiscais pendentes por parte do cliente ou da equipe de triagem." ),
+			                ROW ( "Ordem", 4, "Etapa", "Operação", "Qtd", vOper, "Class", "oper", "Tip", "<b>FASE DE OPERAÇÃO (ATIVA)</b><br/>• <b>Significado:</b> Jobs na principal fila de execução e cálculo técnico.<br/>• <b>Regra de Mapeamento:</b> O <code>[NOME_AREA]</code> da última movimentação do job contém <b>&quot;OPER&quot;</b>, <b>&quot;PLANILH&quot;</b>, <b>&quot;RETIFIC&quot;</b>, <b>&quot;REVISÃO&quot;</b>, <b>&quot;JURÍD&quot;</b> ou <b>&quot;MANIPULA&quot;</b>.<br/>• <b>Uso prático:</b> Fila active de elaboração de cálculos técnicos, revisão fiscal e retificação de SPED." ),
+			                ROW ( "Ordem", 5, "Etapa", "Reunião Tec", "Qtd", vReu, "Class", "reu", "Tip", "<b>FASE DE REUNIÃO TÉCNICA (ATIVA)</b><br/>• <b>Significado:</b> Projetos operacionalmente finalizados aguardando validação.<br/>• <b>Regra de Mapeamento:</b> O <code>[NOME_AREA]</code> da última movimentação do job contém <b>&quot;REUNIÃO&quot;</b> ou <b>&quot;REUNIAO&quot;</b>.<br/>• <b>Uso prático:</b> Reuniões técnicas de alinhamento com o cliente para validação dos resultados calculados antes do protocolo." ),
+			                ROW ( "Ordem", 6, "Etapa", "Diagnóstico", "Qtd", vDiag, "Class", "diag", "Tip", "<b>FASE DE DIAGNÓSTICO (ATIVA)</b><br/>• <b>Significado:</b> Fase final de formalização técnica do projeto comercial.<br/>• <b>Regra de Mapeamento:</b> O <code>[NOME_AREA]</code> da última movimentação do job contém <b>&quot;DIAGN&quot;</b> ou <b>&quot;ENTREGA&quot;</b>.<br/>• <b>Uso prático:</b> Confecção do laudo de diagnóstico consolidado e dossiê de entrega para apresentação ao cliente." ),
+			                ROW ( "Ordem", 7, "Etapa", "Créditos", "Qtd", vCred, "Class", "cred", "Tip", "<b>FASE DE CRÉDITOS (TERMINAL)</b><br/>• <b>Significado:</b> Jobs concluídos operacionalmente que atingiram a fase de créditos.<br/>• <b>Regra de Mapeamento:</b> O <code>[NOME_AREA]</code> da última movimentação do job contém <b>&quot;CRÉDIT&quot;</b>, <b>&quot;CREDIT&quot;</b>, <b>&quot;COMPENSA&quot;</b> ou <b>&quot;LIQUID&quot;</b>.<br/>• <b>Status:</b> Trabalho técnico entregue com sucesso, créditos em fase de homologação fiscal ou compensações ativas." ),
+			                ROW ( "Ordem", 8, "Etapa", "Finalizado/Faturado", "Qtd", vFinalizado, "Class", "fim", "Tip", "<b>FASE FINALIZADO / FATURADO (TERMINAL)</b><br/>• <b>Significado:</b> Jobs concluídos operacionalmente e com faturamento/honorários liquidados.<br/>• <b>Regra de Mapeamento:</b> O <code>[NOME_AREA]</code> da última movimentação do job contém <b>&quot;FIM&quot;</b> ou <b>&quot;FATUR&quot;</b>.<br/>• <b>Status:</b> Projeto concluído operacionalmente com sucesso e devidamente faturado comercialmente." ),
+			                ROW ( "Ordem", 9, "Etapa", "Cancelado/Perdido", "Qtd", vCancelado, "Class", "canc", "Tip", "<b>FASE CANCELADO / PERDIDO (TERMINAL)</b><br/>• <b>Significado:</b> Jobs suspensos, distratados ou perdidos comercialmente.<br/>• <b>Regra de Mapeamento:</b> O <code>[NOME_AREA]</code> da última movimentação do job contém <b>&quot;DISTRATO&quot;</b>, <b>&quot;NÃO FATURADO&quot;</b>, <b>&quot;NÃO APROVADO&quot;</b> ou <b>&quot;NÃO APRESENTADO&quot;</b>.<br/>• <b>Status:</b> Projetos formalmente suspensos ou cancelados na esteira operacional." )
 			            )
 			        VAR vStageCellsBase =
 			            CONCATENATEX (
@@ -1263,18 +1302,24 @@ table medidas_html
 			                VAR q = [Qtd]
 			                VAR pct = DIVIDE ( q, vTotalEtapas, 0 )
 			                RETURN
-			                    "<div class='metric " & [Class] & "' data-tip='" & [Tip] & " Valor: " & FORMAT ( q, vIntFormat ) & " jobs, representando " & FORMAT ( pct, vPctFormat ) & " do total exibido nas etapas deste produto.'><b>" & IF ( q = 0, "-", FORMAT ( q, vIntFormat ) ) & "</b><small>" & FORMAT ( pct, vPctFormat ) & " das etapas</small></div>",
+			                    "<div class='metric " & [Class] & "' data-tip='" & [Tip] & "<br/><br/><b>Estatística desta Célula:</b><br/>• <b>Jobs nesta Etapa:</b> " & FORMAT ( q, vIntFormat ) & " jobs operacionais.<br/>• <b>Representatividade:</b> " & FORMAT ( pct, vPctFormat ) & " do total exibido nas etapas deste produto no período selecionado.'><b>" & IF ( q = 0, "-", FORMAT ( q, vIntFormat ) ) & "</b><small>" & FORMAT ( pct, vPctFormat ) & " das etapas</small></div>",
 			                "",
 			                [Ordem], ASC
 			            )
 			        VAR vStageCells =
-			            "<div class='metric active' data-tip='Jobs ativos encontrados para este produto no recorte atual.'><b>" & FORMAT ( vAtivos, vIntFormat ) & "</b><small>jobs ativos</small></div>"
+			            "<div class='metric active' data-tip='<b>TOTAL DE JOBS ATIVOS DO PRODUTO</b><br/>• <b>Qtd de Jobs Ativos:</b> " & FORMAT ( vAtivos, vIntFormat ) & " jobs operacionais em andamento.<br/>• <b>Fases consideradas ativas:</b> Cadastro, Procuração, Checklist, Operação, Reunião Técnica e Diagnóstico.<br/>• <b>Fases excluídas:</b> Não soma Créditos, Finalizado/Faturado e Cancelado/Perdido (que são etapas terminais).<br/>• <b>Filtros ativos:</b> Slicer de Período nativo restringe a data comercial, e Slicer de Área filtra os jobs.'><b>" & FORMAT ( vAtivos, vIntFormat ) & "</b><small>jobs ativos</small></div>"
 			                & vStageCellsBase
 			        VAR vMoneyCells =
-			            "<div class='metric money' data-tip='Honorários Estimados: soma da estimativa da CONTRATOS_OPORTUNIDADES para este produto no recorte atual.'><b>" & vHonorEstimadoTxt & "</b><small>hon. est.</small></div>"
-			                & "<div class='metric money' data-tip='Honorários Encontrados: soma de JOBS_PRODUTO_AREA[JOB_HONORARIOS_ENCONTRADOS] dos jobs ligados aos CNPJs deste produto.'><b>" & vHonorEncontradoTxt & "</b><small>hon. enc.</small></div>"
+			            "<div class='metric money' data-tip='<b>HONORÁRIOS ESTIMADOS COMERCIAL</b><br/>• <b>Valor Comercial:</b> " & vHonorEstimadoTxt & "<br/>• <b>Origem Comercial:</b> Soma da estimativa de crédito em <code>CONTRATOS_OPORTUNIDADES[estimativa]</code> para este produto comercial.<br/>• <b>Filtro:</b> Filtrado pela data de contrato das oportunidades selecionadas no slicer de período.'><b>" & vHonorEstimadoTxt & "</b><small>hon. est.</small></div>"
+			                & "<div class='metric money' data-tip='<b>HONORÁRIOS ENCONTRADOS OPERACIONAL</b><br/>• <b>Valor Operacional apurado:</b> " & vHonorEncontradoTxt & "<br/>• <b>Origem Operacional:</b> Soma de <code>JOBS_PRODUTO_AREA[JOB_HONORARIOS_ENCONTRADOS]</code>.<br/>• <b>Regra de Vinculação:</b> Considera somente os jobs operacionais vinculados ao CNPJ e ID deste produto para evitar mistura com outros serviços.'><b>" & vHonorEncontradoTxt & "</b><small>hon. enc.</small></div>"
 			        VAR cnpjs = DISTINCT ( SELECTCOLUMNS ( FILTER ( vCO_Base, [__Produto] = p ), "__CNPJ", [__CNPJ] ) )
-			        VAR vJobsProduto = FILTER ( vJobs_Status, [__CNPJ] IN cnpjs )
+			        VAR baseJobs = DISTINCT ( SELECTCOLUMNS ( FILTER ( vCO_Base, [__Produto] = p ), "__JobCO", [__JobCO] ) )
+			        VAR vJobsProduto =
+			            FILTER (
+			                vJobs_Status,
+			                [__CNPJ] IN cnpjs
+			                    && [__BaseJob] IN baseJobs
+			            )
 			        VAR vDetalhesPrimeiros =
 			            TOPN (
 			                vTopDetalhes,
@@ -1369,7 +1414,7 @@ table medidas_html
 			        RETURN
 			            "<details class='diag-row' data-prod='" & vProdutoAttr & "' data-periodos='" & vPeriodosProduto & "' data-etapas='" & vEtapaAttr & "' data-status='" & vStatusAttr & "'>"
 			                & "<summary><div class='row-grid'>"
-			                    & "<div class='prod-cell' data-tip='Produto vindo da tabela CONTRATOS_OPORTUNIDADES. A linha pega os CNPJs com esta oportunidade, cruza por CNPJ com JOBS_PRODUTO_AREA e distribui os jobs pela etapa atual.'><div class='prod-title'>" & p & "</div><div class='prod-sub'>" & FORMAT ( vOpp, vIntFormat ) & " oportunidades · " & FORMAT ( vEmp, vIntFormat ) & " empresas · " & FORMAT ( vJobs, vIntFormat ) & " jobs · " & FORMAT ( vAtivos, vIntFormat ) & " ativos" & IF ( vSemJob > 0, " · " & FORMAT ( vSemJob, vIntFormat ) & " CNPJs sem job", "" ) & "</div><div class='prod-progress'><span style='width:" & FORMAT ( ROUND ( vPctAtivos * 100, 0 ), "0" ) & "%'></span></div></div>"
+			                    & "<div class='prod-cell' data-tip='<b>PRODUTO COMERCIAL (ÂNCORA DE ALINHAMENTO)</b><br/>• <b>Nome do Produto:</b> " & p & "<br/>• <b>Origem Comercial:</b> Campo <code>CONTRATOS_OPORTUNIDADES[oportunidade]</code>.<br/>• <b>Métricas desta Linha comercial no período:</b><br/>  - <b>Oportunidades Comerciais:</b> " & FORMAT ( vOpp, vIntFormat ) & " registros comerciais.<br/>  - <b>Clientes (Empresas únicas):</b> " & FORMAT ( vEmp, vIntFormat ) & " CNPJs contratados.<br/>  - <b>Jobs operacionais localizados:</b> " & FORMAT ( vJobs, vIntFormat ) & " jobs vinculados.<br/>  - <b>Jobs ativos (em andamento):</b> " & FORMAT ( vAtivos, vIntFormat ) & " jobs ativos.<br/>  - <b>CNPJs sem correspondência:</b> " & FORMAT ( vSemJob, vIntFormat ) & " empresas contratadas que ainda não possuem job criado na base operacional.<br/>• <b>Regra de Prevenção de Vazamento:</b> O cruzamento entre a base comercial e a operacional é realizado tanto pelo <code>[CNPJ_JOIN]</code> quanto pelo <code>[BASE_JOB_ID]</code> (ID sem sufixos operacionais como -PRT). Isso garante que jobs operacionais pertencentes a outros produtos do mesmo cliente (ex: Previdenciária) não sejam exibidos indevidamente na linha deste produto (ex: Tributária).'><div class='prod-title'>" & p & "</div><div class='prod-sub'>" & FORMAT ( vOpp, vIntFormat ) & " oportunidades · " & FORMAT ( vEmp, vIntFormat ) & " empresas · " & FORMAT ( vJobs, vIntFormat ) & " jobs · " & FORMAT ( vAtivos, vIntFormat ) & " ativos" & IF ( vSemJob > 0, " · " & FORMAT ( vSemJob, vIntFormat ) & " CNPJs sem job", "" ) & "</div><div class='prod-progress'><span style='width:" & FORMAT ( ROUND ( vPctAtivos * 100, 0 ), "0" ) & "%'></span></div></div>"
 			                    & vStageCells
 			                    & vMoneyCells
 			                & "</div></summary>"
@@ -1384,15 +1429,15 @@ table medidas_html
 			        [__Jobs], DESC,
 			        [__Produto], ASC
 			    )
-
+			
 			VAR vNota =
 			    IF (
 			        COUNTROWS ( vProductSummary ) > vTopProdutos,
 			        "Exibindo os " & FORMAT ( vTopProdutos, vIntFormat ) & " produtos com maior prioridade. Use os slicers para reduzir o recorte.",
 			        ""
 			    )
-
-
+			
+			
 			VAR vJS =
 			"
 			<script>
@@ -1433,7 +1478,7 @@ table medidas_html
 			    el.addEventListener('mouseenter',function(ev){
 			      var t=el.getAttribute('data-tip')||'';
 			      if(!t)return;
-			      tip.textContent=t;
+			      tip.innerHTML=t;
 			      tip.classList.add('on');
 			      placeTip(ev);
 			    });
@@ -1446,7 +1491,7 @@ table medidas_html
 			setTimeout(bindFloatingTooltips,200);
 			</script>
 			"
-
+			
 			RETURN
 			    vCSS
 			        & "<div class='diag-wrap'>"
@@ -1456,7 +1501,7 @@ table medidas_html
 			            & "<div class='foot'>" & vNota & "</div>"
 			        & "</div>"
 			        & vJS
-
+			
 			```
 		displayFolder: HTML
 		lineageTag: b0000702-d1ag-ba5e-b010-ba5e00000702
@@ -1477,3 +1522,4 @@ table medidas_html
 	annotation PBI_Id = 1fcf0b6930bb4e10a61b1c725afbbaf7
 
 	annotation 436ba87b-9c83-4389-a31b-ebd06a36be98 = {"Expression":""}
+

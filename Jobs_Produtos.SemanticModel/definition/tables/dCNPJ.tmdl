@@ -23,6 +23,7 @@ table dCNPJ
 				        ),
 				        NOT ISBLANK ( [CNPJ_JOIN] )
 				            && LEN ( [CNPJ_JOIN] ) = 14
+				            && [CNPJ_JOIN] <> "00000000000000"
 				    )
 				)
 
