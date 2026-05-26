@@ -1,0 +1,44 @@
+table vw_powerbi_journeys_menor_area_novos
+	lineageTag: 3f3831be-6420-4fbf-ab47-fc086b5c6316
+
+	column PmvJob
+		dataType: int64
+		formatString: 0
+		lineageTag: 5c6b2259-bddb-4431-a72d-ae04da739691
+		summarizeBy: sum
+		sourceColumn: PmvJob
+
+		annotation SummarizationSetBy = Automatic
+
+	column PmvArea
+		dataType: double
+		lineageTag: f237878c-95be-4af0-8677-563596ddcfc6
+		summarizeBy: sum
+		sourceColumn: PmvArea
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column ParNome
+		dataType: string
+		lineageTag: f19f00b4-2969-4c32-8f45-541cd678e86d
+		summarizeBy: none
+		sourceColumn: ParNome
+
+		annotation SummarizationSetBy = Automatic
+
+	partition vw_powerbi_journeys_menor_area_novos = m
+		mode: import
+		source =
+				let
+				    Fonte = Sql.Databases("192.168.2.34"),
+				    STUDIO_FISCAL = Fonte{[Name="STUDIO_FISCAL"]}[Data],
+				    dbo_vw_powerbi_journeys_menor_area_novos = STUDIO_FISCAL{[Schema="dbo",Item="vw_powerbi_journeys_menor_area_novos"]}[Data]
+				in
+				    dbo_vw_powerbi_journeys_menor_area_novos
+
+	annotation PBI_NavigationStepName = Navegação
+
+	annotation PBI_ResultType = Table
+

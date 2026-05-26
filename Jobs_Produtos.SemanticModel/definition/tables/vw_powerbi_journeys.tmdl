@@ -1,0 +1,52 @@
+table vw_powerbi_journeys
+	lineageTag: c47ba319-4d59-400b-ab5d-682a3f416457
+
+	column CODIGO
+		dataType: int64
+		formatString: 0
+		lineageTag: c431b76c-bf7b-4ae1-8b8b-a496ce26693d
+		summarizeBy: sum
+		sourceColumn: CODIGO
+
+		annotation SummarizationSetBy = Automatic
+
+	column JOB
+		dataType: string
+		lineageTag: 8f404ced-a50b-4880-a5b7-a981cb795f3c
+		summarizeBy: none
+		sourceColumn: JOB
+
+		annotation SummarizationSetBy = Automatic
+
+	column DATA_CADASTRO
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: fc537012-a21a-48e8-923e-eabde802d567
+		summarizeBy: none
+		sourceColumn: DATA_CADASTRO
+
+		annotation SummarizationSetBy = Automatic
+
+	column FIM
+		dataType: int64
+		formatString: 0
+		lineageTag: ccfbb0dd-aae4-4b8e-a494-87057adb995f
+		summarizeBy: sum
+		sourceColumn: FIM
+
+		annotation SummarizationSetBy = Automatic
+
+	partition vw_powerbi_journeys = m
+		mode: import
+		source =
+				let
+				    Fonte = Sql.Databases("192.168.2.34"),
+				    STUDIO_FISCAL = Fonte{[Name="STUDIO_FISCAL"]}[Data],
+				    dbo_vw_powerbi_journeys = STUDIO_FISCAL{[Schema="dbo",Item="vw_powerbi_journeys"]}[Data]
+				in
+				    dbo_vw_powerbi_journeys
+
+	annotation PBI_NavigationStepName = Navegação
+
+	annotation PBI_ResultType = Table
+

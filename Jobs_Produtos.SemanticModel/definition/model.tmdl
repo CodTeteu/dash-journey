@@ -8,15 +8,15 @@ model Model
 
 annotation __PBI_TimeIntelligenceEnabled = 0
 
-annotation PBI_QueryOrder = ["CONTRATOS_OPORTUNIDADES","JOBS_PRODUTO_AREA"]
+annotation PBI_QueryOrder = ["vw_powerbi_journeys","vw_powerbi_journeys_filhos_novos","vw_powerbi_journeys_menor_area_novos"]
 
 annotation PBI_ProTooling = ["MCP-PBIModeling","DevMode"]
 
 ref table medidas_html
 ref table dCalendar
-ref table CONTRATOS_OPORTUNIDADES
-ref table JOBS_PRODUTO_AREA
-ref table dCNPJ
+ref table vw_powerbi_journeys
+ref table vw_powerbi_journeys_filhos_novos
+ref table vw_powerbi_journeys_menor_area_novos
 
 ref cultureInfo pt-BR
 

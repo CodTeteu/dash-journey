@@ -287,22 +287,36 @@ table dCalendar
 				
 				VAR vMinAllowed = DATE ( 2000, 1, 1 )
 				
-				-- O periodo do projeto deve nascer da tabela de oportunidades.
-				-- A operacao/JOBS_PRODUTO_AREA sera cruzada por CNPJ dentro das medidas.
-				VAR vDateCandidates =
+				-- Calendario oficial do projeto com base nas novas views de Journey.
+				VAR vJourneyDates =
 				    SELECTCOLUMNS (
 				        FILTER (
-				            ALL ( 'CONTRATOS_OPORTUNIDADES' ),
-				            NOT ISBLANK ( 'CONTRATOS_OPORTUNIDADES'[data_contrato] )
-				                && 'CONTRATOS_OPORTUNIDADES'[data_contrato] >= vMinAllowed
+				            ALL ( 'vw_powerbi_journeys' ),
+				            NOT ISBLANK ( 'vw_powerbi_journeys'[DATA_CADASTRO] )
+				                && 'vw_powerbi_journeys'[DATA_CADASTRO] >= vMinAllowed
 				        ),
 				        "DateValue",
 				            DATE (
-				                YEAR ( 'CONTRATOS_OPORTUNIDADES'[data_contrato] ),
-				                MONTH ( 'CONTRATOS_OPORTUNIDADES'[data_contrato] ),
-				                DAY ( 'CONTRATOS_OPORTUNIDADES'[data_contrato] )
+				                YEAR ( 'vw_powerbi_journeys'[DATA_CADASTRO] ),
+				                MONTH ( 'vw_powerbi_journeys'[DATA_CADASTRO] ),
+				                DAY ( 'vw_powerbi_journeys'[DATA_CADASTRO] )
 				            )
 				    )
+				VAR vJobDates =
+				    SELECTCOLUMNS (
+				        FILTER (
+				            ALL ( 'vw_powerbi_journeys_filhos_novos' ),
+				            NOT ISBLANK ( 'vw_powerbi_journeys_filhos_novos'[DATA_CADASTRO] )
+				                && 'vw_powerbi_journeys_filhos_novos'[DATA_CADASTRO] >= vMinAllowed
+				        ),
+				        "DateValue",
+				            DATE (
+				                YEAR ( 'vw_powerbi_journeys_filhos_novos'[DATA_CADASTRO] ),
+				                MONTH ( 'vw_powerbi_journeys_filhos_novos'[DATA_CADASTRO] ),
+				                DAY ( 'vw_powerbi_journeys_filhos_novos'[DATA_CADASTRO] )
+				            )
+				    )
+				VAR vDateCandidates = UNION ( vJourneyDates, vJobDates )
 				
 				VAR vMinBase = MINX ( vDateCandidates, [DateValue] )
 				VAR vMaxBase = MAXX ( vDateCandidates, [DateValue] )

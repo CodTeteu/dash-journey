@@ -20,14 +20,14 @@
                 "Column": {
                   "Expression": {
                     "SourceRef": {
-                      "Entity": "CONTRATOS_OPORTUNIDADES"
+                      "Entity": "vw_powerbi_journeys"
                     }
                   },
-                  "Property": "razao_social"
+                  "Property": "JOB"
                 }
               },
-              "queryRef": "CONTRATOS_OPORTUNIDADES.razao_social",
-              "nativeQueryRef": "razao_social",
+              "queryRef": "vw_powerbi_journeys.JOB",
+              "nativeQueryRef": "JOB",
               "active": true
             }
           ]
@@ -54,7 +54,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Cliente'"
+                  "Value": "'Journey'"
                 }
               }
             },
@@ -224,7 +224,7 @@
       ]
     },
     "syncGroup": {
-      "groupName": "razao_social",
+      "groupName": "Journey_JOB",
       "fieldChanges": true,
       "filterChanges": true
     },

@@ -1,0 +1,69 @@
+table vw_powerbi_journeys_filhos_novos
+	lineageTag: 35dc9144-6e78-4d6e-bdbe-1e72f4e01261
+
+	column CODIGO
+		dataType: int64
+		formatString: 0
+		lineageTag: 7ea0fb70-8af5-4ab0-8ad2-bf32d7ba9a03
+		summarizeBy: sum
+		sourceColumn: CODIGO
+
+		annotation SummarizationSetBy = Automatic
+
+	column JOB
+		dataType: string
+		lineageTag: 06db6ac3-1666-465b-8b32-c7d96e4bc376
+		summarizeBy: none
+		sourceColumn: JOB
+
+		annotation SummarizationSetBy = Automatic
+
+	column DATA_CADASTRO
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 1546dbbe-d205-4155-8920-2f67f816c3d1
+		summarizeBy: none
+		sourceColumn: DATA_CADASTRO
+
+		annotation SummarizationSetBy = Automatic
+
+	column CODIGO_PRODUTO
+		dataType: int64
+		formatString: 0
+		lineageTag: 5e5d8b27-bc7e-4a84-bc6d-d9139a8b6a0d
+		summarizeBy: sum
+		sourceColumn: CODIGO_PRODUTO
+
+		annotation SummarizationSetBy = Automatic
+
+	column FIM
+		dataType: int64
+		formatString: 0
+		lineageTag: f0d1eb51-c1a5-4abd-b6f3-6de2975fa69a
+		summarizeBy: sum
+		sourceColumn: FIM
+
+		annotation SummarizationSetBy = Automatic
+
+	column GppNome
+		dataType: string
+		lineageTag: 0e3baae6-3db6-40de-8576-b23bc4dc648a
+		summarizeBy: none
+		sourceColumn: GppNome
+
+		annotation SummarizationSetBy = Automatic
+
+	partition vw_powerbi_journeys_filhos_novos = m
+		mode: import
+		source =
+				let
+				    Fonte = Sql.Databases("192.168.2.34"),
+				    STUDIO_FISCAL = Fonte{[Name="STUDIO_FISCAL"]}[Data],
+				    dbo_vw_powerbi_journeys_filhos_novos = STUDIO_FISCAL{[Schema="dbo",Item="vw_powerbi_journeys_filhos_novos"]}[Data]
+				in
+				    dbo_vw_powerbi_journeys_filhos_novos
+
+	annotation PBI_NavigationStepName = Navegação
+
+	annotation PBI_ResultType = Table
+

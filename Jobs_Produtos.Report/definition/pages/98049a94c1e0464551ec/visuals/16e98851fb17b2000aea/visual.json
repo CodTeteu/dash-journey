@@ -20,14 +20,14 @@
                 "Column": {
                   "Expression": {
                     "SourceRef": {
-                      "Entity": "JOBS_PRODUTO_AREA"
+                      "Entity": "vw_powerbi_journeys_menor_area_novos"
                     }
                   },
-                  "Property": "NOME_AREA"
+                  "Property": "ParNome"
                 }
               },
-              "queryRef": "JOBS_PRODUTO_AREA.NOME_AREA",
-              "nativeQueryRef": "NOME_AREA",
+              "queryRef": "vw_powerbi_journeys_menor_area_novos.ParNome",
+              "nativeQueryRef": "ParNome",
               "active": true
             }
           ]
@@ -54,7 +54,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Área'"
+                  "Value": "'Etapa'"
                 }
               }
             },
@@ -224,7 +224,7 @@
       ]
     },
     "syncGroup": {
-      "groupName": "NOME_AREA",
+      "groupName": "ParNome",
       "fieldChanges": true,
       "filterChanges": true
     },

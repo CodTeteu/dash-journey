@@ -20,14 +20,14 @@
                 "Column": {
                   "Expression": {
                     "SourceRef": {
-                      "Entity": "CONTRATOS_OPORTUNIDADES"
+                      "Entity": "vw_powerbi_journeys_filhos_novos"
                     }
                   },
-                  "Property": "oportunidade"
+                  "Property": "GppNome"
                 }
               },
-              "queryRef": "CONTRATOS_OPORTUNIDADES.oportunidade",
-              "nativeQueryRef": "oportunidade",
+              "queryRef": "vw_powerbi_journeys_filhos_novos.GppNome",
+              "nativeQueryRef": "GppNome",
               "active": true
             }
           ]
@@ -172,13 +172,6 @@
       "selection": [
         {
           "properties": {
-            "strictSingleSelect": {
-              "expr": {
-                "Literal": {
-                  "Value": "false"
-                }
-              }
-            },
             "selectAllCheckboxEnabled": {
               "expr": {
                 "Literal": {
@@ -224,7 +217,7 @@
       ]
     },
     "syncGroup": {
-      "groupName": "oportunidade",
+      "groupName": "GppNome",
       "fieldChanges": true,
       "filterChanges": true
     },

@@ -20,14 +20,14 @@
                 "Column": {
                   "Expression": {
                     "SourceRef": {
-                      "Entity": "dCNPJ"
+                      "Entity": "vw_powerbi_journeys_filhos_novos"
                     }
                   },
-                  "Property": "CNPJ_JOIN"
+                  "Property": "JOB"
                 }
               },
-              "queryRef": "dCNPJ.CNPJ_JOIN",
-              "nativeQueryRef": "CNPJ_JOIN",
+              "queryRef": "vw_powerbi_journeys_filhos_novos.JOB",
+              "nativeQueryRef": "JOB",
               "active": true
             }
           ]
@@ -40,10 +40,10 @@
               "Column": {
                 "Expression": {
                   "SourceRef": {
-                    "Entity": "dCNPJ"
+                    "Entity": "vw_powerbi_journeys_filhos_novos"
                   }
                 },
-                "Property": "CNPJ_JOIN"
+                "Property": "JOB"
               }
             },
             "direction": "Ascending"
@@ -58,7 +58,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'CNPJ'"
+                  "Value": "'Job'"
                 }
               }
             },
@@ -169,6 +169,13 @@
                   }
                 }
               }
+            },
+            "selfFilterEnabled": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
             }
           }
         }
@@ -221,7 +228,7 @@
       ]
     },
     "syncGroup": {
-      "groupName": "CNPJ_JOIN",
+      "groupName": "Job",
       "fieldChanges": true,
       "filterChanges": true
     },
