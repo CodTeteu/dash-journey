@@ -884,12 +884,12 @@ table medidas_html
 				        VAR pc = [__ProdutoCodigo]
 				        VAR vJobs = [__Jobs]
 				        VAR vAtivos = [__Ativos]
-				        VAR vCad = [__Cadastro]
-				        VAR vProc = [__Procuracao]
-				        VAR vCheck = [__Checklist]
-				        VAR vOper = [__Operacao]
-				        VAR vReu = [__Reuniao]
-				        VAR vFim = [__Fim]
+				        VAR vCad = COALESCE ( [__Cadastro], 0 )
+				        VAR vProc = COALESCE ( [__Procuracao], 0 )
+				        VAR vCheck = COALESCE ( [__Checklist], 0 )
+				        VAR vOper = COALESCE ( [__Operacao], 0 )
+				        VAR vReu = COALESCE ( [__Reuniao], 0 )
+				        VAR vFim = COALESCE ( [__Fim], 0 )
 				        VAR vPctAtivos = DIVIDE ( vAtivos, vJobs, 0 )
 				        VAR vTotalEtapas = vCad + vProc + vCheck + vOper + vReu + vFim
 				        VAR vStageTable =
@@ -909,7 +909,7 @@ table medidas_html
 				                    VAR q = [Qtd]
 				                    VAR pct = DIVIDE ( q, vTotalEtapas, 0 )
 				                    VAR cellTip = "<b>ETAPA: " & [Etapa] & "</b><br/>Jobs nesta etapa: <b>" & FORMAT ( q, vIntFormat ) & "</b> ativos.<br/>Representatividade no produto: <b>" & FORMAT ( pct, vPctFormat ) & "</b>.<br/><br/><b>Tabela Origem:</b> <code>vw_powerbi_journeys_menor_area_novos</code><br/><b>Vínculo:</b> <code>PmvJob</code> = <code>CODIGO</code> do Job Filho.<br/><b>Coluna:</b> <code>ParNome</code>"
-				                    RETURN "<div class='metric " & [Class] & "' data-tip='" & cellTip & "'><b>" & IF ( q = 0, "-", FORMAT ( q, vIntFormat ) ) & "</b><small>" & FORMAT ( pct, vPctFormat ) & "</small></div>",
+				                    RETURN "<div class='metric " & [Class] & "' data-tip='" & cellTip & "'><b>" & IF ( q = 0, "0", FORMAT ( q, vIntFormat ) ) & "</b><small>" & FORMAT ( pct, vPctFormat ) & "</small></div>",
 				                    "",
 				                    [Ordem], ASC
 				                )
