@@ -543,7 +543,19 @@ table medidas_html
 							VAR vDetalheAll =
 							    ADDCOLUMNS (
 							        vJobsBase,
-							        "__Etapa", VAR c = [__Codigo] RETURN COALESCE ( MAXX ( FILTER ( vAreas, [__PmvJob] = c ), [__Etapa] ), "SEM ETAPA" ),
+							        "__Etapa",
+							        VAR c = [__Codigo]
+							        VAR jobAreas = FILTER ( vAreas, [__PmvJob] = c )
+							        VAR stages = SELECTCOLUMNS ( jobAreas, "__Etapa", [__Etapa] )
+							        RETURN
+							            IF ( "FIM" IN stages, "FIM",
+							            IF ( "IMP" IN stages || "IMPLANTAÇÃO" IN stages || "IMPLANTACAO" IN stages, "IMPLANTAÇÃO",
+							            IF ( "NEGOCIAÇÃO" IN stages || "NEGOCIACAO" IN stages, "NEGOCIAÇÃO",
+							            IF ( "OPERAÇÃO" IN stages || "OPERACAO" IN stages, "OPERAÇÃO",
+							            IF ( "CHECKLIST" IN stages, "CHECKLIST",
+							            IF ( "CADASTRO" IN stages || "PROCURAÇÃO ELETRÔNICA" IN stages, "ONBOARDING",
+							            COALESCE ( MAXX ( jobAreas, [__Etapa] ), "SEM ETAPA" )
+							            ) ) ) ) ) ),
 							        "__Status", IF ( [__Fim] = 1, "Ativo", "Inativo" )
 							    )
 							VAR vDetalheTop = TOPN ( vLimiteLinhas, vDetalheAll, [__Data], DESC, [__Job], ASC )
