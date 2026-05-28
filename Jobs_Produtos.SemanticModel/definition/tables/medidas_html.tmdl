@@ -6,7 +6,9 @@ table medidas_html
 			VAR vIntFormat = "#,##0"
 				VAR vCalendarStart = MIN ( 'dCalendar'[Date] )
 				VAR vCalendarEnd = MAX ( 'dCalendar'[Date] )
-				VAR vHasCalendarFilter = COUNTROWS ( 'dCalendar' ) < COUNTROWS ( ALL ( 'dCalendar' ) )
+				VAR vMinCalendarDate = CALCULATE ( MIN ( 'dCalendar'[Date] ), ALL ( 'dCalendar' ) )
+				VAR vMaxCalendarDate = CALCULATE ( MAX ( 'dCalendar'[Date] ), ALL ( 'dCalendar' ) )
+				VAR vHasCalendarFilter = ( vCalendarStart > vMinCalendarDate ) || ( vCalendarEnd < vMaxCalendarDate )
 				VAR vCalendarDates = VALUES ( 'dCalendar'[Date] )
 				VAR vHasJobFilter =
 				    ISFILTERED ( 'vw_powerbi_journeys_filhos_novos'[JOB] )
@@ -87,7 +89,9 @@ table medidas_html
 			VAR vIntFormat = "#,##0"
 				VAR vCalendarStart = MIN ( 'dCalendar'[Date] )
 				VAR vCalendarEnd = MAX ( 'dCalendar'[Date] )
-				VAR vHasCalendarFilter = COUNTROWS ( 'dCalendar' ) < COUNTROWS ( ALL ( 'dCalendar' ) )
+				VAR vMinCalendarDate = CALCULATE ( MIN ( 'dCalendar'[Date] ), ALL ( 'dCalendar' ) )
+				VAR vMaxCalendarDate = CALCULATE ( MAX ( 'dCalendar'[Date] ), ALL ( 'dCalendar' ) )
+				VAR vHasCalendarFilter = ( vCalendarStart > vMinCalendarDate ) || ( vCalendarEnd < vMaxCalendarDate )
 				VAR vCalendarDates = VALUES ( 'dCalendar'[Date] )
 				VAR vHasJobFilter =
 				    ISFILTERED ( 'vw_powerbi_journeys_filhos_novos'[JOB] )
@@ -476,7 +480,9 @@ table medidas_html
 							VAR vLimiteLinhas = 3000
 							VAR vCalendarStart = MIN ( 'dCalendar'[Date] )
 							VAR vCalendarEnd = MAX ( 'dCalendar'[Date] )
-							VAR vHasCalendarFilter = COUNTROWS ( 'dCalendar' ) < COUNTROWS ( ALL ( 'dCalendar' ) )
+							VAR vMinCalendarDate = CALCULATE ( MIN ( 'dCalendar'[Date] ), ALL ( 'dCalendar' ) )
+							VAR vMaxCalendarDate = CALCULATE ( MAX ( 'dCalendar'[Date] ), ALL ( 'dCalendar' ) )
+							VAR vHasCalendarFilter = ( vCalendarStart > vMinCalendarDate ) || ( vCalendarEnd < vMaxCalendarDate )
 							VAR vCalendarDates = VALUES ( 'dCalendar'[Date] )
 							VAR vPeriodo =
 							    IF (
@@ -511,11 +517,12 @@ table medidas_html
 							            "__Codigo", 'vw_powerbi_journeys_filhos_novos'[CODIGO],
 							            "__Job", 'vw_powerbi_journeys_filhos_novos'[JOB],
 							            "__Data", 'vw_powerbi_journeys_filhos_novos'[DATA_CADASTRO],
+							            "__ProdutoCodigo", 'vw_powerbi_journeys_filhos_novos'[CODIGO_PRODUTO],
 							            "__Produto", COALESCE ( 'vw_powerbi_journeys_filhos_novos'[GppNome], "Sem produto" ),
 							            "__Fim", 'vw_powerbi_journeys_filhos_novos'[FIM]
 							        ),
 							        "__Journey", VAR j = COALESCE ( [__Job], "" ) RETURN LEFT ( j, SEARCH ( "-", j & "-", 1, LEN ( j ) + 1 ) - 1 ),
-							        "__JourneyJob", VAR j = COALESCE ( [__Job], "" ) RETURN LEFT ( j, SEARCH ( "-", j & "-", 1, LEN ( j ) + 1 ) - 1 )
+							        "__ParentJob", VAR j = COALESCE ( [__Job], "" ) RETURN LEFT ( j, SEARCH ( "-", j & "-", 1, LEN ( j ) + 1 ) - 1 )
 							    )
 							VAR vAreas =
 							    SELECTCOLUMNS (
@@ -529,10 +536,10 @@ table medidas_html
 							        || ISFILTERED ( 'vw_powerbi_journeys_menor_area_novos'[PmvJob] )
 							VAR vAreaJobCodes = DISTINCT ( SELECTCOLUMNS ( vAreas, "__Codigo", [__PmvJob] ) )
 							VAR vJobsPeriodEtapa = FILTER ( vJobsPeriod, NOT vHasEtapaFilter || [__Codigo] IN vAreaJobCodes )
-							VAR vJobParents = DISTINCT ( SELECTCOLUMNS ( vJobsPeriodEtapa, "__JourneyJob", [__JourneyJob] ) )
+							VAR vJobParents = DISTINCT ( SELECTCOLUMNS ( vJobsPeriodEtapa, "__JourneyJob", [__ParentJob] ) )
 							VAR vJourneysBase = FILTER ( vJourneysPeriod, NOT ( vHasJobFilter || vHasEtapaFilter ) || [__JourneyJob] IN vJobParents )
-							VAR vJourneyKeys = DISTINCT ( SELECTCOLUMNS ( vJourneysBase, "__JourneyJob", [__JourneyJob] ) )
-							VAR vJobsBase = FILTER ( vJobsPeriodEtapa, [__JourneyJob] IN vJourneyKeys )
+							VAR vJourneyKeys = DISTINCT ( SELECTCOLUMNS ( vJourneysBase, "__ParentJob", [__JourneyJob] ) )
+							VAR vJobsBase = FILTER ( vJobsPeriodEtapa, [__ParentJob] IN vJourneyKeys )
 							VAR vDetalheAll =
 							    ADDCOLUMNS (
 							        vJobsBase,
@@ -558,20 +565,21 @@ table medidas_html
 			.period-container{display:flex;align-items:center;gap:10px}
 			.btn-back{display:inline-flex;align-items:center;justify-content:center;border:1px solid rgba(213,174,119,.34);background:rgba(213,174,119,.10);color:var(--gold);border-radius:999px;height:38px;padding:0 16px;font-size:13px;font-weight:1000;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;white-space:nowrap;transition:all .15s ease}
 			.btn-back:hover{transform:translateY(-2px);background:rgba(213,174,119,.18);border-color:var(--gold);box-shadow:0 6px 14px rgba(0,0,0,.2)}.kpis{display:grid;grid-template-columns:repeat(5,minmax(145px,1fr));gap:12px;margin-bottom:14px}.kpi{position:relative;padding:15px 18px 14px;border-radius:17px;background:linear-gradient(155deg,rgba(18,31,42,.98),rgba(9,15,21,.96));border:1px solid rgba(255,255,255,.10);box-shadow:0 12px 24px rgba(0,0,0,.24);overflow:hidden;transition:transform .15s ease,border-color .15s ease,box-shadow .15s ease;display:flex;align-items:center;justify-content:space-between;gap:10px}.kpi:before{content:'';position:absolute;left:14px;top:0;width:42px;height:4px;border-radius:0 0 10px 10px;background:linear-gradient(90deg,var(--gold),var(--teal))}.kpi:hover{transform:translateY(-3px);border-color:rgba(244,217,169,.42);box-shadow:0 18px 34px rgba(0,0,0,.32)}.kpi-content{min-width:0;flex:1;display:flex;flex-direction:column;align-items:flex-start}.kpi-label{display:block;color:var(--muted);font-size:11.5px;font-weight:1000;text-transform:uppercase;letter-spacing:.08em}.kpi-value{display:block;color:var(--gold);font-size:32px;font-weight:1000;margin-top:8px;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.kpi-note{display:block;color:var(--dim);font-size:11px;font-weight:850;line-height:1.25;margin-top:6px}.kpi-side-badge{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 10px;border-radius:10px;background:linear-gradient(135deg,rgba(213,174,119,.08),rgba(139,224,209,.04));border:1px solid rgba(213,174,119,.18);min-width:88px;text-align:center;transition:all .15s ease}.kpi-side-badge .badge-val{color:var(--gold);font-size:16px;font-weight:1000;line-height:1.15}.kpi-side-badge .badge-lbl{color:var(--muted);font-size:9.0px;font-weight:1000;text-transform:uppercase;letter-spacing:.05em;margin-top:3px}.kpi:hover .kpi-side-badge{background:linear-gradient(135deg,rgba(213,174,119,.16),rgba(139,224,209,.07));border-color:var(--gold2);transform:scale(1.03)}.controls.doc-filters{display:grid!important;grid-template-columns:1.25fr repeat(6,minmax(0,1fr)) auto!important;gap:9px!important;margin-bottom:12px!important;align-items:end!important}.doc-filter{display:flex;flex-direction:column;gap:5px;min-width:0}.doc-filter label{color:var(--gold2);font-size:11px;font-weight:1000;letter-spacing:.075em;text-transform:uppercase}.doc-filter input,.doc-filter select{height:42px;width:100%;box-sizing:border-box;border:1px solid rgba(213,174,119,.28);background:#071018;color:#F4F7FA;border-radius:11px;padding:0 11px;font-size:13px;font-weight:850;outline:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}.doc-filter input:focus,.doc-filter select:focus{border-color:rgba(139,224,209,.62);box-shadow:0 0 0 3px rgba(139,224,209,.08),inset 0 1px 0 rgba(255,255,255,.06)}.doc-actions{display:flex;gap:8px;align-items:end;justify-content:flex-end}.btn{border:1px solid rgba(213,174,119,.34);background:rgba(213,174,119,.10);color:var(--gold);border-radius:12px;height:42px;padding:0 13px;font-size:12px;font-weight:1000;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;white-space:nowrap;transition:transform .15s ease,background .15s ease}.btn:hover{transform:translateY(-2px);background:rgba(213,174,119,.18)}.table-wrap{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;border:1px solid rgba(213,174,119,.16);border-radius:18px;background:rgba(255,255,255,.022);box-shadow:inset 0 1px 0 rgba(255,255,255,.035)}.table-wrap::-webkit-scrollbar{width:12px;height:0}.table-wrap::-webkit-scrollbar-track{background:#071018}.table-wrap::-webkit-scrollbar-thumb{background:linear-gradient(180deg,rgba(244,217,169,.78),rgba(139,224,209,.44));border:3px solid #071018;border-radius:999px}table{border-collapse:collapse;width:100%;min-width:0;table-layout:fixed}th{position:sticky;top:0;z-index:4;background:linear-gradient(180deg,#111D27,#0B141D);color:var(--gold2);font-size:14px;font-weight:1000;text-transform:uppercase;letter-spacing:.07em;padding:15px 13px;text-align:left;border-bottom:1px solid rgba(213,174,119,.25);white-space:nowrap}
-			th:nth-child(1),td:nth-child(1){width:32%;text-align:left;padding-left:12px}
-			th:nth-child(2),td:nth-child(2){width:8%;text-align:center}
-			th:nth-child(3),td:nth-child(3){width:12%;text-align:center}
-			th:nth-child(4),td:nth-child(4){width:8%;text-align:center}
-			th:nth-child(5),td:nth-child(5){width:16%;text-align:center}
-			th:nth-child(6),td:nth-child(6){width:10%;text-align:center}
-			th:nth-child(7),td:nth-child(7){width:14%;text-align:right;padding-right:12px}
-			td{font-size:16px;font-weight:820;color:#EEF3F8;padding:15px 13px;border-bottom:1px solid rgba(255,255,255,.055);vertical-align:middle;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.25}tr{transition:background .14s ease,transform .14s ease}tr:hover td{background:rgba(213,174,119,.075)}tr:hover{transform:translateX(2px)}td.prod{font-weight:1000;color:#FFF2DE}td.journey,td.job,td.codigo{font-family:Consolas,'Courier New',monospace;color:var(--gold);font-size:15px}td.date{font-family:Consolas,'Courier New',monospace;color:#B9C7D5;font-size:15px;text-align:center}.chip{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;padding:8px 12px;font-size:13px;font-weight:1000;text-transform:uppercase;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.055);min-width:100px}.ativo{color:#8BE0D1;border-color:rgba(139,224,209,.25)}.inativo{color:var(--red);border-color:rgba(255,156,147,.25)}.etapa{color:#F4D9A9;border-color:rgba(244,217,169,.25)}.foot{margin-top:11px;color:var(--dim);font-size:14px;font-weight:850}.empty{margin:24px;padding:34px;border:1px dashed rgba(213,174,119,.30);border-radius:18px;color:var(--muted);text-align:center;font-size:18px;font-weight:900}@media(max-width:1200px){.controls.doc-filters{grid-template-columns:repeat(4,minmax(0,1fr))!important}.doc-actions{justify-content:flex-start}.kpis{grid-template-columns:repeat(5,minmax(145px,1fr));overflow-x:auto}}
+			th:nth-child(1),td:nth-child(1){width:4%;text-align:center}
+			th:nth-child(2),td:nth-child(2){width:28%;text-align:left;padding-left:12px}
+			th:nth-child(3),td:nth-child(3){width:8%;text-align:center}
+			th:nth-child(4),td:nth-child(4){width:12%;text-align:center}
+			th:nth-child(5),td:nth-child(5){width:8%;text-align:center}
+			th:nth-child(6),td:nth-child(6){width:16%;text-align:center}
+			th:nth-child(7),td:nth-child(7){width:10%;text-align:center}
+			th:nth-child(8),td:nth-child(8){width:14%;text-align:right;padding-right:12px}
+			td{font-size:16px;font-weight:820;color:#EEF3F8;padding:15px 13px;border-bottom:1px solid rgba(255,255,255,.055);vertical-align:middle;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.25}tr{transition:background .14s ease,transform .14s ease}tr:hover td{background:rgba(213,174,119,.075)}tr:hover{transform:translateX(2px)}td.rownum{font-family:Consolas,'Courier New',monospace;color:var(--dim);font-size:14px;font-weight:1000;text-align:center}td.prod{font-weight:1000;color:#FFF2DE}td.journey,td.job,td.codigo{font-family:Consolas,'Courier New',monospace;color:var(--gold);font-size:15px}td.date{font-family:Consolas,'Courier New',monospace;color:#B9C7D5;font-size:15px;text-align:center}.chip{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;padding:8px 12px;font-size:13px;font-weight:1000;text-transform:uppercase;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.055);min-width:100px}.ativo{color:#8BE0D1;border-color:rgba(139,224,209,.25)}.inativo{color:var(--red);border-color:rgba(255,156,147,.25)}.etapa{color:#F4D9A9;border-color:rgba(244,217,169,.25)}.foot{margin-top:11px;color:var(--dim);font-size:14px;font-weight:850}.empty{margin:24px;padding:34px;border:1px dashed rgba(213,174,119,.30);border-radius:18px;color:var(--muted);text-align:center;font-size:18px;font-weight:900}@media(max-width:1200px){.controls.doc-filters{grid-template-columns:repeat(4,minmax(0,1fr))!important}.doc-actions{justify-content:flex-start}.kpis{grid-template-columns:repeat(5,minmax(145px,1fr));overflow-x:auto}}
 							[data-tip]{position:relative;cursor:default}.kpi[data-tip]:hover,th[data-tip]:hover{outline:1px solid rgba(244,217,169,.22);outline-offset:-1px}.float-tip{position:fixed;z-index:2147483647;display:none;max-width:500px;min-width:280px;padding:16px 18px;border-radius:15px;background:linear-gradient(160deg,rgba(7,12,18,.99),rgba(15,27,36,.99));border:1px solid rgba(244,217,169,.45);color:#F4F7FA;font-family:'Segoe UI',Arial,sans-serif;font-size:15px;font-weight:800;line-height:1.5;text-align:left;box-shadow:0 18px 40px rgba(0,0,0,.48),0 0 0 1px rgba(139,224,209,.08),inset 0 1px 0 rgba(255,255,255,.07);pointer-events:none;white-space:normal}.float-tip.on{display:block}.float-tip b{color:#F4D9A9}.float-tip code{color:#8BE0D1;font-family:Consolas,'Courier New',monospace;font-size:.95em}
 							</style>
 							<script>
 							function normDoc(s){try{return (s||'').toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');}catch(e){return (s||'').toString().toLowerCase();}}
 							function valDoc(id){var el=document.getElementById(id);return el?normDoc(el.value):'';}
-							function filtrarDoc(){var q=valDoc('q');var fProd=valDoc('fDocProduto');var fJourney=valDoc('fDocJourney');var fJob=valDoc('fDocJob');var fCodigo=valDoc('fDocCodigo');var fEtapa=valDoc('fDocEtapa');var fStatus=valDoc('fDocStatus');var rows=document.querySelectorAll('.linha');var n=0;rows.forEach(function(r){var ok=true;var txt=normDoc(r.textContent);if(q&&txt.indexOf(q)===-1)ok=false;if(fProd&&normDoc(r.getAttribute('data-prod')).indexOf(fProd)===-1)ok=false;if(fJourney&&normDoc(r.getAttribute('data-journey')).indexOf(fJourney)===-1)ok=false;if(fJob&&normDoc(r.getAttribute('data-job')).indexOf(fJob)===-1)ok=false;if(fCodigo&&normDoc(r.getAttribute('data-codigo')).indexOf(fCodigo)===-1)ok=false;if(fEtapa&&normDoc(r.getAttribute('data-etapa')).indexOf(fEtapa)===-1)ok=false;if(fStatus&&normDoc(r.getAttribute('data-status')).indexOf(fStatus)===-1)ok=false;r.style.display=ok?'':'none';if(ok)n++;});var hasFilter=(q||fProd||fJourney||fJob||fCodigo||fEtapa||fStatus);var el=document.getElementById('vis');if(el)el.textContent=hasFilter?n:el.getAttribute('data-total');var empty=document.getElementById('docNoMatch');if(empty)empty.style.display=n===0?'block':'none';}
+							function filtrarDoc(){var q=valDoc('q');var fProd=valDoc('fDocProduto');var fJourney=valDoc('fDocJourney');var fJob=valDoc('fDocJob');var fCodigo=valDoc('fDocCodigo');var fEtapa=valDoc('fDocEtapa');var fStatus=valDoc('fDocStatus');var rows=document.querySelectorAll('.linha');var n=0;rows.forEach(function(r){var ok=true;var txt=normDoc(r.textContent);if(q&&txt.indexOf(q)===-1)ok=false;if(fProd&&normDoc(r.getAttribute('data-prod')).indexOf(fProd)===-1)ok=false;if(fJourney&&normDoc(r.getAttribute('data-journey')).indexOf(fJourney)===-1)ok=false;if(fJob&&normDoc(r.getAttribute('data-job')).indexOf(fJob)===-1)ok=false;if(fCodigo&&normDoc(r.getAttribute('data-codigo')).indexOf(fCodigo)===-1)ok=false;if(fEtapa&&normDoc(r.getAttribute('data-etapa')).indexOf(fEtapa)===-1)ok=false;if(fStatus&&normDoc(r.getAttribute('data-status')).indexOf(fStatus)===-1)ok=false;r.style.display=ok?'':'none';if(ok)n++;});var hasFilter=(q||fProd||fJourney||fJob||fCodigo||fEtapa||fStatus);var el=document.getElementById('vis');if(el)el.textContent=hasFilter?n:el.getAttribute('data-total');var empty=document.getElementById('docNoMatch');if(empty)empty.style.display=n===0?'block':'none';var idx=0;rows.forEach(function(r){if(r.style.display!=='none'){idx++;var rn=r.querySelector('.rownum');if(rn)rn.textContent=idx;}});var fv=document.getElementById('foot-vis');if(fv)fv.textContent=hasFilter?n:fv.getAttribute('data-total');}
 							function limparFiltrosDoc(){['q','fDocProduto','fDocJourney','fDocJob','fDocCodigo','fDocEtapa','fDocStatus'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});filtrarDoc();}
 							function copiarTabela(){var rows=document.querySelectorAll('tr');var out=[];rows.forEach(function(r){if(r.className==='linha'&&r.style.display==='none')return;var cells=r.querySelectorAll('th,td');var vals=[];cells.forEach(function(c){vals.push(c.textContent.trim().replace(/\s+/g,' '));});out.push(vals.join('\t'));});var ta=document.createElement('textarea');ta.value=out.join('\r\n');document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);var b=document.getElementById('copy');var old=b.innerHTML;b.innerHTML='Copiado';setTimeout(function(){b.innerHTML=old},1800);}
 							setTimeout(filtrarDoc,100);
@@ -639,6 +647,7 @@ table medidas_html
 							        VAR vDataTxt = IF ( ISBLANK ( [__Data] ), "-", FORMAT ( [__Data], "dd/MM/yyyy HH:mm" ) )
 							        RETURN
 							            "<tr class='linha' data-prod='" & vProdutoAttr & "' data-journey='" & vJourneyAttr & "' data-job='" & vJobAttr & "' data-codigo='" & vCodigoAttr & "' data-etapa='" & vEtapaAttr & "' data-status='" & vStatusAttr & "'>"
+							                & "<td class='rownum'></td>"
 							                & "<td class='prod' title='" & vProdutoAttr & "'>" & [__Produto] & "</td>"
 							                & "<td class='journey'>" & [__Journey] & "</td>"
 							                & "<td class='job'>" & [__Job] & "</td>"
@@ -686,8 +695,8 @@ table medidas_html
 							                & "<div class='kpi' data-tip='" & vTipLinhas & "'><div class='kpi-content'><div class='kpi-label'>Linhas Exibidas</div><div class='kpi-value'><span id='vis' data-total='" & FORMAT ( vTotalRows, vIntFormat ) & "'>" & FORMAT ( vTotalRows, vIntFormat ) & "</span></div><div class='kpi-note'>Registros na tabela abaixo</div></div><div class='kpi-side-badge'><div class='badge-val'>Tabela</div><div class='badge-lbl'>Operacional</div></div></div>"
 							            & "</div>"
 							            & "<div class='controls doc-filters'><div class='doc-filter'><label data-tip='" & vTipFiltroBusca & "'>Busca geral</label><input id='q' class='search' oninput='filtrarDoc()' placeholder='Buscar em todas as colunas'></div><div class='doc-filter'><label data-tip='" & vTipFiltroProduto & "'>Produto</label><input id='fDocProduto' oninput='filtrarDoc()' placeholder='Produto'></div><div class='doc-filter'><label data-tip='" & vTipFiltroJourney & "'>Journey</label><input id='fDocJourney' oninput='filtrarDoc()' placeholder='Journey'></div><div class='doc-filter'><label data-tip='" & vTipFiltroJob & "'>Job</label><input id='fDocJob' oninput='filtrarDoc()' placeholder='Job'></div><div class='doc-filter'><label data-tip='" & vTipFiltroCodigo & "'>Código</label><input id='fDocCodigo' oninput='filtrarDoc()' placeholder='Código'></div><div class='doc-filter'><label data-tip='" & vTipFiltroEtapa & "'>Etapa</label><input id='fDocEtapa' oninput='filtrarDoc()' placeholder='Etapa'></div><div class='doc-filter'><label data-tip='" & vTipFiltroStatus & "'>Status</label><select id='fDocStatus' onchange='filtrarDoc()'><option value=''>Todos</option><option value='Ativo'>Ativo</option><option value='Inativo'>Inativo</option></select></div><div class='doc-actions'><button class='btn' data-tip='" & vTipBotaoLimpar & "' onclick='limparFiltrosDoc()'>Limpar</button><button id='copy' class='btn' data-tip='" & vTipBotaoCopiar & "' onclick='copiarTabela()'>Copiar</button></div></div>"
-							            & "<div class='table-wrap'><table><thead><tr><th data-tip='" & vTipHeaderProd & "'>Produto</th><th data-tip='" & vTipHeaderJourney & "'>Journey</th><th data-tip='" & vTipHeaderJob & "'>Job</th><th data-tip='" & vTipHeaderCodigo & "'>Código</th><th data-tip='" & vTipHeaderCadastro & "'>Cadastro</th><th data-tip='" & vTipHeaderStatus & "'>Status</th><th data-tip='" & vTipHeaderEtapa & "'>Etapa Atual</th></tr></thead><tbody>" & IF ( ISBLANK ( vRowsHTML ), "<tr><td colspan='7'>Nenhum registro encontrado.</td></tr>", vRowsHTML ) & "</tbody></table><div id='docNoMatch' class='empty' style='display:none'>Nenhum registro encontrado para os filtros internos.</div></div>"
-							            & "<div class='foot'>Exibindo " & FORMAT ( vRowsVisiveis, vIntFormat ) & " de " & FORMAT ( vTotalRows, vIntFormat ) & " linhas. Se o total for maior que o limite, use slicers para reduzir o recorte.</div>"
+							            & "<div class='table-wrap'><table><thead><tr><th>#</th><th data-tip='" & vTipHeaderProd & "'>Produto</th><th data-tip='" & vTipHeaderJourney & "'>Journey</th><th data-tip='" & vTipHeaderJob & "'>Job</th><th data-tip='" & vTipHeaderCodigo & "'>Código</th><th data-tip='" & vTipHeaderCadastro & "'>Cadastro</th><th data-tip='" & vTipHeaderStatus & "'>Status</th><th data-tip='" & vTipHeaderEtapa & "'>Etapa Atual</th></tr></thead><tbody>" & IF ( ISBLANK ( vRowsHTML ), "<tr><td colspan='8'>Nenhum registro encontrado.</td></tr>", vRowsHTML ) & "</tbody></table><div id='docNoMatch' class='empty' style='display:none'>Nenhum registro encontrado para os filtros internos.</div></div>"
+							            & "<div class='foot'>Exibindo <span id='foot-vis' data-total='" & FORMAT ( vRowsVisiveis, vIntFormat ) & "'>" & FORMAT ( vRowsVisiveis, vIntFormat ) & "</span> de " & FORMAT ( vTotalRows, vIntFormat ) & " linhas. Se o total for maior que o limite, use slicers para reduzir o recorte.</div>"
 							        & "</div>"
 			```
 		displayFolder: HTML
@@ -701,7 +710,9 @@ table medidas_html
 				VAR vTopDetalhes = 12
 				VAR vCalendarStart = MIN ( 'dCalendar'[Date] )
 				VAR vCalendarEnd = MAX ( 'dCalendar'[Date] )
-				VAR vHasCalendarFilter = COUNTROWS ( 'dCalendar' ) < COUNTROWS ( ALL ( 'dCalendar' ) )
+				VAR vMinCalendarDate = CALCULATE ( MIN ( 'dCalendar'[Date] ), ALL ( 'dCalendar' ) )
+				VAR vMaxCalendarDate = CALCULATE ( MAX ( 'dCalendar'[Date] ), ALL ( 'dCalendar' ) )
+				VAR vHasCalendarFilter = ( vCalendarStart > vMinCalendarDate ) || ( vCalendarEnd < vMaxCalendarDate )
 				VAR vCalendarDates = VALUES ( 'dCalendar'[Date] )
 				VAR vHasJobFilter =
 				    ISFILTERED ( 'vw_powerbi_journeys_filhos_novos'[JOB] )
