@@ -1,4 +1,4 @@
-table medidas_html
+﻿table medidas_html
 	lineageTag: f371007f-daa0-4acf-919c-58dc35ff6b74
 
 	/// Cabeçalho executivo do dashboard Journey, baseado nas novas views de Journey e Jobs.
@@ -543,7 +543,7 @@ table medidas_html
 							VAR vDetalheAll =
 							    ADDCOLUMNS (
 							        vJobsBase,
-							        "__Etapa", VAR c = [__Codigo] RETURN COALESCE ( MAXX ( FILTER ( vAreas, [__PmvJob] = c ), [__Etapa] ), IF ( [__Fim] = 1, "SEM ETAPA", "INATIVO" ) ),
+							        "__Etapa", VAR c = [__Codigo] RETURN COALESCE ( MAXX ( FILTER ( vAreas, [__PmvJob] = c ), [__Etapa] ), "SEM ETAPA" ),
 							        "__Status", IF ( [__Fim] = 1, "Ativo", "Inativo" )
 							    )
 							VAR vDetalheTop = TOPN ( vLimiteLinhas, vDetalheAll, [__Data], DESC, [__Job], ASC )
@@ -798,12 +798,12 @@ table medidas_html
 				        "__Ativos", VAR p = [__ProdutoCodigo] RETURN COUNTROWS ( FILTER ( vJobsBase, [__ProdutoCodigo] = p && [__Fim] = 1 ) ),
 				        "__Empresas", VAR p = [__ProdutoCodigo] RETURN COUNTROWS ( DISTINCT ( SELECTCOLUMNS ( FILTER ( vJobsBase, [__ProdutoCodigo] = p && NOT ISBLANK ( [__ParCNPJ] ) ), "__ParCNPJ", [__ParCNPJ] ) ) ),
 				        "__EmpresasAtivas", VAR p = [__ProdutoCodigo] RETURN COUNTROWS ( DISTINCT ( SELECTCOLUMNS ( FILTER ( vJobsBase, [__ProdutoCodigo] = p && [__Fim] = 1 && NOT ISBLANK ( [__ParCNPJ] ) ), "__ParCNPJ", [__ParCNPJ] ) ) ),
-				        "__Onboarding", VAR p = [__ProdutoCodigo] VAR jobsP = SELECTCOLUMNS ( FILTER ( vJobsBase, [__ProdutoCodigo] = p && [__Fim] = 1 ), "__PmvJob", [__Codigo] ) RETURN COUNTROWS ( FILTER ( vAreas, [__PmvJob] IN jobsP && [__Etapa] IN { "CADASTRO", "PROCURAÇÃO ELETRÔNICA" } ) ),
-				        "__Checklist", VAR p = [__ProdutoCodigo] VAR jobsP = SELECTCOLUMNS ( FILTER ( vJobsBase, [__ProdutoCodigo] = p && [__Fim] = 1 ), "__PmvJob", [__Codigo] ) RETURN COUNTROWS ( FILTER ( vAreas, [__PmvJob] IN jobsP && [__Etapa] = "CHECKLIST" ) ),
-				        "__Operacao", VAR p = [__ProdutoCodigo] VAR jobsP = SELECTCOLUMNS ( FILTER ( vJobsBase, [__ProdutoCodigo] = p && [__Fim] = 1 ), "__PmvJob", [__Codigo] ) RETURN COUNTROWS ( FILTER ( vAreas, [__PmvJob] IN jobsP && [__Etapa] = "OPERAÇÃO" ) ),
-				        "__Negociacao", VAR p = [__ProdutoCodigo] VAR jobsP = SELECTCOLUMNS ( FILTER ( vJobsBase, [__ProdutoCodigo] = p && [__Fim] = 1 ), "__PmvJob", [__Codigo] ) RETURN COUNTROWS ( FILTER ( vAreas, [__PmvJob] IN jobsP && [__Etapa] = "NEGOCIAÇÃO" ) ),
-				        "__Implantacao", VAR p = [__ProdutoCodigo] VAR jobsP = SELECTCOLUMNS ( FILTER ( vJobsBase, [__ProdutoCodigo] = p && [__Fim] = 1 ), "__PmvJob", [__Codigo] ) RETURN COUNTROWS ( FILTER ( vAreas, [__PmvJob] IN jobsP && ( [__Etapa] IN { "IMP", "IMPLANTAÇÃO", "IMPLANTACAO" } || LEFT ( [__Etapa], 3 ) = "IMP" ) ) ),
-				        "__Fim", VAR p = [__ProdutoCodigo] VAR jobsP = SELECTCOLUMNS ( FILTER ( vJobsBase, [__ProdutoCodigo] = p && [__Fim] = 1 ), "__PmvJob", [__Codigo] ) RETURN COUNTROWS ( FILTER ( vAreas, [__PmvJob] IN jobsP && [__Etapa] = "FIM" ) ),
+				        "__Onboarding", VAR p = [__ProdutoCodigo] VAR jobsP = SELECTCOLUMNS ( FILTER ( vJobsBase, [__ProdutoCodigo] = p ), "__PmvJob", [__Codigo] ) RETURN COUNTROWS ( FILTER ( vAreas, [__PmvJob] IN jobsP && [__Etapa] IN { "CADASTRO", "PROCURAÇÃO ELETRÔNICA" } ) ),
+				        "__Checklist", VAR p = [__ProdutoCodigo] VAR jobsP = SELECTCOLUMNS ( FILTER ( vJobsBase, [__ProdutoCodigo] = p ), "__PmvJob", [__Codigo] ) RETURN COUNTROWS ( FILTER ( vAreas, [__PmvJob] IN jobsP && [__Etapa] = "CHECKLIST" ) ),
+				        "__Operacao", VAR p = [__ProdutoCodigo] VAR jobsP = SELECTCOLUMNS ( FILTER ( vJobsBase, [__ProdutoCodigo] = p ), "__PmvJob", [__Codigo] ) RETURN COUNTROWS ( FILTER ( vAreas, [__PmvJob] IN jobsP && [__Etapa] = "OPERAÇÃO" ) ),
+				        "__Negociacao", VAR p = [__ProdutoCodigo] VAR jobsP = SELECTCOLUMNS ( FILTER ( vJobsBase, [__ProdutoCodigo] = p ), "__PmvJob", [__Codigo] ) RETURN COUNTROWS ( FILTER ( vAreas, [__PmvJob] IN jobsP && [__Etapa] = "NEGOCIAÇÃO" ) ),
+				        "__Implantacao", VAR p = [__ProdutoCodigo] VAR jobsP = SELECTCOLUMNS ( FILTER ( vJobsBase, [__ProdutoCodigo] = p ), "__PmvJob", [__Codigo] ) RETURN COUNTROWS ( FILTER ( vAreas, [__PmvJob] IN jobsP && ( [__Etapa] IN { "IMP", "IMPLANTAÇÃO", "IMPLANTACAO" } || LEFT ( [__Etapa], 3 ) = "IMP" ) ) ),
+				        "__Fim", VAR p = [__ProdutoCodigo] VAR jobsP = SELECTCOLUMNS ( FILTER ( vJobsBase, [__ProdutoCodigo] = p ), "__PmvJob", [__Codigo] ) RETURN COUNTROWS ( FILTER ( vAreas, [__PmvJob] IN jobsP && [__Etapa] = "FIM" ) ),
 				        "__PJ360Credito", VAR p = [__ProdutoCodigo] RETURN SUMX ( FILTER ( vJobsBase, [__ProdutoCodigo] = p ), [__PJ360Credito] ),
 				        "__PJ360CreditoQtd", VAR p = [__ProdutoCodigo] RETURN COUNTROWS ( FILTER ( vJobsBase, [__ProdutoCodigo] = p && [__PJ360Credito] > 0 ) ),
 				        "__PJ360Honorario", VAR p = [__ProdutoCodigo] RETURN SUMX ( FILTER ( vJobsBase, [__ProdutoCodigo] = p ), [__PJ360Honorario] ),
