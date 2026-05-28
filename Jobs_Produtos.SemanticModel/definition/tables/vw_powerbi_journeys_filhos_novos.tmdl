@@ -53,6 +53,100 @@ table vw_powerbi_journeys_filhos_novos
 
 		annotation SummarizationSetBy = Automatic
 
+	column ParCNPJ
+		dataType: string
+		lineageTag: 609a497a-4f5b-4a2c-8d7e-bb7cd1635f46
+		summarizeBy: none
+		sourceColumn: ParCNPJ
+
+		annotation SummarizationSetBy = Automatic
+
+	column ParRazao
+		dataType: string
+		lineageTag: 15da48eb-5906-4486-962b-9e89ceda8a9b
+		summarizeBy: none
+		sourceColumn: ParRazao
+
+		annotation SummarizationSetBy = Automatic
+
+	column RT_JOB
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: c0856974-0420-4a20-b40c-75fe26118c0d
+		summarizeBy: none
+		sourceColumn: RT_JOB
+
+		annotation SummarizationSetBy = Automatic
+
+	column RT_PAI
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 001ea125-3d2b-4d1b-beef-e0031a7006bc
+		summarizeBy: none
+		sourceColumn: RT_PAI
+
+		annotation SummarizationSetBy = Automatic
+
+	column PERCENTUAL
+		dataType: double
+		lineageTag: 44a1de03-3223-41a4-a7ca-4dc6da5b9f78
+		summarizeBy: sum
+		sourceColumn: PERCENTUAL
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column SIMULACAO_CREDITO
+		dataType: double
+		lineageTag: 8ce6e919-6459-4601-8cc6-3875c6a84bde
+		summarizeBy: sum
+		sourceColumn: SIMULACAO_CREDITO
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column SIMULACAO_HONORARIO
+		dataType: double
+		lineageTag: 141673da-6613-4cad-856d-9f4dbd8031d0
+		summarizeBy: sum
+		sourceColumn: SIMULACAO_HONORARIO
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column RF_VALOR
+		dataType: double
+		lineageTag: cce4f087-e050-417b-9e0d-699d2a5c6b8c
+		summarizeBy: sum
+		sourceColumn: RF_VALOR
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column CREDITOS
+		dataType: double
+		lineageTag: 43392292-f593-4b1f-ae67-10d247d68970
+		summarizeBy: sum
+		sourceColumn: CREDITOS
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Honorarios
+		dataType: double
+		lineageTag: 49f21875-f0e7-4815-8f8d-5504ed5c92c2
+		summarizeBy: sum
+		sourceColumn: Honorarios
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
 	partition vw_powerbi_journeys_filhos_novos = m
 		mode: import
 		source =

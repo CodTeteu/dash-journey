@@ -7,6 +7,7 @@ table medidas_html
 				VAR vCalendarStart = MIN ( 'dCalendar'[Date] )
 				VAR vCalendarEnd = MAX ( 'dCalendar'[Date] )
 				VAR vHasCalendarFilter = COUNTROWS ( 'dCalendar' ) < COUNTROWS ( ALL ( 'dCalendar' ) )
+				VAR vCalendarDates = VALUES ( 'dCalendar'[Date] )
 				VAR vHasJobFilter =
 				    ISFILTERED ( 'vw_powerbi_journeys_filhos_novos'[JOB] )
 				        || ISFILTERED ( 'vw_powerbi_journeys_filhos_novos'[CODIGO] )
@@ -17,11 +18,9 @@ table medidas_html
 				        FILTER (
 				            ALLSELECTED ( 'vw_powerbi_journeys' ),
 				            NOT vHasCalendarFilter
-				                || (
-				                    'vw_powerbi_journeys'[DATA_CADASTRO] >= vCalendarStart
-				                        && 'vw_powerbi_journeys'[DATA_CADASTRO] < vCalendarEnd + 1
-				                )
+				                || CONTAINS ( vCalendarDates, 'dCalendar'[Date], DATE ( YEAR ( 'vw_powerbi_journeys'[DATA_CADASTRO] ), MONTH ( 'vw_powerbi_journeys'[DATA_CADASTRO] ), DAY ( 'vw_powerbi_journeys'[DATA_CADASTRO] ) ) )
 				        ),
+				        "__JourneyCodigo", 'vw_powerbi_journeys'[CODIGO],
 				        "__JourneyJob", 'vw_powerbi_journeys'[JOB],
 				        "__Fim", 'vw_powerbi_journeys'[FIM],
 				        "__Data", 'vw_powerbi_journeys'[DATA_CADASTRO]
@@ -32,10 +31,7 @@ table medidas_html
 				            FILTER (
 				                ALLSELECTED ( 'vw_powerbi_journeys_filhos_novos' ),
 				                NOT vHasCalendarFilter
-				                    || (
-				                        'vw_powerbi_journeys_filhos_novos'[DATA_CADASTRO] >= vCalendarStart
-				                            && 'vw_powerbi_journeys_filhos_novos'[DATA_CADASTRO] < vCalendarEnd + 1
-				                    )
+				                    || CONTAINS ( vCalendarDates, 'dCalendar'[Date], DATE ( YEAR ( 'vw_powerbi_journeys_filhos_novos'[DATA_CADASTRO] ), MONTH ( 'vw_powerbi_journeys_filhos_novos'[DATA_CADASTRO] ), DAY ( 'vw_powerbi_journeys_filhos_novos'[DATA_CADASTRO] ) ) )
 				            ),
 				            "__Codigo", 'vw_powerbi_journeys_filhos_novos'[CODIGO],
 				            "__Job", 'vw_powerbi_journeys_filhos_novos'[JOB],
@@ -44,7 +40,7 @@ table medidas_html
 				            "__Fim", 'vw_powerbi_journeys_filhos_novos'[FIM],
 				            "__Data", 'vw_powerbi_journeys_filhos_novos'[DATA_CADASTRO]
 				        ),
-				        "__ParentJob", VAR j = [__Job] RETURN LEFT ( j, SEARCH ( "-", j & "-", 1, LEN ( j ) + 1 ) - 1 )
+				        "__ParentJob", VAR j = COALESCE ( [__Job], "" ) RETURN LEFT ( j, SEARCH ( "-", j & "-", 1, LEN ( j ) + 1 ) - 1 )
 				    )
 				VAR vJobParents = DISTINCT ( SELECTCOLUMNS ( vJobsPeriod, "__JourneyJob", [__ParentJob] ) )
 			VAR vJourneysBase = FILTER ( vJourneysPeriod, NOT ( vHasJobFilter ) || [__JourneyJob] IN vJobParents )
@@ -87,11 +83,12 @@ table medidas_html
 		lineageTag: c4874ca8-7357-4c3e-b3e5-6180c4491f86
 
 	/// Documentação executiva da refatoração com as views vw_powerbi_journeys.
-	measure DOCUMENTACAO_DIAGNOSTICO_JOURNEY_HTML_V4_FORMAL_TODO_PERIODO = ```
+	measure DOCUMENTACAO_DIAGNOSTICO_JOURNEY_HTML_V4_FORMAL_TODO_PERIODO =
 			VAR vIntFormat = "#,##0"
 				VAR vCalendarStart = MIN ( 'dCalendar'[Date] )
 				VAR vCalendarEnd = MAX ( 'dCalendar'[Date] )
 				VAR vHasCalendarFilter = COUNTROWS ( 'dCalendar' ) < COUNTROWS ( ALL ( 'dCalendar' ) )
+				VAR vCalendarDates = VALUES ( 'dCalendar'[Date] )
 				VAR vHasJobFilter =
 				    ISFILTERED ( 'vw_powerbi_journeys_filhos_novos'[JOB] )
 				        || ISFILTERED ( 'vw_powerbi_journeys_filhos_novos'[CODIGO] )
@@ -102,11 +99,9 @@ table medidas_html
 				        FILTER (
 				            ALLSELECTED ( 'vw_powerbi_journeys' ),
 				            NOT vHasCalendarFilter
-				                || (
-				                    'vw_powerbi_journeys'[DATA_CADASTRO] >= vCalendarStart
-				                        && 'vw_powerbi_journeys'[DATA_CADASTRO] < vCalendarEnd + 1
-				                )
+				                || CONTAINS ( vCalendarDates, 'dCalendar'[Date], DATE ( YEAR ( 'vw_powerbi_journeys'[DATA_CADASTRO] ), MONTH ( 'vw_powerbi_journeys'[DATA_CADASTRO] ), DAY ( 'vw_powerbi_journeys'[DATA_CADASTRO] ) ) )
 				        ),
+				        "__JourneyCodigo", 'vw_powerbi_journeys'[CODIGO],
 				        "__JourneyJob", 'vw_powerbi_journeys'[JOB],
 				        "__Fim", 'vw_powerbi_journeys'[FIM]
 				    )
@@ -116,10 +111,7 @@ table medidas_html
 				            FILTER (
 				                ALLSELECTED ( 'vw_powerbi_journeys_filhos_novos' ),
 				                NOT vHasCalendarFilter
-				                    || (
-				                        'vw_powerbi_journeys_filhos_novos'[DATA_CADASTRO] >= vCalendarStart
-				                            && 'vw_powerbi_journeys_filhos_novos'[DATA_CADASTRO] < vCalendarEnd + 1
-				                    )
+				                    || CONTAINS ( vCalendarDates, 'dCalendar'[Date], DATE ( YEAR ( 'vw_powerbi_journeys_filhos_novos'[DATA_CADASTRO] ), MONTH ( 'vw_powerbi_journeys_filhos_novos'[DATA_CADASTRO] ), DAY ( 'vw_powerbi_journeys_filhos_novos'[DATA_CADASTRO] ) ) )
 				            ),
 				            "__Codigo", 'vw_powerbi_journeys_filhos_novos'[CODIGO],
 				            "__Job", 'vw_powerbi_journeys_filhos_novos'[JOB],
@@ -127,7 +119,7 @@ table medidas_html
 				            "__Produto", 'vw_powerbi_journeys_filhos_novos'[GppNome],
 				            "__Fim", 'vw_powerbi_journeys_filhos_novos'[FIM]
 				        ),
-				        "__ParentJob", VAR j = [__Job] RETURN LEFT ( j, SEARCH ( "-", j & "-", 1, LEN ( j ) + 1 ) - 1 )
+				        "__ParentJob", VAR j = COALESCE ( [__Job], "" ) RETURN LEFT ( j, SEARCH ( "-", j & "-", 1, LEN ( j ) + 1 ) - 1 )
 				    )
 				VAR vAreas =
 				    SELECTCOLUMNS (
@@ -145,7 +137,6 @@ table medidas_html
 				VAR vJourneysBase = FILTER ( vJourneysPeriod, NOT ( vHasJobFilter || vHasEtapaFilter ) || [__JourneyJob] IN vJobParents )
 				VAR vJourneyKeys = DISTINCT ( SELECTCOLUMNS ( vJourneysBase, "__ParentJob", [__JourneyJob] ) )
 				VAR vJobsBase = FILTER ( vJobsPeriodEtapa, [__ParentJob] IN vJourneyKeys )
-				
 				VAR vJourneys = COUNTROWS ( vJourneysBase )
 				VAR vJourneysAtivos = COUNTROWS ( FILTER ( vJourneysBase, [__Fim] = 1 ) )
 				VAR vJobs = COUNTROWS ( vJobsBase )
@@ -182,12 +173,10 @@ table medidas_html
 				.side-value{display:block;font-size:18px;color:#F4F7FA;font-weight:850;line-height:1.3}
 				.side-value.big{color:#F4D9A9;font-size:24px}
 				.side-small{color:#8B98A6;font-size:12px;line-height:1.4;margin-top:8px}
-				
 				.nav-menu{margin-top:20px;border-top:1px solid rgba(255,255,255,.08);padding-top:16px;display:flex;flex-direction:column;gap:8px}
 				.nav-item{display:flex;align-items:center;padding:10px 14px;border-radius:10px;color:#A8B4C0;text-decoration:none;font-size:12.5px;font-weight:800;background:rgba(255,255,255,.015);border:1px solid rgba(255,255,255,.04);transition:all .15s ease}
 				.nav-item:hover{color:#F4D9A9;background:rgba(213,174,119,.08);border-color:rgba(213,174,119,.25);transform:translateX(2px)}
 				.nav-item:before{content:'✦';color:#8BE0D1;margin-right:8px;font-size:10px}
-				
 				.doc-main{height:100%;background:linear-gradient(180deg,rgba(14, 23, 32, 0.95) 0%,rgba(9, 15, 21, 0.98) 100%);border:1px solid rgba(213,174,119,.20);border-radius:20px;box-shadow:0 20px 50px rgba(0,0,0,.50),inset 0 1px 0 rgba(255,255,255,.05);overflow:hidden;display:flex;flex-direction:column}
 				.doc-header{padding:22px 28px;border-bottom:1px solid rgba(213,174,119,.16);display:flex;align-items:center;justify-content:space-between;background:linear-gradient(90deg,rgba(255,255,255,.02),rgba(213,174,119,.02))}
 				.doc-header h1{margin:0;color:#F4D9A9;font-size:28px;font-weight:1000;letter-spacing:.05em;text-transform:uppercase}
@@ -232,7 +221,6 @@ table medidas_html
 				.callout{border-left:4px solid #D5AE77;background:rgba(213,174,119,.05);border-radius:8px;padding:16px;color:#DCE5EE;font-size:14px;line-height:1.5;margin:18px 0}
 				.callout.info{border-left-color:#8BE0D1;background:rgba(139,224,209,.04)}
 				.callout.alert{border-left-color:#FF9C93;background:rgba(255,156,147,.04)}
-				
 				.timeline{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin:24px 0;position:relative;padding-top:10px}
 				.timeline:before{content:'';position:absolute;top:30px;left:8%;right:8%;height:2px;background:rgba(255,255,255,.08);z-index:1}
 				.timeline-item{text-align:center;position:relative;z-index:2}
@@ -246,25 +234,20 @@ table medidas_html
 				.timeline-badge.fim{border-color:#7BEEA6;color:#7BEEA6;background:rgba(123,238,166,.1)}
 				.timeline-title{font-size:13px;font-weight:900;color:#F4D9A9;margin-bottom:4px;text-transform:uppercase;letter-spacing:.3px}
 				.timeline-desc{font-size:11px;color:#A8B4C0;line-height:1.3;padding:0 4px}
-				
 				.guide-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0}
 				.guide-card{background:rgba(255, 255, 255, 0.02);border:1px solid rgba(255, 255, 255, 0.06);border-radius:12px;padding:16px}
 				.guide-card h3{font-size:14px;color:#8BE0D1;margin-bottom:8px;text-transform:uppercase;font-weight:900}
-				
 				.faq-item{border-bottom:1px solid rgba(255, 255, 255, 0.05);padding:14px 0}
 				.faq-item:last-child{border-bottom:none;padding-bottom:0}
 				.faq-item:first-child{padding-top:0}
 				.faq-q{font-weight:900;color:#F4D9A9;margin-bottom:6px;font-size:14px}
 				.faq-a{color:#B7C2CD;font-size:13.5px;line-height:1.5}
-				
 				.footer-doc{margin-top:24px;padding-top:16px;border-top:1px solid rgba(255,255,255,.06);display:flex;justify-content:space-between;color:#6D7A86;font-size:12px;font-weight:700}
-				
 				[data-tip]{position:relative;cursor:default}.metric[data-tip]:hover{outline:1px solid rgba(244,217,169,.22);outline-offset:-1px}
 				.float-tip{position:fixed;z-index:2147483647;display:none;max-width:500px;min-width:280px;padding:16px 18px;border-radius:15px;background:linear-gradient(160deg,rgba(7,12,18,.99),rgba(15,27,36,.99));border:1px solid rgba(244,217,169,.45);color:#F4F7FA;font-family:'Segoe UI',Arial,sans-serif;font-size:15px;font-weight:800;line-height:1.5;text-align:left;box-shadow:0 18px 40px rgba(0,0,0,.48),0 0 0 1px rgba(139,224,209,.08),inset 0 1px 0 rgba(255,255,255,.07);pointer-events:none;white-space:normal}
 				.float-tip.on{display:block}
 				.float-tip b{color:#F4D9A9}
 				.float-tip code{color:#8BE0D1;font-family:Consolas,'Courier New',monospace;font-size:.95em}
-				
 				.dept-badge{display:inline-flex;align-items:center;justify-content:center;padding:4px 8px;border-radius:6px;font-size:11px;font-weight:900;text-transform:uppercase}
 				.dept-comercial{background:rgba(255,207,135,.12);color:#FFCF87;border:1px solid rgba(255,207,135,.25)}
 				.dept-backoffice{background:rgba(156,203,255,.12);color:#9CCBFF;border:1px solid rgba(156,203,255,.25)}
@@ -272,7 +255,6 @@ table medidas_html
 				.dept-operacao{background:rgba(139,224,209,.12);color:#8BE0D1;border:1px solid rgba(139,224,209,.25)}
 				.dept-financeiro{background:rgba(123,238,166,.12);color:#7BEEA6;border:1px solid rgba(123,238,166,.25)}
 				.dept-legal{background:rgba(203,156,255,.12);color:#D19CFF;border:1px solid rgba(203,156,255,.25)}
-				
 				.prod-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:16px 0}
 				.prod-card{background:rgba(255,255,255,.015);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:14px;transition:transform .15s ease,border-color .15s ease}
 				.prod-card:hover{transform:translateY(-2px);border-color:rgba(139,224,209,.3)}
@@ -280,10 +262,10 @@ table medidas_html
 				.prod-card p{font-size:11.5px;color:#B7C2CD;line-height:1.4;margin:0}
 				</style>
 				"
-				VAR vTipJourneys = "<b>JOURNEYS (JORNADAS PAI)</b><br/>Quantidade total de jornadas pai no período e filtros ativos.<br/><br/><b>Tabela Origem:</b> <code>vw_powerbi_journeys</code><br/><b>Colunas Usadas:</b> <code>CODIGO</code>, <code>JOB</code>, <code>DATA_CADASTRO</code>, <code>FIM</code><br/><b>Regra de Cálculo:</b> Conta as linhas da tabela de jornadas filtradas pela coluna <code>DATA_CADASTRO</code> no slicer de período. Se filtros de produto, job ou etapa estiverem ativos (tabela de jobs filhos), a listagem restringe-se apenas aos journeys vinculados a esses jobs correspondentes."
-				VAR vTipJourneysAtivos = "<b>JOURNEYS ATIVOS (FIM = 1)</b><br/>Quantidade de jornadas pai consideradas ativas no recorte selecionado.<br/><br/><b>Tabela Origem:</b> <code>vw_powerbi_journeys</code><br/><b>Colunas Usadas:</b> <code>CODIGO</code>, <code>JOB</code>, <code>DATA_CADASTRO</code>, <code>FIM</code><br/><b>Regra de Cálculo:</b> Filtra as jornadas do período pelo critério <code>vw_powerbi_journeys[FIM] = 1</code>. Respeita os filtros cruzados de produtos, jobs e etapas aplicados no painel."
-				VAR vTipJobs = "<b>JOBS (TRABALHOS FILHOS)</b><br/>Quantidade total de jobs filhos associados a jornadas no recorte selecionado.<br/><br/><b>Tabela Origem:</b> <code>vw_powerbi_journeys_filhos_novos</code><br/><b>Colunas Usadas:</b> <code>CODIGO</code>, <code>JOB</code>, <code>DATA_CADASTRO</code>, <code>CODIGO_PRODUTO</code>, <code>GppNome</code>, <code>FIM</code><br/><b>Regra de Cálculo:</b> Conta os jobs cujos pais (jornadas) estão no período de cadastro selecionado. Os jobs são cruzados com os filtros de produto e etapa aplicados."
-				VAR vTipJobsAtivos = "<b>JOBS ATIVOS (FIM = 1)</b><br/>Quantidade de jobs filhos com status ativo no recorte selecionado.<br/><br/><b>Tabela Origem:</b> <code>vw_powerbi_journeys_filhos_novos</code><br/><b>Colunas Usadas:</b> <code>CODIGO</code>, <code>JOB</code>, <code>DATA_CADASTRO</code>, <code>FIM</code><br/><b>Regra de Cálculo:</b> Filtra a lista de jobs do recorte pelo critério <code>vw_powerbi_journeys_filhos_novos[FIM] = 1</code>. A etapa atual mostrada na distribuição do produto é baseada apenas nestes jobs ativos."
+				VAR vTipJourneys = "<b>JOURNEYS PAI</b><br/>O que mostra: total de journeys pai no recorte atual.<br/><br/><b>Como calcula:</b> conta linhas de <code>vw_powerbi_journeys</code> filtradas por <code>DATA_CADASTRO</code> e pelos filtros ativos.<br/><b>Origem:</b> <code>CODIGO</code>, <code>JOB</code>, <code>DATA_CADASTRO</code>, <code>FIM</code>.<br/><b>Como interpretar:</b> volume de contas ou contratos principais analisados, não quantidade de serviços.<br/><b>Atenção:</b> quando há filtros de produto, job ou etapa, o vínculo com jobs filhos usa o prefixo de <code>vw_powerbi_journeys_filhos_novos[JOB]</code> comparado a <code>vw_powerbi_journeys[JOB]</code>."
+				VAR vTipJourneysAtivos = "<b>JOURNEYS ATIVOS (FIM = 1)</b><br/>O que mostra: journeys pai considerados ativos no recorte selecionado.<br/><br/><b>Como calcula:</b> filtra <code>vw_powerbi_journeys</code> pelo período e mantém apenas <code>FIM = 1</code>.<br/><b>Origem:</b> <code>vw_powerbi_journeys[JOB]</code>, <code>DATA_CADASTRO</code> e <code>FIM</code>.<br/><b>Como interpretar:</b> operação vigente em andamento na base principal.<br/><b>Atenção:</b> <code>FIM = 1</code> é a regra oficial de ativo neste modelo."
+				VAR vTipJobs = "<b>JOBS FILHOS</b><br/>O que mostra: total de serviços ou trabalhos filhos associados aos journeys do recorte.<br/><br/><b>Como calcula:</b> conta jobs em <code>vw_powerbi_journeys_filhos_novos</code> cujos pais existem no recorte de journeys.<br/><b>Origem:</b> <code>CODIGO</code>, <code>JOB</code>, <code>DATA_CADASTRO</code>, <code>CODIGO_PRODUTO</code>, <code>GppNome</code>, <code>FIM</code>.<br/><b>Como interpretar:</b> carga operacional total gerada pelos journeys.<br/><b>Atenção:</b> o pai é localizado pelo prefixo de <code>JOB</code> do filho, comparado com <code>vw_powerbi_journeys[JOB]</code>."
+				VAR vTipJobsAtivos = "<b>JOBS ATIVOS (FIM = 1)</b><br/>O que mostra: jobs filhos ativos no recorte selecionado.<br/><br/><b>Como calcula:</b> filtra <code>vw_powerbi_journeys_filhos_novos</code> pelo período, vínculo com journey e <code>FIM = 1</code>.<br/><b>Origem:</b> <code>CODIGO</code>, <code>JOB</code>, <code>DATA_CADASTRO</code> e <code>FIM</code>.<br/><b>Como interpretar:</b> volume de serviços que ainda demandam acompanhamento operacional.<br/><b>Atenção:</b> a distribuição de etapas usa apenas jobs ativos."
 				RETURN
 				    vCSS
 				        & "<div class='doc-page'><div class='doc-shell'><aside class='doc-sidebar'>"
@@ -292,7 +274,7 @@ table medidas_html
 				        & "<div class='side-card highlight'><span class='side-label'>Público Alvo</span><span class='side-value'>Diretoria e Gestores</span><div class='side-small'>Linguagem focada em tomada de decisão operacional e comercial.</div></div>"
 				        & "<div class='side-card'><span class='side-label'>Propósito Operacional</span><span class='side-value'>Diagnóstico Fiscal (Tax)</span><div class='side-small'>Acompanhamento dos serviços em andamento e identificação de gargalos.</div></div>"
 				        & "<div class='nav-menu'><span class='side-label'>Navegação Rápida</span>"
-				        & "<a href='#sec01' class='nav-item'>01. Jornadas vs. Serviços</a>"
+				        & "<a href='#sec01' class='nav-item'>01. Journey vs. Serviços</a>"
 				        & "<a href='#sec02' class='nav-item'>02. Regra da Versão Ativa</a>"
 				        & "<a href='#sec03' class='nav-item'>03. Ciclo de Vida & Funil</a>"
 				        & "<a href='#sec04' class='nav-item'>04. Matriz de SLA e Prazos</a>"
@@ -300,22 +282,23 @@ table medidas_html
 				        & "<a href='#sec06' class='nav-item'>06. Canais de Escalação</a>"
 				        & "<a href='#sec07' class='nav-item'>07. Guia de Ação Prática</a>"
 				        & "<a href='#sec08' class='nav-item'>08. Segurança & Monetização</a>"
-				        & "<a href='#sec09' class='nav-item'>09. Perguntas Frequentes</a>"
+				        & "<a href='#sec09' class='nav-item'>09. Regras Técnicas do Painel</a>"
+				        & "<a href='#sec10' class='nav-item'>10. Perguntas Frequentes</a>"
 				        & "</div>"
 				        & "</aside><main class='doc-main'><div class='doc-header'><div><h1>Documentação de Negócio · Diagnóstico Fiscal</h1><p>Entenda a lógica de funcionamento, os conceitos e como extrair o máximo valor do relatório. Recorte: <strong>" & vPeriodo & "</strong></p></div></div><div class='doc-scroll'>"
 				        & "<div class='metric-grid'>"
-				        & "<div class='metric primary' data-tip='" & vTipJourneys & "'><div class='metric-content'><span class='m-label'>Clientes (Journeys)</span><span class='m-value'>" & FORMAT ( vJourneys, vIntFormat ) & "</span><span class='m-note'>Volume total de contratos</span></div><div class='metric-side-badge'><div class='badge-val'>" & FORMAT ( vPctAtivosJourneys, "0.0%" ) & "</div><div class='badge-lbl'>Ativos</div></div></div>"
-				        & "<div class='metric' data-tip='" & vTipJourneysAtivos & "'><div class='metric-content'><span class='m-label'>Clientes Ativos</span><span class='m-value'>" & FORMAT ( vJourneysAtivos, vIntFormat ) & "</span><span class='m-note'>Operação vigente em andamento</span></div><div class='metric-side-badge'><div class='badge-val'>" & FORMAT ( vInativosJourneys, vIntFormat ) & "</div><div class='badge-lbl'>Históricos</div></div></div>"
-				        & "<div class='metric primary' data-tip='" & vTipJobs & "'><div class='metric-content'><span class='m-label'>Serviços (Jobs)</span><span class='m-value'>" & FORMAT ( vJobs, vIntFormat ) & "</span><span class='m-note'>Subprodutos solicitados</span></div><div class='metric-side-badge'><div class='badge-val'>" & FORMAT ( vCrossSell, "0.0" ) & "</div><div class='badge-lbl'>Jobs/Cliente</div></div></div>"
-				        & "<div class='metric' data-tip='" & vTipJobsAtivos & "'><div class='metric-content'><span class='m-label'>Serviços Ativos</span><span class='m-value'>" & FORMAT ( vJobsAtivos, vIntFormat ) & "</span><span class='m-note'>Carga de trabalho em execução</span></div><div class='metric-side-badge'><div class='badge-val'>" & FORMAT ( vPctAtivosJobs, "0.0%" ) & "</div><div class='badge-lbl'>Operando</div></div></div>"
+				        & "<div class='metric primary' data-tip='" & vTipJourneys & "'><div class='metric-content'><span class='m-label'>Journeys</span><span class='m-value'>" & FORMAT ( vJourneys, vIntFormat ) & "</span><span class='m-note'>Volume total de journeys</span></div><div class='metric-side-badge'><div class='badge-val'>" & FORMAT ( vPctAtivosJourneys, "0.0%" ) & "</div><div class='badge-lbl'>Ativos</div></div></div>"
+				        & "<div class='metric' data-tip='" & vTipJourneysAtivos & "'><div class='metric-content'><span class='m-label'>Journey Ativos</span><span class='m-value'>" & FORMAT ( vJourneysAtivos, vIntFormat ) & "</span><span class='m-note'>Operação vigente em andamento</span></div><div class='metric-side-badge'><div class='badge-val'>" & FORMAT ( vInativosJourneys, vIntFormat ) & "</div><div class='badge-lbl'>Históricos</div></div></div>"
+				        & "<div class='metric primary' data-tip='" & vTipJobs & "'><div class='metric-content'><span class='m-label'>Jobs</span><span class='m-value'>" & FORMAT ( vJobs, vIntFormat ) & "</span><span class='m-note'>Subprodutos solicitados</span></div><div class='metric-side-badge'><div class='badge-val'>" & FORMAT ( vCrossSell, "0.0" ) & "</div><div class='badge-lbl'>Jobs/Journey</div></div></div>"
+				        & "<div class='metric' data-tip='" & vTipJobsAtivos & "'><div class='metric-content'><span class='m-label'>Jobs Ativos</span><span class='m-value'>" & FORMAT ( vJobsAtivos, vIntFormat ) & "</span><span class='m-note'>Carga de trabalho em execução</span></div><div class='metric-side-badge'><div class='badge-val'>" & FORMAT ( vPctAtivosJobs, "0.0%" ) & "</div><div class='badge-lbl'>Operando</div></div></div>"
 				        & "</div>"
-				        & "<details class='doc-section' id='sec01' open><summary><span class='summary-title'>01. Conceito Central: Jornadas (Journeys) vs. Serviços (Jobs)</span><span class='summary-chevron'>›</span></summary><div class='section-body'>"
-				        & "<p>Para facilitar a interpretação dos volumes exibidos no relatório, é fundamental compreender a diferença entre os termos <strong>Jornada (Journey)</strong> e <strong>Serviço/Trabalho (Job)</strong>:</p>"
+				        & "<details class='doc-section' id='sec01' open><summary><span class='summary-title'>01. Conceito Central: Journey vs. Serviços (Jobs)</span><span class='summary-chevron'>›</span></summary><div class='section-body'>"
+				        & "<p>Para facilitar a interpretação dos volumes exibidos no relatório, é fundamental compreender a diferença entre os termos <strong>Journey</strong> e <strong>Serviço/Trabalho (Job)</strong>:</p>"
 				        & "<table class='doc-table'><thead><tr><th>Termo de Negócio</th><th>O que representa?</th><th>Exemplo Prático</th><th>Vínculo Técnico (Modelo de Dados)</th></tr></thead><tbody>"
-				        & "<tr><td><strong>Jornada (Journey)</strong></td><td>É o <strong>veículo contratual ou a conta principal</strong> do cliente. Representa a empresa parceira que iniciou um ciclo de diagnóstico com o Grupo Studio. Cada cliente possui apenas uma Jornada ativa na base principal.</td><td>Empresa ABC Ltda entra como um cliente de diagnóstico fiscal.</td><td>Chave identificadora única na tabela <code>vw_powerbi_journeys[JOB]</code>.</td></tr>"
-				        & "<tr><td><strong>Serviço / Trabalho (Job)</strong></td><td>São os <strong>subprodutos ou serviços individuais contratados</strong> sob a mesma Jornada. Uma única empresa (Jornada) pode contratar e ter em andamento diversos serviços tributários específicos de forma simultânea.</td><td>A mesma Empresa ABC Ltda executa em paralelo: <em>Diagnóstico de ICMS</em>, <em>Diagnóstico Previdenciário</em> e <em>Exclusão do ICMS da Base do PIS/COFINS</em>.</td><td>Registros filhos vinculados na tabela <code>vw_powerbi_journeys_filhos_novos[JOB]</code> através do código prefixo do pai.</td></tr>"
+				        & "<tr><td><strong>Journey</strong></td><td>É o <strong>veículo contratual ou a conta principal</strong> do cliente. Representa a empresa parceira que iniciou um ciclo de diagnóstico com o Grupo Studio. Cada cliente possui apenas um journey ativo na base principal.</td><td>Empresa ABC Ltda entra como um cliente de diagnóstico fiscal.</td><td>Chave técnica de vínculo na tabela <code>vw_powerbi_journeys[JOB]</code>.</td></tr>"
+				        & "<tr><td><strong>Serviço / Trabalho (Job)</strong></td><td>São os <strong>subprodutos ou serviços individuais contratados</strong> sob o mesmo journey. Uma única empresa (journey) pode contratar e ter em andamento diversos serviços tributários específicos de forma simultânea.</td><td>A mesma Empresa ABC Ltda executa em paralelo: <em>Diagnóstico de ICMS</em>, <em>Diagnóstico Previdenciário</em> e <em>Exclusão do ICMS da Base do PIS/COFINS</em>.</td><td>Registros filhos vinculados por DAX: extrai-se o prefixo de <code>vw_powerbi_journeys_filhos_novos[JOB]</code> e compara-se com <code>vw_powerbi_journeys[JOB]</code>.</td></tr>"
 				        & "</tbody></table>"
-				        & "<div class='callout info'><strong>Visão da Diretoria:</strong> Se você deseja saber quantos clientes únicos estamos atendendo, olhe para os indicadores de <strong>Jornadas (Journeys)</strong>. Se você quer entender o volume de entrega operacional e a carga de trabalho dos analistas fiscais, olhe para os indicadores de <strong>Serviços (Jobs)</strong>.</div>"
+				        & "<div class='callout info'><strong>Visão da Diretoria:</strong> Se você deseja saber quantos journeys estão no recorte, olhe para <strong>Journeys</strong>. Se você quer entender o volume de entrega operacional e a carga de trabalho dos analistas fiscais, olhe para <strong>Jobs</strong>. Para empresas únicas, a tabela principal usa CNPJs distintos em <code>ParCNPJ</code>.</div>"
 				        & "</div></details>"
 				        & "<details class='doc-section' id='sec02' open><summary><span class='summary-title'>02. A Regra da Versão Ativa (Por que filtramos por FIM = 1?)</span><span class='summary-chevron'>›</span></summary><div class='section-body'>"
 				        & "<p>No sistema operacional do Grupo Studio, sempre que um serviço passa por uma atualização cadastral, alteração de escopo, mudança de responsável ou readequação técnica, o sistema grava uma nova linha na base de dados para registrar o histórico (versionamento). Este mecanismo gera dois cenários:</p>"
@@ -412,7 +395,18 @@ table medidas_html
 				        & "<li><strong>Cruzamento Estritamente Matemático:</strong> A auditoria baseia-se no cruzamento eletrônico dos arquivos digitais (SPEDs e XMLs) que a própria empresa enviou originalmente ao fisco. O que fazemos é identificar erros de preenchimento ou pagamentos a maior gerados por erros de parametrização interna do cliente.</li>"
 				        & "</ul>"
 				        & "</div></details>"
-				        & "<details class='doc-section' id='sec09' open><summary><span class='summary-title'>09. Perguntas Frequentes (FAQ & Dúvidas Comuns)</span><span class='summary-chevron'>›</span></summary><div class='section-body'>"
+				        & "<details class='doc-section' id='sec09' open><summary><span class='summary-title'>09. Regras Técnicas do Painel</span><span class='summary-chevron'>›</span></summary><div class='section-body'>"
+				        & "<p>As regras abaixo documentam os cálculos atualmente aplicados no painel principal. O modelo permanece sem relacionamentos físicos; os filtros são resolvidos dentro das medidas DAX.</p>"
+				        & "<table class='doc-table'><thead><tr><th>Regra</th><th>Como é calculada</th><th>Observação</th></tr></thead><tbody>"
+				        & "<tr><td><strong>Período</strong></td><td>O slicer usa <code>dCalendar[Date]</code> e filtra as datas de cadastro das views por DAX.</td><td>A tabela <code>dCalendar</code> é explícita; auto date/time permanece desativado.</td></tr>"
+				        & "<tr><td><strong>Vínculo Journey x Job</strong></td><td>Extrai o prefixo de <code>vw_powerbi_journeys_filhos_novos[JOB]</code> e compara com <code>vw_powerbi_journeys[JOB]</code>.</td><td>O campo <code>CODIGO</code> dos journeys é o código da linha, mas não corresponde ao prefixo dos jobs filhos nesta base.</td></tr>"
+				        & "<tr><td><strong>Empresas</strong></td><td>Conta CNPJs únicos por produto usando <code>DISTINCTCOUNT</code> lógico sobre <code>ParCNPJ</code>.</td><td>O valor menor considera apenas jobs ativos (<code>FIM = 1</code>).</td></tr>"
+				        & "<tr><td><strong>Créditos</strong></td><td><code>CREDITOS</code>.</td><td><code>CREDITOS</code> é PROJECT. (Apenas PROJECT é exibido nos cards e colunas).</td></tr>"
+				        & "<tr><td><strong>Honorários</strong></td><td><code>Honorarios * (1 - PERCENTUAL / 100)</code>.</td><td>O desconto percentual é aplicado ao honorário PROJECT. (Apenas PROJECT é exibido nos cards e colunas).</td></tr>"
+				        & "<tr><td><strong>QTD financeira</strong></td><td>Conta jobs com valor preenchido e maior que zero em cada indicador.</td><td><code>RF_VALOR</code> existe no modelo, mas não é usado nesta versão.</td></tr>"
+				        & "</tbody></table>"
+				        & "</div></details>"
+				        & "<details class='doc-section' id='sec10' open><summary><span class='summary-title'>10. Perguntas Frequentes (FAQ & Dúvidas Comuns)</span><span class='summary-chevron'>›</span></summary><div class='section-body'>"
 				        & "  <div class='faq-item'><div class='faq-q'>Por que os números de cartões mudam quando aplico filtros de produtos?</div><div class='faq-a'>Diferente da estrutura antiga, a lógica atual calcula os números de forma dinâmica. Se você filtrar pelo produto <em>'Crédito Acumulado de ICMS'</em>, os cartões de Journeys e Jobs mostrarão apenas os contratos e serviços que pertencem a essa vertical. Isso garante visibilidade setorial real.</div></div>"
 				        & "  <div class='faq-item'><div class='faq-q'>O que muda de fato se eu desativar a limitação ao critério FIM = 1?</div><div class='faq-a'>A coluna <code>FIM</code> indica se aquela linha é a versão final ativa (<code>1</code>) ou um histórico inativo (<code>0</code>). Se você desativar esse filtro e contar todas as linhas indistintamente, o painel contará as versões históricas antigas do mesmo serviço. O resultado será um número inflado artificialmente, que não condiz com a quantidade de serviços que de fato correm na operação hoje. Mantê-la restrita ao <strong>FIM = 1</strong> é vital para a precisão estatística.</div></div>"
 				        & "  <div class='faq-item'><div class='faq-q'>E se eu deixar o status FIM = 0 ativado e disponível também, o que muda?</div><div class='faq-a'>Deixar ambos disponíveis permite ver toda a trilha de auditoria e versionamentos históricos na base. Isso é útil para auditoria pontual da TI (para saber quantas alterações um contrato sofreu), mas prejudica a leitura gerencial da diretoria, pois a soma geral de jobs ativos e inativos duplicará a contagem de clientes e serviços em andamento. No relatório gerencial, ocultamos o 0 por padrão para simplificar a visão executiva.</div></div>"
@@ -473,7 +467,6 @@ table medidas_html
 				        & "})();"
 				        & "</script>"
 				        & "</div></main></div></div>"
-			```
 		displayFolder: HTML
 		lineageTag: f12039a5-a0eb-4967-9a5c-c2c27638806e
 
@@ -484,6 +477,7 @@ table medidas_html
 							VAR vCalendarStart = MIN ( 'dCalendar'[Date] )
 							VAR vCalendarEnd = MAX ( 'dCalendar'[Date] )
 							VAR vHasCalendarFilter = COUNTROWS ( 'dCalendar' ) < COUNTROWS ( ALL ( 'dCalendar' ) )
+							VAR vCalendarDates = VALUES ( 'dCalendar'[Date] )
 							VAR vPeriodo =
 							    IF (
 							        vHasCalendarFilter,
@@ -500,11 +494,9 @@ table medidas_html
 							        FILTER (
 							            ALLSELECTED ( 'vw_powerbi_journeys' ),
 							            NOT vHasCalendarFilter
-							                || (
-							                    'vw_powerbi_journeys'[DATA_CADASTRO] >= vCalendarStart
-							                        && 'vw_powerbi_journeys'[DATA_CADASTRO] < vCalendarEnd + 1
-							                )
+							                || CONTAINS ( vCalendarDates, 'dCalendar'[Date], DATE ( YEAR ( 'vw_powerbi_journeys'[DATA_CADASTRO] ), MONTH ( 'vw_powerbi_journeys'[DATA_CADASTRO] ), DAY ( 'vw_powerbi_journeys'[DATA_CADASTRO] ) ) )
 							        ),
+							        "__JourneyCodigo", 'vw_powerbi_journeys'[CODIGO],
 							        "__JourneyJob", 'vw_powerbi_journeys'[JOB],
 							        "__Fim", 'vw_powerbi_journeys'[FIM]
 							    )
@@ -514,10 +506,7 @@ table medidas_html
 							            FILTER (
 							                ALLSELECTED ( 'vw_powerbi_journeys_filhos_novos' ),
 							                NOT vHasCalendarFilter
-							                    || (
-							                        'vw_powerbi_journeys_filhos_novos'[DATA_CADASTRO] >= vCalendarStart
-							                            && 'vw_powerbi_journeys_filhos_novos'[DATA_CADASTRO] < vCalendarEnd + 1
-							                    )
+							                    || CONTAINS ( vCalendarDates, 'dCalendar'[Date], DATE ( YEAR ( 'vw_powerbi_journeys_filhos_novos'[DATA_CADASTRO] ), MONTH ( 'vw_powerbi_journeys_filhos_novos'[DATA_CADASTRO] ), DAY ( 'vw_powerbi_journeys_filhos_novos'[DATA_CADASTRO] ) ) )
 							            ),
 							            "__Codigo", 'vw_powerbi_journeys_filhos_novos'[CODIGO],
 							            "__Job", 'vw_powerbi_journeys_filhos_novos'[JOB],
@@ -525,7 +514,8 @@ table medidas_html
 							            "__Produto", COALESCE ( 'vw_powerbi_journeys_filhos_novos'[GppNome], "Sem produto" ),
 							            "__Fim", 'vw_powerbi_journeys_filhos_novos'[FIM]
 							        ),
-							        "__Journey", VAR j = COALESCE ( [__Job], "" ) RETURN LEFT ( j, SEARCH ( "-", j & "-", 1, LEN ( j ) + 1 ) - 1 )
+							        "__Journey", VAR j = COALESCE ( [__Job], "" ) RETURN LEFT ( j, SEARCH ( "-", j & "-", 1, LEN ( j ) + 1 ) - 1 ),
+							        "__JourneyJob", VAR j = COALESCE ( [__Job], "" ) RETURN LEFT ( j, SEARCH ( "-", j & "-", 1, LEN ( j ) + 1 ) - 1 )
 							    )
 							VAR vAreas =
 							    SELECTCOLUMNS (
@@ -539,10 +529,10 @@ table medidas_html
 							        || ISFILTERED ( 'vw_powerbi_journeys_menor_area_novos'[PmvJob] )
 							VAR vAreaJobCodes = DISTINCT ( SELECTCOLUMNS ( vAreas, "__Codigo", [__PmvJob] ) )
 							VAR vJobsPeriodEtapa = FILTER ( vJobsPeriod, NOT vHasEtapaFilter || [__Codigo] IN vAreaJobCodes )
-							VAR vJobParents = DISTINCT ( SELECTCOLUMNS ( vJobsPeriodEtapa, "__JourneyJob", [__Journey] ) )
+							VAR vJobParents = DISTINCT ( SELECTCOLUMNS ( vJobsPeriodEtapa, "__JourneyJob", [__JourneyJob] ) )
 							VAR vJourneysBase = FILTER ( vJourneysPeriod, NOT ( vHasJobFilter || vHasEtapaFilter ) || [__JourneyJob] IN vJobParents )
 							VAR vJourneyKeys = DISTINCT ( SELECTCOLUMNS ( vJourneysBase, "__JourneyJob", [__JourneyJob] ) )
-							VAR vJobsBase = FILTER ( vJobsPeriodEtapa, [__Journey] IN vJourneyKeys )
+							VAR vJobsBase = FILTER ( vJobsPeriodEtapa, [__JourneyJob] IN vJourneyKeys )
 							VAR vDetalheAll =
 							    ADDCOLUMNS (
 							        vJobsBase,
@@ -662,30 +652,40 @@ table medidas_html
 							        [__Produto], ASC,
 							        [__Job], ASC
 							    )
-							VAR vTipJourneys = "<b>JOURNEYS (JORNADAS PAI)</b><br/>Quantidade total de jornadas pai no período e filtros ativos.<br/><br/><b>Tabela Origem:</b> <code>vw_powerbi_journeys</code><br/><b>Colunas Usadas:</b> <code>CODIGO</code>, <code>JOB</code>, <code>DATA_CADASTRO</code>, <code>FIM</code><br/><b>Regra de Cálculo:</b> Conta as linhas da tabela de jornadas filtradas pela coluna <code>DATA_CADASTRO</code> no slicer de período. Se filtros de produto, job ou etapa estiverem ativos (tabela de jobs filhos), a listagem restringe-se apenas aos journeys vinculados a esses jobs correspondentes."
-							VAR vTipJourneysAtivos = "<b>JOURNEYS ATIVOS (FIM = 1)</b><br/>Quantidade de jornadas pai consideradas ativas no recorte selecionado.<br/><br/><b>Tabela Origem:</b> <code>vw_powerbi_journeys</code><br/><b>Colunas Usadas:</b> <code>CODIGO</code>, <code>JOB</code>, <code>DATA_CADASTRO</code>, <code>FIM</code><br/><b>Regra de Cálculo:</b> Filtra as jornadas do período pelo critério <code>vw_powerbi_journeys[FIM] = 1</code>. Respeita os filtros cruzados de produtos, jobs e etapas aplicados no painel."
-							VAR vTipJobs = "<b>JOBS (TRABALHOS FILHOS)</b><br/>Quantidade total de jobs filhos associados a jornadas no recorte selecionado.<br/><br/><b>Tabela Origem:</b> <code>vw_powerbi_journeys_filhos_novos</code><br/><b>Colunas Usadas:</b> <code>CODIGO</code>, <code>JOB</code>, <code>DATA_CADASTRO</code>, <code>CODIGO_PRODUTO</code>, <code>GppNome</code>, <code>FIM</code><br/><b>Regra de Cálculo:</b> Conta os jobs cujos pais (jornadas) estão no período de cadastro selecionado. Os jobs são cruzados com os filtros de produto e etapa aplicados."
-							VAR vTipJobsAtivos = "<b>JOBS ATIVOS (FIM = 1)</b><br/>Quantidade de jobs filhos com status ativo no recorte selecionado.<br/><br/><b>Tabela Origem:</b> <code>vw_powerbi_journeys_filhos_novos</code><br/><b>Colunas Usadas:</b> <code>CODIGO</code>, <code>JOB</code>, <code>DATA_CADASTRO</code>, <code>FIM</code><br/><b>Regra de Cálculo:</b> Filtra a lista de jobs do recorte pelo critério <code>vw_powerbi_journeys_filhos_novos[FIM] = 1</code>. A etapa atual mostrada na distribuição do produto é baseada apenas nestes jobs ativos."
-							VAR vTipLinhas = "<b>LINHAS EXIBIDAS</b><br/>Quantidade total de jobs filhos retornados sob os filtros atuais e exibidos na tabela abaixo.<br/><br/><b>Origem:</b> Total de registros avaliados em tempo de execução no modelo sem o limite de paginação visual."
-							VAR vTipHeaderProd = "<b>PRODUTO (LINHA)</b><br/>Agrupamento dos jobs filhos por produto.<br/><br/><b>Tabela Origem:</b> <code>vw_powerbi_journeys_filhos_novos</code><br/><b>Coluna:</b> <code>GppNome</code>"
-							VAR vTipHeaderJourney = "<b>JOURNEY (JORNADA PAI)</b><br/>Identificador da jornada pai do job.<br/><br/><b>Tabela Origem:</b> <code>vw_powerbi_journeys</code><br/><b>Coluna:</b> <code>JOB</code>"
-							VAR vTipHeaderJob = "<b>JOB (IDENTIFICADOR DO JOB)</b><br/>Identificador único do job filho.<br/><br/><b>Tabela Origem:</b> <code>vw_powerbi_journeys_filhos_novos</code><br/><b>Coluna:</b> <code>JOB</code>"
-							VAR vTipHeaderCodigo = "<b>CÓDIGO DO JOB</b><br/>Código numérico chave do job filho.<br/><br/><b>Tabela Origem:</b> <code>vw_powerbi_journeys_filhos_novos</code><br/><b>Coluna:</b> <code>CODIGO</code>"
-							VAR vTipHeaderCadastro = "<b>DATA DE CADASTRO</b><br/>Data e hora de registro do job filho.<br/><br/><b>Tabela Origem:</b> <code>vw_powerbi_journeys_filhos_novos</code><br/><b>Coluna:</b> <code>DATA_CADASTRO</code>"
-							VAR vTipHeaderStatus = "<b>STATUS DO JOB</b><br/>Indica se o job está ativo ou inativo com base na regra oficial.<br/><br/><b>Tabela Origem:</b> <code>vw_powerbi_journeys_filhos_novos</code><br/><b>Regra:</b> Ativo se <code>FIM = 1</code>, Inativo se <code>FIM &lt;&gt; 1</code>"
-							VAR vTipHeaderEtapa = "<b>ETAPA ATUAL</b><br/>Menor área atual do job ativo.<br/><br/><b>Tabela Origem:</b> <code>vw_powerbi_journeys_menor_area_novos</code><br/><b>Colunas:</b> <code>ParNome</code>, <code>PmvJob</code>"
+							VAR vTipJourneys = "<b>JOURNEYS PAI</b><br/>O que mostra: total de journeys pai que chegam ao detalhe após slicers e filtros internos.<br/><br/><b>Como calcula:</b> conta <code>vw_powerbi_journeys</code> no período e restringe pelos jobs filhos quando produto, job ou etapa estão filtrados.<br/><b>Origem:</b> <code>JOB</code>, <code>DATA_CADASTRO</code>, <code>FIM</code>.<br/><b>Como interpretar:</b> universo de contas principais por trás das linhas detalhadas.<br/><b>Atenção:</b> o modelo não usa relacionamento físico; o vínculo é resolvido por DAX dentro da medida."
+							VAR vTipJourneysAtivos = "<b>JOURNEYS ATIVOS (FIM = 1)</b><br/>O que mostra: journeys pai ativos dentro do recorte detalhado.<br/><br/><b>Como calcula:</b> aplica <code>FIM = 1</code> sobre os journeys pai filtrados.<br/><b>Origem:</b> <code>vw_powerbi_journeys[FIM]</code>.<br/><b>Como interpretar:</b> contas principais vigentes, separadas do histórico.<br/><b>Atenção:</b> inativos aparecem como histórico e não representam operação vigente."
+							VAR vTipJobs = "<b>JOBS FILHOS</b><br/>O que mostra: total de jobs filhos listáveis no detalhe sob os filtros atuais.<br/><br/><b>Como calcula:</b> cruza jobs filhos com journeys pai pelo prefixo de <code>JOB</code> e aplica período, produto e etapa.<br/><b>Origem:</b> <code>vw_powerbi_journeys_filhos_novos</code>.<br/><b>Como interpretar:</b> volume operacional detalhável na tabela.<br/><b>Atenção:</b> pode ser maior que journeys porque um journey pode ter vários jobs."
+							VAR vTipJobsAtivos = "<b>JOBS ATIVOS (FIM = 1)</b><br/>O que mostra: jobs filhos ativos no detalhe.<br/><br/><b>Como calcula:</b> filtra a lista de jobs filhos por <code>FIM = 1</code> depois do cruzamento com journeys e etapas.<br/><b>Origem:</b> <code>vw_powerbi_journeys_filhos_novos[FIM]</code>.<br/><b>Como interpretar:</b> carga de trabalho que ainda deve ser acompanhada.<br/><b>Atenção:</b> etapa atual é considerada apenas para jobs ativos."
+							VAR vTipLinhas = "<b>LINHAS EXIBIDAS</b><br/>O que mostra: quantidade de registros de jobs filhos retornados e renderizados na tabela.<br/><br/><b>Como calcula:</b> avalia todos os registros do recorte e exibe até o limite técnico da página.<br/><b>Origem:</b> tabela virtual criada na medida HTML.<br/><b>Como interpretar:</b> tamanho da lista operacional disponível para consulta ou cópia.<br/><b>Atenção:</b> a página mantém <code>TOPN(3000)</code>; se o total exceder esse limite, reduza o recorte com slicers ou filtros internos."
+							VAR vTipHeaderProd = "<b>PRODUTO</b><br/>O que mostra: produto associado ao job filho.<br/><br/><b>Origem:</b> <code>vw_powerbi_journeys_filhos_novos[GppNome]</code>.<br/><b>Como interpretar:</b> linha de serviço tributário à qual o job pertence.<br/><b>Atenção:</b> valores em branco são tratados como <code>Sem produto</code> na medida."
+							VAR vTipHeaderJourney = "<b>JOURNEY PAI</b><br/>O que mostra: identificador do journey pai do job.<br/><br/><b>Como calcula:</b> extrai o prefixo do <code>JOB</code> filho antes do hífen e compara com <code>vw_powerbi_journeys[JOB]</code>.<br/><b>Origem:</b> <code>vw_powerbi_journeys[JOB]</code>.<br/><b>Como interpretar:</b> agrupa vários jobs sob a mesma conta principal."
+							VAR vTipHeaderJob = "<b>JOB FILHO</b><br/>O que mostra: identificador completo do job filho.<br/><br/><b>Origem:</b> <code>vw_powerbi_journeys_filhos_novos[JOB]</code>.<br/><b>Como interpretar:</b> item operacional específico executado dentro do journey.<br/><b>Atenção:</b> o prefixo antes do hífen indica o journey pai."
+							VAR vTipHeaderCodigo = "<b>CÓDIGO DO JOB</b><br/>O que mostra: chave numérica do job filho.<br/><br/><b>Origem:</b> <code>vw_powerbi_journeys_filhos_novos[CODIGO]</code>.<br/><b>Como interpretar:</b> identificador usado para vincular o job à menor área atual.<br/><b>Atenção:</b> este código não deve substituir o prefixo de <code>JOB</code> no vínculo Journey x Job."
+							VAR vTipHeaderCadastro = "<b>DATA DE CADASTRO</b><br/>O que mostra: data e hora de entrada do job filho na base.<br/><br/><b>Origem:</b> <code>vw_powerbi_journeys_filhos_novos[DATA_CADASTRO]</code>.<br/><b>Como interpretar:</b> referência temporal usada pelo slicer de período.<br/><b>Atenção:</b> o filtro de período usa a data de cadastro, não data de conclusão."
+							VAR vTipHeaderStatus = "<b>STATUS DO JOB</b><br/>O que mostra: se o job é ativo ou histórico.<br/><br/><b>Como calcula:</b> <code>FIM = 1</code> vira Ativo; outros valores viram Inativo.<br/><b>Origem:</b> <code>vw_powerbi_journeys_filhos_novos[FIM]</code>.<br/><b>Como interpretar:</b> ativos representam operação vigente; inativos representam histórico."
+							VAR vTipHeaderEtapa = "<b>ETAPA ATUAL</b><br/>O que mostra: menor área ou etapa atual do job ativo.<br/><br/><b>Como calcula:</b> busca <code>ParNome</code> em <code>vw_powerbi_journeys_menor_area_novos</code> via <code>PmvJob</code> = <code>CODIGO</code> do job.<br/><b>Como interpretar:</b> indica onde o job está parado ou em execução.<br/><b>Atenção:</b> jobs ativos sem área aparecem como <code>SEM ETAPA</code>."
+							VAR vTipVoltar = "<b>VOLTAR</b><br/>Retorna para a página principal do painel.<br/><br/><b>Como usar:</b> clique para navegar para a visão consolidada por produto.<br/><b>Atenção:</b> os slicers sincronizados continuam respeitando o recorte selecionado."
+							VAR vTipFiltroBusca = "<b>BUSCA GERAL</b><br/>Filtra a tabela por qualquer texto visível nas colunas exibidas.<br/><br/><b>Escopo:</b> produto, journey, job, código, cadastro, status e etapa."
+							VAR vTipFiltroProduto = "<b>FILTRO PRODUTO</b><br/>Filtra a tabela pelo nome do produto exibido na coluna Produto.<br/><br/><b>Origem:</b> <code>GppNome</code>."
+							VAR vTipFiltroJourney = "<b>FILTRO JOURNEY</b><br/>Filtra a tabela pelo identificador do journey pai.<br/><br/><b>Origem:</b> prefixo do <code>JOB</code> filho vinculado a <code>vw_powerbi_journeys[JOB]</code>."
+							VAR vTipFiltroJob = "<b>FILTRO JOB</b><br/>Filtra a tabela pelo identificador completo do job filho.<br/><br/><b>Origem:</b> <code>vw_powerbi_journeys_filhos_novos[JOB]</code>."
+							VAR vTipFiltroCodigo = "<b>FILTRO CÓDIGO</b><br/>Filtra a tabela pelo código numérico do job filho.<br/><br/><b>Origem:</b> <code>vw_powerbi_journeys_filhos_novos[CODIGO]</code>."
+							VAR vTipFiltroEtapa = "<b>FILTRO ETAPA</b><br/>Filtra a tabela pela etapa atual exibida.<br/><br/><b>Origem:</b> <code>vw_powerbi_journeys_menor_area_novos[ParNome]</code>."
+							VAR vTipFiltroStatus = "<b>FILTRO STATUS</b><br/>Filtra por Ativo ou Inativo conforme a regra <code>FIM = 1</code>.<br/><br/><b>Atenção:</b> Ativo representa operação vigente; Inativo representa histórico."
+							VAR vTipBotaoLimpar = "<b>LIMPAR FILTROS INTERNOS</b><br/>Remove apenas os filtros digitados nesta tabela HTML.<br/><br/><b>Atenção:</b> não altera slicers do Power BI."
+							VAR vTipBotaoCopiar = "<b>COPIAR TABELA</b><br/>Copia as linhas visíveis da tabela para a área de transferência em formato tabulado.<br/><br/><b>Atenção:</b> respeita os filtros internos aplicados."
 							RETURN
 							    vCSS
 							        & "<div class='wrap'>"
-							            & "<div class='head'><div><div class='title'>Detalhamento Journey x Jobs</div><div class='subtitle'>Detalhamento por produto, journey, job, status e etapa atual.</div></div><div class='period-container'><div class='btn-back'>‹ Voltar</div><div class='period'>" & vPeriodo & "</div></div></div>"
+							            & "<div class='head'><div><div class='title'>Detalhamento Journey x Jobs</div><div class='subtitle'>Detalhamento por produto, journey, job, status e etapa atual.</div></div><div class='period-container'><div class='btn-back' data-tip='" & vTipVoltar & "'>‹ Voltar</div><div class='period'>" & vPeriodo & "</div></div></div>"
 							            & "<div class='kpis'>"
-							                & "<div class='kpi primary' data-tip='" & vTipJourneys & "'><div class='kpi-content'><div class='kpi-label'>Clientes (Journeys)</div><div class='kpi-value'>" & FORMAT ( vJourneys, vIntFormat ) & "</div><div class='kpi-note'>Volume total de contratos</div></div><div class='kpi-side-badge'><div class='badge-val'>" & FORMAT ( vPctAtivosJourneys, "0.0%" ) & "</div><div class='badge-lbl'>Ativos</div></div></div>"
-							                & "<div class='kpi attention' data-tip='" & vTipJourneysAtivos & "'><div class='kpi-content'><div class='kpi-label'>Clientes Ativos</div><div class='kpi-value'>" & FORMAT ( vJourneysAtivos, vIntFormat ) & "</div><div class='kpi-note'>Operação vigente em andamento</div></div><div class='kpi-side-badge'><div class='badge-val'>" & FORMAT ( vInativosJourneys, vIntFormat ) & "</div><div class='badge-lbl'>Históricos</div></div></div>"
-							                & "<div class='kpi primary' data-tip='" & vTipJobs & "'><div class='kpi-content'><div class='kpi-label'>Serviços (Jobs)</div><div class='kpi-value'>" & FORMAT ( vJobs, vIntFormat ) & "</div><div class='kpi-note'>Subprodutos solicitados</div></div><div class='kpi-side-badge'><div class='badge-val'>" & FORMAT ( vCrossSell, "0.0" ) & "</div><div class='badge-lbl'>Jobs/Cliente</div></div></div>"
-							                & "<div class='kpi attention' data-tip='" & vTipJobsAtivos & "'><div class='kpi-content'><div class='kpi-label'>Serviços Ativos</div><div class='kpi-value'>" & FORMAT ( vJobsAtivos, vIntFormat ) & "</div><div class='kpi-note'>Carga de trabalho em execução</div></div><div class='kpi-side-badge'><div class='badge-val'>" & FORMAT ( vPctAtivosJobs, "0.0%" ) & "</div><div class='badge-lbl'>Operando</div></div></div>"
+							                & "<div class='kpi primary' data-tip='" & vTipJourneys & "'><div class='kpi-content'><div class='kpi-label'>Journeys</div><div class='kpi-value'>" & FORMAT ( vJourneys, vIntFormat ) & "</div><div class='kpi-note'>Volume total de journeys</div></div><div class='kpi-side-badge'><div class='badge-val'>" & FORMAT ( vPctAtivosJourneys, "0.0%" ) & "</div><div class='badge-lbl'>Ativos</div></div></div>"
+							                & "<div class='kpi attention' data-tip='" & vTipJourneysAtivos & "'><div class='kpi-content'><div class='kpi-label'>Journey Ativos</div><div class='kpi-value'>" & FORMAT ( vJourneysAtivos, vIntFormat ) & "</div><div class='kpi-note'>Operação vigente em andamento</div></div><div class='kpi-side-badge'><div class='badge-val'>" & FORMAT ( vInativosJourneys, vIntFormat ) & "</div><div class='badge-lbl'>Históricos</div></div></div>"
+							                & "<div class='kpi primary' data-tip='" & vTipJobs & "'><div class='kpi-content'><div class='kpi-label'>Jobs</div><div class='kpi-value'>" & FORMAT ( vJobs, vIntFormat ) & "</div><div class='kpi-note'>Subprodutos solicitados</div></div><div class='kpi-side-badge'><div class='badge-val'>" & FORMAT ( vCrossSell, "0.0" ) & "</div><div class='badge-lbl'>Jobs/Journey</div></div></div>"
+							                & "<div class='kpi attention' data-tip='" & vTipJobsAtivos & "'><div class='kpi-content'><div class='kpi-label'>Jobs Ativos</div><div class='kpi-value'>" & FORMAT ( vJobsAtivos, vIntFormat ) & "</div><div class='kpi-note'>Carga de trabalho em execução</div></div><div class='kpi-side-badge'><div class='badge-val'>" & FORMAT ( vPctAtivosJobs, "0.0%" ) & "</div><div class='badge-lbl'>Operando</div></div></div>"
 							                & "<div class='kpi' data-tip='" & vTipLinhas & "'><div class='kpi-content'><div class='kpi-label'>Linhas Exibidas</div><div class='kpi-value'><span id='vis' data-total='" & FORMAT ( vTotalRows, vIntFormat ) & "'>" & FORMAT ( vTotalRows, vIntFormat ) & "</span></div><div class='kpi-note'>Registros na tabela abaixo</div></div><div class='kpi-side-badge'><div class='badge-val'>Tabela</div><div class='badge-lbl'>Operacional</div></div></div>"
 							            & "</div>"
-							            & "<div class='controls doc-filters'><div class='doc-filter'><label>Busca geral</label><input id='q' class='search' oninput='filtrarDoc()' placeholder='Buscar em todas as colunas'></div><div class='doc-filter'><label>Produto</label><input id='fDocProduto' oninput='filtrarDoc()' placeholder='Produto'></div><div class='doc-filter'><label>Journey</label><input id='fDocJourney' oninput='filtrarDoc()' placeholder='Journey'></div><div class='doc-filter'><label>Job</label><input id='fDocJob' oninput='filtrarDoc()' placeholder='Job'></div><div class='doc-filter'><label>Código</label><input id='fDocCodigo' oninput='filtrarDoc()' placeholder='Código'></div><div class='doc-filter'><label>Etapa</label><input id='fDocEtapa' oninput='filtrarDoc()' placeholder='Etapa'></div><div class='doc-filter'><label>Status</label><select id='fDocStatus' onchange='filtrarDoc()'><option value=''>Todos</option><option value='Ativo'>Ativo</option><option value='Inativo'>Inativo</option></select></div><div class='doc-actions'><button class='btn' onclick='limparFiltrosDoc()'>Limpar</button><button id='copy' class='btn' onclick='copiarTabela()'>Copiar</button></div></div>"
+							            & "<div class='controls doc-filters'><div class='doc-filter'><label data-tip='" & vTipFiltroBusca & "'>Busca geral</label><input id='q' class='search' oninput='filtrarDoc()' placeholder='Buscar em todas as colunas'></div><div class='doc-filter'><label data-tip='" & vTipFiltroProduto & "'>Produto</label><input id='fDocProduto' oninput='filtrarDoc()' placeholder='Produto'></div><div class='doc-filter'><label data-tip='" & vTipFiltroJourney & "'>Journey</label><input id='fDocJourney' oninput='filtrarDoc()' placeholder='Journey'></div><div class='doc-filter'><label data-tip='" & vTipFiltroJob & "'>Job</label><input id='fDocJob' oninput='filtrarDoc()' placeholder='Job'></div><div class='doc-filter'><label data-tip='" & vTipFiltroCodigo & "'>Código</label><input id='fDocCodigo' oninput='filtrarDoc()' placeholder='Código'></div><div class='doc-filter'><label data-tip='" & vTipFiltroEtapa & "'>Etapa</label><input id='fDocEtapa' oninput='filtrarDoc()' placeholder='Etapa'></div><div class='doc-filter'><label data-tip='" & vTipFiltroStatus & "'>Status</label><select id='fDocStatus' onchange='filtrarDoc()'><option value=''>Todos</option><option value='Ativo'>Ativo</option><option value='Inativo'>Inativo</option></select></div><div class='doc-actions'><button class='btn' data-tip='" & vTipBotaoLimpar & "' onclick='limparFiltrosDoc()'>Limpar</button><button id='copy' class='btn' data-tip='" & vTipBotaoCopiar & "' onclick='copiarTabela()'>Copiar</button></div></div>"
 							            & "<div class='table-wrap'><table><thead><tr><th data-tip='" & vTipHeaderProd & "'>Produto</th><th data-tip='" & vTipHeaderJourney & "'>Journey</th><th data-tip='" & vTipHeaderJob & "'>Job</th><th data-tip='" & vTipHeaderCodigo & "'>Código</th><th data-tip='" & vTipHeaderCadastro & "'>Cadastro</th><th data-tip='" & vTipHeaderStatus & "'>Status</th><th data-tip='" & vTipHeaderEtapa & "'>Etapa Atual</th></tr></thead><tbody>" & IF ( ISBLANK ( vRowsHTML ), "<tr><td colspan='7'>Nenhum registro encontrado.</td></tr>", vRowsHTML ) & "</tbody></table><div id='docNoMatch' class='empty' style='display:none'>Nenhum registro encontrado para os filtros internos.</div></div>"
 							            & "<div class='foot'>Exibindo " & FORMAT ( vRowsVisiveis, vIntFormat ) & " de " & FORMAT ( vTotalRows, vIntFormat ) & " linhas. Se o total for maior que o limite, use slicers para reduzir o recorte.</div>"
 							        & "</div>"
@@ -702,6 +702,7 @@ table medidas_html
 				VAR vCalendarStart = MIN ( 'dCalendar'[Date] )
 				VAR vCalendarEnd = MAX ( 'dCalendar'[Date] )
 				VAR vHasCalendarFilter = COUNTROWS ( 'dCalendar' ) < COUNTROWS ( ALL ( 'dCalendar' ) )
+				VAR vCalendarDates = VALUES ( 'dCalendar'[Date] )
 				VAR vHasJobFilter =
 				    ISFILTERED ( 'vw_powerbi_journeys_filhos_novos'[JOB] )
 				        || ISFILTERED ( 'vw_powerbi_journeys_filhos_novos'[CODIGO] )
@@ -712,10 +713,7 @@ table medidas_html
 				        FILTER (
 				            ALLSELECTED ( 'vw_powerbi_journeys' ),
 				            NOT vHasCalendarFilter
-				                || (
-				                    'vw_powerbi_journeys'[DATA_CADASTRO] >= vCalendarStart
-				                        && 'vw_powerbi_journeys'[DATA_CADASTRO] < vCalendarEnd + 1
-				                )
+				                || CONTAINS ( vCalendarDates, 'dCalendar'[Date], DATE ( YEAR ( 'vw_powerbi_journeys'[DATA_CADASTRO] ), MONTH ( 'vw_powerbi_journeys'[DATA_CADASTRO] ), DAY ( 'vw_powerbi_journeys'[DATA_CADASTRO] ) ) )
 				        ),
 				        "__JourneyCodigo", 'vw_powerbi_journeys'[CODIGO],
 				        "__JourneyJob", 'vw_powerbi_journeys'[JOB],
@@ -728,19 +726,23 @@ table medidas_html
 				            FILTER (
 				                ALLSELECTED ( 'vw_powerbi_journeys_filhos_novos' ),
 				                NOT vHasCalendarFilter
-				                    || (
-				                        'vw_powerbi_journeys_filhos_novos'[DATA_CADASTRO] >= vCalendarStart
-				                            && 'vw_powerbi_journeys_filhos_novos'[DATA_CADASTRO] < vCalendarEnd + 1
-				                    )
+				                    || CONTAINS ( vCalendarDates, 'dCalendar'[Date], DATE ( YEAR ( 'vw_powerbi_journeys_filhos_novos'[DATA_CADASTRO] ), MONTH ( 'vw_powerbi_journeys_filhos_novos'[DATA_CADASTRO] ), DAY ( 'vw_powerbi_journeys_filhos_novos'[DATA_CADASTRO] ) ) )
 				            ),
 				            "__Codigo", 'vw_powerbi_journeys_filhos_novos'[CODIGO],
 				            "__Job", 'vw_powerbi_journeys_filhos_novos'[JOB],
 				            "__Data", 'vw_powerbi_journeys_filhos_novos'[DATA_CADASTRO],
 				            "__ProdutoCodigo", 'vw_powerbi_journeys_filhos_novos'[CODIGO_PRODUTO],
 				            "__Produto", COALESCE ( 'vw_powerbi_journeys_filhos_novos'[GppNome], "Sem produto" ),
-				            "__Fim", 'vw_powerbi_journeys_filhos_novos'[FIM]
+				            "__Fim", 'vw_powerbi_journeys_filhos_novos'[FIM],
+				            "__ParCNPJ", 'vw_powerbi_journeys_filhos_novos'[ParCNPJ],
+				            "__PctFinanceiro", COALESCE ( 'vw_powerbi_journeys_filhos_novos'[PERCENTUAL], 0 ),
+				            "__PJ360Credito", COALESCE ( 'vw_powerbi_journeys_filhos_novos'[SIMULACAO_CREDITO], 0 ),
+				            "__PJ360Honorario", COALESCE ( 'vw_powerbi_journeys_filhos_novos'[SIMULACAO_HONORARIO], 0 ),
+				            "__ProjectCredito", COALESCE ( 'vw_powerbi_journeys_filhos_novos'[CREDITOS], 0 ),
+				            "__ProjectHonorarioBruto", COALESCE ( 'vw_powerbi_journeys_filhos_novos'[Honorarios], 0 )
 				        ),
-				        "__ParentJob", VAR j = [__Job] RETURN LEFT ( j, SEARCH ( "-", j & "-", 1, LEN ( j ) + 1 ) - 1 )
+				        "__ParentJob", VAR j = COALESCE ( [__Job], "" ) RETURN LEFT ( j, SEARCH ( "-", j & "-", 1, LEN ( j ) + 1 ) - 1 ),
+				        "__ProjectHonorarioLiquido", [__ProjectHonorarioBruto] * ( 1 - DIVIDE ( [__PctFinanceiro], 100 ) )
 				    )
 				VAR vAreas =
 				    SELECTCOLUMNS (
@@ -766,6 +768,11 @@ table medidas_html
 				VAR vInativosJourneys = vJourneys - vJourneysAtivos
 				VAR vCrossSell = DIVIDE ( vJobsTotais, vJourneys, 0 )
 				VAR vPctAtivosJobs = DIVIDE ( vJobsAtivos, vJobsTotais, 0 )
+				VAR vTotalCreditos = SUMX ( vJobsBase, [__ProjectCredito] )
+				VAR vTotalHonorarios = SUMX ( vJobsBase, [__ProjectHonorarioLiquido] )
+				VAR vMoneyFormat = "R$ #,##0.00"
+				VAR vTotalCreditosFmt = IF ( ISBLANK ( vTotalCreditos ), "R$ -", FORMAT ( vTotalCreditos, vMoneyFormat ) )
+				VAR vTotalHonorariosFmt = IF ( ISBLANK ( vTotalHonorarios ), "R$ -", FORMAT ( vTotalHonorarios, vMoneyFormat ) )
 				VAR vPeriodo =
 				    IF (
 				        vHasCalendarFilter,
@@ -778,19 +785,36 @@ table medidas_html
 				        vProdutos,
 				        "__Jobs", VAR p = [__ProdutoCodigo] RETURN COUNTROWS ( FILTER ( vJobsBase, [__ProdutoCodigo] = p ) ),
 				        "__Ativos", VAR p = [__ProdutoCodigo] RETURN COUNTROWS ( FILTER ( vJobsBase, [__ProdutoCodigo] = p && [__Fim] = 1 ) ),
-				        "__Cadastro", VAR p = [__ProdutoCodigo] VAR jobsP = SELECTCOLUMNS ( FILTER ( vJobsBase, [__ProdutoCodigo] = p && [__Fim] = 1 ), "__PmvJob", [__Codigo] ) RETURN COUNTROWS ( FILTER ( vAreas, [__PmvJob] IN jobsP && [__Etapa] = "CADASTRO" ) ),
-				        "__Procuracao", VAR p = [__ProdutoCodigo] VAR jobsP = SELECTCOLUMNS ( FILTER ( vJobsBase, [__ProdutoCodigo] = p && [__Fim] = 1 ), "__PmvJob", [__Codigo] ) RETURN COUNTROWS ( FILTER ( vAreas, [__PmvJob] IN jobsP && [__Etapa] = "PROCURAÇÃO ELETRÔNICA" ) ),
+				        "__Empresas", VAR p = [__ProdutoCodigo] RETURN COUNTROWS ( DISTINCT ( SELECTCOLUMNS ( FILTER ( vJobsBase, [__ProdutoCodigo] = p && NOT ISBLANK ( [__ParCNPJ] ) ), "__ParCNPJ", [__ParCNPJ] ) ) ),
+				        "__EmpresasAtivas", VAR p = [__ProdutoCodigo] RETURN COUNTROWS ( DISTINCT ( SELECTCOLUMNS ( FILTER ( vJobsBase, [__ProdutoCodigo] = p && [__Fim] = 1 && NOT ISBLANK ( [__ParCNPJ] ) ), "__ParCNPJ", [__ParCNPJ] ) ) ),
+				        "__Onboarding", VAR p = [__ProdutoCodigo] VAR jobsP = SELECTCOLUMNS ( FILTER ( vJobsBase, [__ProdutoCodigo] = p && [__Fim] = 1 ), "__PmvJob", [__Codigo] ) RETURN COUNTROWS ( FILTER ( vAreas, [__PmvJob] IN jobsP && [__Etapa] IN { "CADASTRO", "PROCURAÇÃO ELETRÔNICA" } ) ),
 				        "__Checklist", VAR p = [__ProdutoCodigo] VAR jobsP = SELECTCOLUMNS ( FILTER ( vJobsBase, [__ProdutoCodigo] = p && [__Fim] = 1 ), "__PmvJob", [__Codigo] ) RETURN COUNTROWS ( FILTER ( vAreas, [__PmvJob] IN jobsP && [__Etapa] = "CHECKLIST" ) ),
 				        "__Operacao", VAR p = [__ProdutoCodigo] VAR jobsP = SELECTCOLUMNS ( FILTER ( vJobsBase, [__ProdutoCodigo] = p && [__Fim] = 1 ), "__PmvJob", [__Codigo] ) RETURN COUNTROWS ( FILTER ( vAreas, [__PmvJob] IN jobsP && [__Etapa] = "OPERAÇÃO" ) ),
-				        "__Reuniao", VAR p = [__ProdutoCodigo] VAR jobsP = SELECTCOLUMNS ( FILTER ( vJobsBase, [__ProdutoCodigo] = p && [__Fim] = 1 ), "__PmvJob", [__Codigo] ) RETURN COUNTROWS ( FILTER ( vAreas, [__PmvJob] IN jobsP && [__Etapa] = "REUNIÃO TÉCNICA" ) ),
-				        "__Fim", VAR p = [__ProdutoCodigo] VAR jobsP = SELECTCOLUMNS ( FILTER ( vJobsBase, [__ProdutoCodigo] = p && [__Fim] = 1 ), "__PmvJob", [__Codigo] ) RETURN COUNTROWS ( FILTER ( vAreas, [__PmvJob] IN jobsP && [__Etapa] = "FIM" ) )
+				        "__Negociacao", VAR p = [__ProdutoCodigo] VAR jobsP = SELECTCOLUMNS ( FILTER ( vJobsBase, [__ProdutoCodigo] = p && [__Fim] = 1 ), "__PmvJob", [__Codigo] ) RETURN COUNTROWS ( FILTER ( vAreas, [__PmvJob] IN jobsP && [__Etapa] = "NEGOCIAÇÃO" ) ),
+				        "__Implantacao", VAR p = [__ProdutoCodigo] VAR jobsP = SELECTCOLUMNS ( FILTER ( vJobsBase, [__ProdutoCodigo] = p && [__Fim] = 1 ), "__PmvJob", [__Codigo] ) RETURN COUNTROWS ( FILTER ( vAreas, [__PmvJob] IN jobsP && ( [__Etapa] IN { "IMP", "IMPLANTAÇÃO", "IMPLANTACAO" } || LEFT ( [__Etapa], 3 ) = "IMP" ) ) ),
+				        "__Fim", VAR p = [__ProdutoCodigo] VAR jobsP = SELECTCOLUMNS ( FILTER ( vJobsBase, [__ProdutoCodigo] = p && [__Fim] = 1 ), "__PmvJob", [__Codigo] ) RETURN COUNTROWS ( FILTER ( vAreas, [__PmvJob] IN jobsP && [__Etapa] = "FIM" ) ),
+				        "__PJ360Credito", VAR p = [__ProdutoCodigo] RETURN SUMX ( FILTER ( vJobsBase, [__ProdutoCodigo] = p ), [__PJ360Credito] ),
+				        "__PJ360CreditoQtd", VAR p = [__ProdutoCodigo] RETURN COUNTROWS ( FILTER ( vJobsBase, [__ProdutoCodigo] = p && [__PJ360Credito] > 0 ) ),
+				        "__PJ360Honorario", VAR p = [__ProdutoCodigo] RETURN SUMX ( FILTER ( vJobsBase, [__ProdutoCodigo] = p ), [__PJ360Honorario] ),
+				        "__PJ360HonorarioQtd", VAR p = [__ProdutoCodigo] RETURN COUNTROWS ( FILTER ( vJobsBase, [__ProdutoCodigo] = p && [__PJ360Honorario] > 0 ) ),
+				        "__ProjectCredito", VAR p = [__ProdutoCodigo] RETURN SUMX ( FILTER ( vJobsBase, [__ProdutoCodigo] = p ), [__ProjectCredito] ),
+				        "__ProjectCreditoQtd", VAR p = [__ProdutoCodigo] RETURN COUNTROWS ( FILTER ( vJobsBase, [__ProdutoCodigo] = p && [__ProjectCredito] > 0 ) ),
+				        "__ProjectHonorario", VAR p = [__ProdutoCodigo] RETURN SUMX ( FILTER ( vJobsBase, [__ProdutoCodigo] = p ), [__ProjectHonorarioLiquido] ),
+				        "__ProjectHonorarioQtd", VAR p = [__ProdutoCodigo] RETURN COUNTROWS ( FILTER ( vJobsBase, [__ProdutoCodigo] = p && [__ProjectHonorarioBruto] > 0 ) ),
+				        "__Creditos", VAR p = [__ProdutoCodigo] RETURN SUMX ( FILTER ( vJobsBase, [__ProdutoCodigo] = p ), [__ProjectCredito] ),
+				        "__Honorarios", VAR p = [__ProdutoCodigo] RETURN SUMX ( FILTER ( vJobsBase, [__ProdutoCodigo] = p ), [__ProjectHonorarioLiquido] )
 				    )
 				VAR vProductTop = TOPN ( vTopProdutos, vProductSummary, [__Jobs], DESC, [__Ativos], DESC, [__Produto], ASC )
 				VAR vCSS =
 				"
 				<style>
 				:root{--bg:#060A0F;--panel:#0E1720;--panel2:#121F2A;--line:rgba(255,255,255,.08);--gold:#F4D9A9;--gold2:#D5AE77;--teal:#8BE0D1;--text:#F4F7FA;--muted:#A8B4C0;--dim:#6D7A86;--red:#FF9C93;--green:#7BEEA6;--blue:#9CCBFF}.diag-wrap{font-family:'Segoe UI',Arial,sans-serif;width:100%;height:calc(100vh - 2px);box-sizing:border-box;color:var(--text);background:radial-gradient(circle at 0% 0%,rgba(213,174,119,.22),transparent 34%),radial-gradient(circle at 100% 0%,rgba(139,224,209,.14),transparent 30%),linear-gradient(135deg,#101A24 0%,#060A0F 100%);border:1px solid rgba(213,174,119,.32);border-radius:22px;overflow:auto;box-shadow:0 24px 70px rgba(0,0,0,.46)}.diag-wrap::-webkit-scrollbar{width:14px;height:12px}.diag-wrap::-webkit-scrollbar-track{background:#060A0F;border-radius:999px}.diag-wrap::-webkit-scrollbar-thumb{background:linear-gradient(180deg,rgba(244,217,169,.78),rgba(139,224,209,.44));border:3px solid #060A0F;border-radius:999px}.sticky{position:relative!important;z-index:2;background:rgba(8,13,19,.985);border-bottom:1px solid rgba(213,174,119,.22);box-shadow:0 12px 24px rgba(0,0,0,.24);overflow:visible}.diag-head{padding:16px 26px 22px;overflow:visible}.slicer-space{height:auto;min-height:76px;margin-bottom:14px;border-radius:18px;border:0;background:transparent;box-shadow:none;padding:12px 0;display:flex;justify-content:flex-end;align-items:center}.detailbar{width:430px;display:flex;justify-content:stretch;align-items:center}.detail-pill{height:38px;width:100%;display:flex;align-items:center;justify-content:center;border-radius:11px;border:1px solid rgba(213,174,119,.42);background:linear-gradient(135deg,rgba(213,174,119,.16),rgba(139,224,209,.08));color:var(--gold);font-size:12px;font-weight:1000;letter-spacing:.08em;text-transform:uppercase;box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 10px 20px rgba(0,0,0,.16)}.detail-pill span{color:var(--teal);margin-left:7px}.kpis{display:grid;grid-template-columns:repeat(4,minmax(210px,1fr));gap:12px;overflow:visible}.kpi{position:relative;min-width:0;padding:15px 20px 14px;border-radius:18px;background:linear-gradient(155deg,rgba(18,31,42,.98),rgba(9,15,21,.96));border:1px solid rgba(255,255,255,.10);box-shadow:0 18px 34px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.06);overflow:visible;display:flex;align-items:center;justify-content:space-between;gap:12px}.kpi:before{content:'';position:absolute;left:18px;top:0;width:56px;height:5px;border-radius:0 0 10px 10px;background:linear-gradient(90deg,var(--gold),var(--teal))}.kpi.primary{border-color:rgba(213,174,119,.46);background:linear-gradient(155deg,rgba(213,174,119,.18),rgba(18,31,42,.98) 38%,rgba(9,15,21,.96))}.kpi.attention{border-color:rgba(139,224,209,.32);background:linear-gradient(155deg,rgba(139,224,209,.13),rgba(18,31,42,.98) 38%,rgba(9,15,21,.96))}.kpi-content{min-width:0;flex:1;display:flex;flex-direction:column;align-items:flex-start}.kpi-label{color:var(--muted);font-size:11.5px;font-weight:1000;letter-spacing:.09em;text-transform:uppercase}.kpi-value{margin-top:10px;color:var(--gold);font-size:34px;font-weight:1000;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.kpi-note{margin-top:8px;color:var(--dim);font-size:12px;font-weight:850;line-height:1.25}.kpi-side-badge{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 12px;border-radius:12px;background:linear-gradient(135deg,rgba(213,174,119,.08),rgba(139,224,209,.04));border:1px solid rgba(213,174,119,.18);min-width:96px;text-align:center;transition:all .15s ease}.kpi-side-badge .badge-val{color:var(--gold);font-size:17px;font-weight:1000;line-height:1.15}.kpi-side-badge .badge-lbl{color:var(--muted);font-size:9.5px;font-weight:1000;text-transform:uppercase;letter-spacing:.05em;margin-top:4px}.kpi:hover .kpi-side-badge{background:linear-gradient(135deg,rgba(213,174,119,.16),rgba(139,224,209,.07));border-color:var(--gold2);transform:scale(1.03)}.table-head,.row-grid{display:grid;grid-template-columns:340px repeat(8,minmax(105px,.9fr))!important;min-width:1280px!important}.rows{min-width:1280px!important}.table-head{position:sticky!important;top:0!important;z-index:65;background:linear-gradient(180deg,#0F1923 0%,#0A121A 100%);border-bottom:1px solid rgba(213,174,119,.18);box-shadow:0 14px 26px rgba(0,0,0,.35);overflow:visible}.table-head div{padding:13px 10px;color:var(--gold2);font-size:12.8px;line-height:1.16;font-weight:1000;text-transform:uppercase;letter-spacing:.09em;text-align:center;border-right:1px solid rgba(255,255,255,.035);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.table-head div:first-child{text-align:left;padding-left:24px}.diag-row{border-bottom:1px solid rgba(255,255,255,.055);position:relative;z-index:1;overflow:visible}.diag-row summary{list-style:none;cursor:pointer}.diag-row summary::-webkit-details-marker{display:none}.row-grid{align-items:stretch;background:linear-gradient(90deg,rgba(11,18,25,.92) 0%,rgba(6,13,20,.96) 100%)}.row-grid:hover{background:linear-gradient(90deg,rgba(18,27,35,.96) 0%,rgba(7,15,23,.98) 100%)}.prod-cell{position:relative;min-height:92px;padding:10px 14px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;min-width:0}.prod-title{color:#FFF7EC;font-size:18px;font-weight:1000;line-height:1.16;margin-bottom:7px}.prod-sub{margin-top:0;color:#AEB9C4;font-size:12.5px;line-height:1.28;font-weight:800}.prod-progress{margin-top:10px;width:100%;height:6px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}.prod-progress span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#F4D9A9 0%,#8BE0D1 100%)}.metric{position:relative;display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:92px;text-align:center;padding:8px 6px;gap:4px;border-left:1px solid rgba(255,255,255,.06);background:transparent;min-width:0}.metric:hover{background:rgba(255,255,255,.02);box-shadow:inset 0 0 0 1px rgba(255,255,255,.03)}.metric b{color:var(--text);font-size:21px;line-height:1.05;font-weight:1000;white-space:nowrap}.metric small{margin-top:0;color:#95A2AF;font-size:10.6px;line-height:1.18;font-weight:950;text-transform:uppercase;letter-spacing:.04em}.metric.active b{color:#8BE0D1}.metric.cad b{color:#A8B4C0}.metric.proc b{color:#9CCBFF}.metric.check b{color:#F4D9A9}.metric.oper b{color:#FFCF87}.metric.reu b{color:#8BE0D1}.metric.fim b{color:#B4BBC4}.details{display:grid;grid-template-columns:1fr 1fr;gap:18px;padding:14px 16px 16px;background:rgba(2,7,12,.44);border-top:1px solid rgba(213,174,119,.16)}.card{border:1px solid rgba(213,174,119,.18);background:rgba(255,255,255,.04);border-radius:18px;padding:16px;min-width:0}.card-title{color:var(--gold);font-size:12px;font-weight:1000;letter-spacing:.06em;text-transform:uppercase;margin-bottom:13px}.stage-line{display:grid;grid-template-columns:155px 1fr 70px 68px;align-items:center;gap:10px;min-height:36px;border-bottom:1px solid rgba(255,255,255,.055);font-size:14px;font-weight:850}.bar{height:9px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden}.bar span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--gold2),var(--teal))}.num{text-align:right;font-weight:1000;color:#fff}.pcttxt{text-align:right;color:var(--muted);font-size:10.5px;font-weight:950}.det-head,.det-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;align-items:center}.det-head{color:var(--gold2);font-size:11.5px;font-weight:1000;text-transform:uppercase;letter-spacing:.055em;padding-bottom:9px;border-bottom:1px solid rgba(213,174,119,.18)}.det-row{min-height:38px;color:#E8EEF5;font-size:13.5px;font-weight:820;border-bottom:1px solid rgba(255,255,255,.05)}.det-row div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.chip{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;padding:5px 9px;font-size:11px;font-weight:1000;text-transform:uppercase;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:#8BE0D1}.empty{margin:24px;padding:34px;border:1px dashed rgba(213,174,119,.30);border-radius:18px;color:var(--muted);text-align:center;font-size:18px;font-weight:900}.foot{padding:12px 24px 26px;color:var(--dim);font-size:13px;font-weight:800}.det-rows-scroll{max-height:240px;overflow-y:auto;overflow-x:hidden;padding-right:4px}@media(max-width:1000px){.kpis{grid-template-columns:repeat(4,minmax(210px,1fr));overflow-x:auto}.details{grid-template-columns:1fr}.table-head,.row-grid{grid-template-columns:300px repeat(8,minmax(98px,.9fr))!important;min-width:1160px!important}.rows{min-width:1160px!important}.detailbar{width:360px}.slicer-space{min-height:96px}}
-				[data-tip]{position:relative;cursor:default}.kpi[data-tip]:hover,.metric[data-tip]:hover,.prod-cell[data-tip]:hover,.table-head div[data-tip]:hover,.stage-line[data-tip]:hover{outline:1px solid rgba(244,217,169,.22);outline-offset:-1px}.float-tip{position:fixed;z-index:2147483647;display:none;max-width:500px;min-width:280px;padding:16px 18px;border-radius:15px;background:linear-gradient(160deg,rgba(7,12,18,.99),rgba(15,27,36,.99));border:1px solid rgba(244,217,169,.45);color:#F4F7FA;font-family:'Segoe UI',Arial,sans-serif;font-size:15px;font-weight:800;line-height:1.5;text-align:left;box-shadow:0 18px 40px rgba(0,0,0,.48),0 0 0 1px rgba(139,224,209,.08),inset 0 1px 0 rgba(255,255,255,.07);pointer-events:none;white-space:normal}.float-tip.on{display:block}.float-tip b{color:#F4D9A9}.float-tip code{color:#8BE0D1;font-family:Consolas,'Courier New',monospace;font-size:.95em}
+				[data-tip]{position:relative;cursor:default}.kpi[data-tip]:hover,.metric[data-tip]:hover,.prod-cell[data-tip]:hover,.table-head div[data-tip]:hover,.stage-line[data-tip]:hover,.finance-cell[data-tip]:hover,.finance-note[data-tip]:hover,.card-title[data-tip]:hover{outline:1px solid rgba(244,217,169,.22);outline-offset:-1px}.float-tip{position:fixed;z-index:2147483647;display:none;max-width:500px;min-width:280px;padding:16px 18px;border-radius:15px;background:linear-gradient(160deg,rgba(7,12,18,.99),rgba(15,27,36,.99));border:1px solid rgba(244,217,169,.45);color:#F4F7FA;font-family:'Segoe UI',Arial,sans-serif;font-size:15px;font-weight:800;line-height:1.5;text-align:left;box-shadow:0 18px 40px rgba(0,0,0,.48),0 0 0 1px rgba(139,224,209,.08),inset 0 1px 0 rgba(255,255,255,.07);pointer-events:none;white-space:normal}.float-tip.on{display:block}.float-tip b{color:#F4D9A9}.float-tip code{color:#8BE0D1;font-family:Consolas,'Courier New',monospace;font-size:.95em}
+				.kpis{grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}.kpi{padding:15px 14px 14px}.kpi-label{font-size:10.5px;letter-spacing:.07em}.kpi-value{font-size:28px}.primary .kpi-value{font-size:30px}.money .kpi-value{font-size:25px}.kpi-note,.kpi-side-badge{display:none!important}.table-head,.row-grid{grid-template-columns:300px 112px 118px repeat(8,minmax(94px,.82fr))!important;min-width:1260px!important}.rows{min-width:1260px!important}.metric b{font-size:22px}.metric small{font-size:12px;line-height:1.24}.metric.money b{font-size:18px}
+				.details{grid-template-columns:1.05fr .95fr;gap:22px;padding:20px 20px 22px;background:radial-gradient(circle at 8% 0%,rgba(213,174,119,.14),transparent 30%),rgba(2,7,12,.56)}.card{position:relative;border-radius:22px;padding:22px 22px 20px;background:linear-gradient(155deg,rgba(18,31,42,.96),rgba(6,12,18,.94));border:1px solid rgba(244,217,169,.26);box-shadow:0 18px 42px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.06);overflow:hidden}.card:before{content:'';position:absolute;left:22px;top:0;width:74px;height:5px;border-radius:0 0 12px 12px;background:linear-gradient(90deg,var(--gold),var(--teal))}.card-title{display:flex;align-items:center;justify-content:space-between;color:var(--gold);font-size:17px;font-weight:1000;letter-spacing:.09em;text-transform:uppercase;margin-bottom:18px}.card-title .card-sub{color:var(--muted);font-size:11px;font-weight:950;letter-spacing:.08em}.stage-line{grid-template-columns:180px 1fr 88px 78px;gap:14px;min-height:58px;padding:0 2px;border-bottom:1px solid rgba(255,255,255,.075);font-size:18px;font-weight:950}.stage-line>div:first-child{color:#F7E8CC;text-transform:uppercase;letter-spacing:.045em}.stage-line .bar{height:14px;background:rgba(255,255,255,.095);box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}.stage-line .bar span{background:linear-gradient(90deg,#D5AE77 0%,#F4D9A9 38%,#8BE0D1 100%);box-shadow:0 0 18px rgba(139,224,209,.28)}.stage-line .num{color:#fff;font-size:24px;font-weight:1000}.stage-line .pcttxt{color:#8BE0D1;font-size:15px;font-weight:1000}.finance-card{border-color:rgba(139,224,209,.28);background:radial-gradient(circle at 86% 0%,rgba(139,224,209,.13),transparent 30%),linear-gradient(155deg,rgba(18,31,42,.98),rgba(5,10,16,.96))}.finance-grid{display:grid;grid-template-columns:150px repeat(4,1fr);border:1px solid rgba(244,217,169,.18);border-radius:18px;overflow:hidden;background:rgba(255,255,255,.025);box-shadow:inset 0 1px 0 rgba(255,255,255,.045)}.finance-cell{min-height:58px;display:flex;align-items:center;justify-content:center;padding:10px;border-right:1px solid rgba(255,255,255,.065);border-bottom:1px solid rgba(255,255,255,.065);font-size:17px;font-weight:950;color:#F4F7FA;text-align:center}.finance-cell.group{min-height:40px;color:#081018;background:linear-gradient(135deg,#F4D9A9,#8BE0D1);font-size:14px;font-weight:1000;text-transform:uppercase;letter-spacing:.11em}.finance-cell.sub{min-height:38px;color:var(--gold);background:rgba(213,174,119,.08);font-size:13px;font-weight:1000;text-transform:uppercase;letter-spacing:.10em}.finance-cell.row-label{justify-content:flex-start;color:#F7E8CC;background:rgba(244,217,169,.055);font-size:18px;text-transform:uppercase;letter-spacing:.06em}.finance-cell.placeholder{color:#A8B4C0;font-size:20px;font-weight:1000}.finance-note{margin-top:16px;color:#83909D;font-size:13px;font-weight:850;line-height:1.35}.finance-note b{color:var(--gold)}
+				.kpi{min-height:92px;border-radius:22px;border:1px solid rgba(244,217,169,.34);background:radial-gradient(circle at 15% 0%,rgba(244,217,169,.22),transparent 34%),linear-gradient(150deg,rgba(18,31,42,.99),rgba(5,10,16,.98));box-shadow:0 22px 48px rgba(0,0,0,.38),0 0 0 1px rgba(139,224,209,.06),inset 0 1px 0 rgba(255,255,255,.08);isolation:isolate}.kpi:after{content:'';position:absolute;inset:1px;border-radius:21px;background:linear-gradient(135deg,rgba(255,255,255,.08),transparent 42%);pointer-events:none;z-index:-1}.kpi-label{font-size:12px!important;color:#F4D9A9!important;text-shadow:0 1px 8px rgba(244,217,169,.18)}.kpi-value{font-size:30px!important;text-shadow:0 2px 18px rgba(244,217,169,.20)}.primary .kpi-value{font-size:32px!important}.money .kpi-value{font-size:26px!important}.card{border-radius:24px;border-color:rgba(244,217,169,.34);box-shadow:0 22px 54px rgba(0,0,0,.36),0 0 0 1px rgba(139,224,209,.06),inset 0 1px 0 rgba(255,255,255,.08)}.card-title{font-size:18.5px}.details .stage-line{grid-template-columns:190px 1fr 76px 64px;gap:11px;min-height:45px;font-size:14.2px}.details .stage-line .bar{height:10px}.details .stage-line .num{font-size:18.5px}.details .stage-line .pcttxt{font-size:12px}.finance-cell{min-height:47px;font-size:14px}.finance-cell.group{min-height:34px;font-size:12px}.finance-cell.sub{min-height:32px;font-size:11px}.finance-cell.row-label{font-size:14.5px}.finance-cell.placeholder{font-size:15.5px}.finance-note{font-size:11.5px}
+				.kpi{min-height:106px;padding:18px 16px 16px!important;border-radius:24px;background:linear-gradient(145deg,rgba(26,39,52,.98),rgba(6,12,18,.98) 62%,rgba(2,7,12,.99));border:1px solid rgba(244,217,169,.38);box-shadow:0 24px 54px rgba(0,0,0,.42),0 0 0 1px rgba(139,224,209,.08),inset 0 1px 0 rgba(255,255,255,.10);overflow:hidden}.kpi:before{left:16px;top:0;width:62px;height:5px;border-radius:0 0 14px 14px;background:linear-gradient(90deg,#F4D9A9 0%,#D5AE77 48%,#8BE0D1 100%);box-shadow:0 0 20px rgba(244,217,169,.34)}.kpi:after{content:'';position:absolute;inset:1px;border-radius:23px;background:radial-gradient(circle at 82% 18%,rgba(139,224,209,.18),transparent 30%),linear-gradient(135deg,rgba(255,255,255,.10),transparent 44%);pointer-events:none;z-index:-1}.kpi-content{position:relative;z-index:1;padding-top:4px}.kpi-content:after{content:'';position:absolute;right:-8px;bottom:-14px;width:72px;height:72px;border-radius:50%;background:radial-gradient(circle,rgba(244,217,169,.10),transparent 68%);pointer-events:none}.kpi-label{font-size:11.5px!important;color:#F8E6C8!important;letter-spacing:.105em!important;text-shadow:0 2px 10px rgba(244,217,169,.20)}.kpi-value{font-size:34px!important;color:#FFFFFF!important;letter-spacing:-.035em;text-shadow:0 3px 22px rgba(244,217,169,.30),0 0 22px rgba(139,224,209,.12)}.primary .kpi-value{font-size:36px!important}.money .kpi-value{font-size:26px!important;letter-spacing:-.045em;color:#F4D9A9!important}.kpi.primary{background:radial-gradient(circle at 14% 0%,rgba(244,217,169,.26),transparent 36%),linear-gradient(145deg,rgba(31,40,48,.99),rgba(6,12,18,.98) 64%)}.kpi.attention{border-color:rgba(139,224,209,.36);background:radial-gradient(circle at 84% 0%,rgba(139,224,209,.22),transparent 34%),linear-gradient(145deg,rgba(18,34,43,.99),rgba(5,11,17,.98) 64%)}.kpi.money{border-color:rgba(244,217,169,.42);background:radial-gradient(circle at 76% 0%,rgba(244,217,169,.20),transparent 32%),radial-gradient(circle at 12% 100%,rgba(139,224,209,.12),transparent 34%),linear-gradient(145deg,rgba(24,28,34,.99),rgba(4,9,14,.98) 64%)}.kpi:hover{transform:translateY(-4px);border-color:rgba(244,217,169,.58);box-shadow:0 30px 66px rgba(0,0,0,.50),0 0 0 1px rgba(139,224,209,.16),0 0 28px rgba(244,217,169,.10),inset 0 1px 0 rgba(255,255,255,.13)}
+				.kpis{grid-template-columns:repeat(6,minmax(0,1fr));gap:12px}.kpi{min-height:96px;padding:16px 15px 15px!important;border-radius:20px;background:linear-gradient(180deg,rgba(18,29,39,.98),rgba(7,13,20,.99));border:1px solid rgba(244,217,169,.24);box-shadow:0 14px 28px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.055);overflow:hidden}.kpi:before{left:16px;top:0;width:46px;height:4px;border-radius:0 0 10px 10px;background:#D5AE77;box-shadow:none}.kpi:after,.kpi-content:after{display:none!important}.kpi-content{padding-top:2px}.kpi-label{font-size:11px!important;color:#CDB58F!important;letter-spacing:.09em!important;text-shadow:none!important}.kpi-value{font-size:32px!important;color:#F5F7FA!important;letter-spacing:-.03em;text-shadow:none!important}.primary .kpi-value{font-size:33px!important}.money .kpi-value{font-size:24px!important;color:#F1D8AE!important}.kpi.primary{background:linear-gradient(180deg,rgba(25,31,37,.99),rgba(8,14,20,.99));border-color:rgba(213,174,119,.30)}.kpi.attention{background:linear-gradient(180deg,rgba(17,31,39,.99),rgba(7,13,20,.99));border-color:rgba(139,224,209,.24)}.kpi.attention:before{background:#8BE0D1}.kpi.money{background:linear-gradient(180deg,rgba(26,28,31,.99),rgba(7,13,20,.99));border-color:rgba(213,174,119,.28)}.kpi:hover{transform:translateY(-2px);border-color:rgba(244,217,169,.40);box-shadow:0 18px 34px rgba(0,0,0,.40),inset 0 1px 0 rgba(255,255,255,.075)}.table-head div{font-size:14px!important}.kpi-label{font-size:12px!important}.card-title{font-size:20px!important}
 				</style>
 				<script>
 				(function(){
@@ -844,37 +868,46 @@ table medidas_html
 				})();
 				</script>
 				"
-				VAR vTipJourneys = "<b>JOURNEYS (JORNADAS PAI)</b><br/>Quantidade total de jornadas pai no período e filtros ativos.<br/><br/><b>Tabela Origem:</b> <code>vw_powerbi_journeys</code><br/><b>Colunas Usadas:</b> <code>CODIGO</code>, <code>JOB</code>, <code>DATA_CADASTRO</code>, <code>FIM</code><br/><b>Regra de Cálculo:</b> Conta as linhas da tabela de jornadas filtradas pela coluna <code>DATA_CADASTRO</code> no slicer de período. Se filtros de produto, job ou etapa estiverem ativos (tabela de jobs filhos), a listagem restringe-se apenas aos journeys vinculados a esses jobs correspondentes."
-				VAR vTipJourneysAtivos = "<b>JOURNEYS ATIVOS (FIM = 1)</b><br/>Quantidade de jornadas pai consideradas ativas no recorte selecionado.<br/><br/><b>Tabela Origem:</b> <code>vw_powerbi_journeys</code><br/><b>Colunas Usadas:</b> <code>CODIGO</code>, <code>JOB</code>, <code>DATA_CADASTRO</code>, <code>FIM</code><br/><b>Regra de Cálculo:</b> Filtra as jornadas do período pelo critério <code>vw_powerbi_journeys[FIM] = 1</code>. Respeita os filtros cruzados de produtos, jobs e etapas aplicados no painel."
-				VAR vTipJobs = "<b>JOBS (TRABALHOS FILHOS)</b><br/>Quantidade total de jobs filhos associados a jornadas no recorte selecionado.<br/><br/><b>Tabela Origem:</b> <code>vw_powerbi_journeys_filhos_novos</code><br/><b>Colunas Usadas:</b> <code>CODIGO</code>, <code>JOB</code>, <code>DATA_CADASTRO</code>, <code>CODIGO_PRODUTO</code>, <code>GppNome</code>, <code>FIM</code><br/><b>Regra de Cálculo:</b> Conta os jobs cujos pais (jornadas) estão no período de cadastro selecionado. Os jobs são cruzados com os filtros de produto e etapa aplicados."
-				VAR vTipJobsAtivos = "<b>JOBS ATIVOS (FIM = 1)</b><br/>Quantidade de jobs filhos com status ativo no recorte selecionado.<br/><br/><b>Tabela Origem:</b> <code>vw_powerbi_journeys_filhos_novos</code><br/><b>Colunas Usadas:</b> <code>CODIGO</code>, <code>JOB</code>, <code>DATA_CADASTRO</code>, <code>FIM</code><br/><b>Regra de Cálculo:</b> Filtra a lista de jobs do recorte pelo critério <code>vw_powerbi_journeys_filhos_novos[FIM] = 1</code>. A etapa atual mostrada na distribuição do produto é baseada apenas nestes jobs ativos."
-				VAR vTipHeaderProd = "<b>PRODUTO (LINHA)</b><br/>Agrupamento dos jobs filhos por produto.<br/><br/><b>Tabela Origem:</b> <code>vw_powerbi_journeys_filhos_novos</code><br/><b>Coluna:</b> <code>GppNome</code>"
-				VAR vTipHeaderJobs = "<b>JOBS DO PRODUTO</b><br/>Total de jobs filhos vinculados a este produto no período selecionado.<br/><br/><b>Tabela Origem:</b> <code>vw_powerbi_journeys_filhos_novos</code>"
-				VAR vTipHeaderAtivos = "<b>ATIVOS DO PRODUTO</b><br/>Total de jobs filhos ativos do produto.<br/><br/><b>Regra:</b> <code>FIM = 1</code> na tabela <code>vw_powerbi_journeys_filhos_novos</code>"
-				VAR vTipHeaderCad = "<b>ETAPA ATUAL: CADASTRO</b><br/>Jobs ativos do produto cuja menor área atual é Cadastro.<br/><br/><b>Tabela Origem:</b> <code>vw_powerbi_journeys_menor_area_novos</code><br/><b>Coluna:</b> <code>ParNome</code> = 'CADASTRO'"
-				VAR vTipHeaderProc = "<b>ETAPA ATUAL: PROCURAÇÃO ELETRÔNICA</b><br/>Jobs ativos do produto parados na etapa Procuração Eletrônica.<br/><br/><b>Tabela Origem:</b> <code>vw_powerbi_journeys_menor_area_novos</code><br/><b>Coluna:</b> <code>ParNome</code> = 'PROCURAÇÃO ELETRÔNICA'"
-				VAR vTipHeaderCheck = "<b>ETAPA ATUAL: CHECKLIST</b><br/>Jobs ativos do produto na etapa Checklist.<br/><br/><b>Tabela Origem:</b> <code>vw_powerbi_journeys_menor_area_novos</code><br/><b>Coluna:</b> <code>ParNome</code> = 'CHECKLIST'"
-				VAR vTipHeaderOper = "<b>ETAPA ATUAL: OPERAÇÃO</b><br/>Jobs ativos do produto na etapa Operação.<br/><br/><b>Tabela Origem:</b> <code>vw_powerbi_journeys_menor_area_novos</code><br/><b>Coluna:</b> <code>ParNome</code> = 'OPERAÇÃO'"
-				VAR vTipHeaderReu = "<b>ETAPA ATUAL: REUNIÃO TÉCNICA</b><br/>Jobs ativos do produto na etapa Reunião Técnica.<br/><br/><b>Tabela Origem:</b> <code>vw_powerbi_journeys_menor_area_novos</code><br/><b>Coluna:</b> <code>ParNome</code> = 'REUNIÃO TÉCNICA'"
-				VAR vTipHeaderFim = "<b>ETAPA ATUAL: FIM</b><br/>Jobs ativos do produto na etapa Fim (finalizados).<br/><br/><b>Tabela Origem:</b> <code>vw_powerbi_journeys_menor_area_novos</code><br/><b>Coluna:</b> <code>ParNome</code> = 'FIM'"
+				VAR vTipJourneys = "<b>JOURNEYS PAI</b><br/>O que mostra: total de journeys pai no recorte da página principal.<br/><br/><b>Como calcula:</b> conta <code>vw_powerbi_journeys</code> no período selecionado e aplica filtros de produto, job e etapa por DAX.<br/><b>Origem:</b> <code>JOB</code>, <code>DATA_CADASTRO</code>, <code>FIM</code>.<br/><b>Como interpretar:</b> tamanho da carteira principal analisada no painel.<br/><b>Atenção:</b> sem relacionamento físico; o vínculo com jobs usa prefixo de <code>JOB</code>."
+				VAR vTipJourneysAtivos = "<b>JOURNEYS ATIVOS</b><br/>O que mostra: journeys pai vigentes no recorte atual.<br/><br/><b>Como calcula:</b> aplica <code>FIM = 1</code> sobre os journeys pai filtrados.<br/><b>Origem:</b> <code>vw_powerbi_journeys[FIM]</code>.<br/><b>Como interpretar:</b> contratos ou contas principais ainda ativos.<br/><b>Atenção:</b> <code>FIM = 1</code> significa ativo e não deve ser reinterpretado."
+				VAR vTipJobs = "<b>JOBS FILHOS</b><br/>O que mostra: total de jobs filhos vinculados aos journeys filtrados.<br/><br/><b>Como calcula:</b> conta linhas de <code>vw_powerbi_journeys_filhos_novos</code> após período, produto e vínculo com journey pai.<br/><b>Origem:</b> <code>CODIGO</code>, <code>JOB</code>, <code>CODIGO_PRODUTO</code>, <code>GppNome</code>.<br/><b>Como interpretar:</b> carga operacional total de serviços.<br/><b>Atenção:</b> um journey pode gerar vários jobs."
+				VAR vTipJobsAtivos = "<b>JOBS ATIVOS</b><br/>O que mostra: jobs filhos ativos no recorte atual.<br/><br/><b>Como calcula:</b> filtra os jobs filhos por <code>FIM = 1</code> depois dos filtros de período e produto.<br/><b>Origem:</b> <code>vw_powerbi_journeys_filhos_novos[FIM]</code>.<br/><b>Como interpretar:</b> serviços em andamento que demandam gestão.<br/><b>Atenção:</b> a distribuição por etapa usa essa base ativa."
+				VAR vTipCreditos = "<b>TOTAL CRÉDITOS PROJECT</b><br/>O que mostra: soma dos créditos PROJECT no recorte atual.<br/><br/><b>Como calcula:</b> soma <code>CREDITOS</code> dos jobs filtrados.<br/><b>Origem:</b> <code>vw_powerbi_journeys_filhos_novos[CREDITOS]</code>.<br/><b>Como interpretar:</b> potencial financeiro PROJECT do recorte.<br/><b>Atenção:</b> PJ360 fica separado na matriz expandida; <code>RF_VALOR</code> não é usado."
+				VAR vTipHonorarios = "<b>TOTAL HONORÁRIOS PROJECT</b><br/>O que mostra: soma dos honorários PROJECT líquidos no recorte atual.<br/><br/><b>Como calcula:</b> aplica <code>Honorarios * (1 - PERCENTUAL / 100)</code> por job e soma o resultado.<br/><b>Origem:</b> <code>Honorarios</code> e <code>PERCENTUAL</code> em <code>vw_powerbi_journeys_filhos_novos</code>.<br/><b>Como interpretar:</b> honorário PROJECT esperado após desconto percentual.<br/><b>Atenção:</b> PJ360 usa colunas <code>SIMULACAO_*</code> e fica separado no expandido."
+				VAR vTipHeaderProd = "<b>PRODUTO</b><br/>O que mostra: agrupamento dos jobs por produto.<br/><br/><b>Origem:</b> <code>vw_powerbi_journeys_filhos_novos[GppNome]</code>.<br/><b>Como interpretar:</b> cada linha consolida indicadores de uma solução tributária.<br/><b>Atenção:</b> clique na linha para abrir o detalhamento expandido."
+				VAR vTipHeaderJobs = "<b>JOBS</b><br/>O que mostra: total de jobs no produto e, em menor destaque, quantos estão ativos.<br/><br/><b>Como calcula:</b> conta jobs filhos do produto; ativos usam <code>FIM = 1</code>.<br/><b>Origem:</b> <code>vw_powerbi_journeys_filhos_novos</code>.<br/><b>Como interpretar:</b> volume operacional por produto."
+				VAR vTipHeaderEmpresas = "<b>EMPRESAS</b><br/>O que mostra: CNPJs únicos vinculados ao produto e CNPJs únicos em jobs ativos.<br/><br/><b>Como calcula:</b> contagem distinta de <code>ParCNPJ</code> por produto.<br/><b>Origem:</b> <code>vw_powerbi_journeys_filhos_novos[ParCNPJ]</code>.<br/><b>Como interpretar:</b> quantidade de empresas únicas, não quantidade de journeys."
+				VAR vTipHeaderOnboarding = "<b>ONBOARDING</b><br/>O que mostra: jobs ativos em etapas iniciais do fluxo.<br/><br/><b>Como calcula:</b> agrupa <code>CADASTRO</code> e <code>PROCURAÇÃO ELETRÔNICA</code> em <code>ParNome</code>.<br/><b>Origem:</b> <code>vw_powerbi_journeys_menor_area_novos[ParNome]</code>.<br/><b>Como interpretar:</b> entrada e preparação documental dos serviços."
+				VAR vTipHeaderCheck = "<b>CHECKLIST</b><br/>O que mostra: jobs ativos na etapa Checklist.<br/><br/><b>Como calcula:</b> conta jobs ativos com <code>ParNome</code> igual a <code>CHECKLIST</code>.<br/><b>Origem:</b> <code>vw_powerbi_journeys_menor_area_novos</code>.<br/><b>Como interpretar:</b> volume aguardando ou executando conferência de documentação."
+				VAR vTipHeaderOper = "<b>OPERAÇÃO</b><br/>O que mostra: jobs ativos na etapa Operação.<br/><br/><b>Como calcula:</b> conta jobs ativos com <code>ParNome</code> igual a <code>OPERAÇÃO</code>.<br/><b>Origem:</b> <code>vw_powerbi_journeys_menor_area_novos</code>.<br/><b>Como interpretar:</b> carga técnica em execução operacional."
+				VAR vTipHeaderNeg = "<b>NEGOCIAÇÃO</b><br/>O que mostra: jobs ativos na etapa Negociação.<br/><br/><b>Como calcula:</b> conta jobs ativos com <code>ParNome</code> igual a <code>NEGOCIAÇÃO</code>.<br/><b>Origem:</b> <code>vw_powerbi_journeys_menor_area_novos[ParNome]</code>.<br/><b>Como interpretar:</b> oportunidades em tratativa comercial ou aceite."
+				VAR vTipHeaderImp = "<b>IMPLANTAÇÃO</b><br/>O que mostra: jobs ativos cuja etapa indica implantação.<br/><br/><b>Como calcula:</b> considera <code>IMP</code>, <code>IMPLANTAÇÃO</code>, <code>IMPLANTACAO</code> ou valores iniciados por <code>IMP</code>.<br/><b>Origem:</b> <code>vw_powerbi_journeys_menor_area_novos[ParNome]</code>.<br/><b>Atenção:</b> <code>IMP</code> é etapa válida e mapeia para implantação."
+				VAR vTipHeaderFim = "<b>FIM</b><br/>O que mostra: jobs ativos que estão na etapa Fim.<br/><br/><b>Como calcula:</b> conta jobs ativos com <code>ParNome</code> igual a <code>FIM</code>.<br/><b>Origem:</b> <code>vw_powerbi_journeys_menor_area_novos[ParNome]</code>.<br/><b>Como interpretar:</b> serviços finalizados dentro da etapa operacional."
+				VAR vTipHeaderCreditos = "<b>CRÉDITOS PROJECT</b><br/>O que mostra: total PROJECT de créditos por produto.<br/><br/><b>Como calcula:</b> soma <code>CREDITOS</code> nos jobs do produto.<br/><b>Atenção:</b> PJ360 usa <code>SIMULACAO_CREDITO</code> e aparece no expandido."
+				VAR vTipHeaderHonorarios = "<b>HONORÁRIOS PROJECT</b><br/>O que mostra: honorários PROJECT líquidos por produto.<br/><br/><b>Como calcula:</b> soma <code>Honorarios * (1 - PERCENTUAL / 100)</code>.<br/><b>Atenção:</b> PJ360 usa <code>SIMULACAO_HONORARIO</code> e aparece no expandido."
+				VAR vTipAbrirDetalhamento = "<b>ABRIR DETALHAMENTO</b><br/>Navega para a página de detalhe operacional.<br/><br/><b>Como usar:</b> clique para ver a lista granular de jobs por produto, journey, status e etapa.<br/><b>Atenção:</b> os slicers sincronizados continuam respeitando o recorte atual."
 				VAR vCards =
 				    "<div class='kpis'>"
-				        & "<div class='kpi primary' data-tip='" & vTipJourneys & "'><div class='kpi-content'><div class='kpi-label'>Clientes (Journeys)</div><div class='kpi-value'>" & FORMAT ( vJourneys, vIntFormat ) & "</div><div class='kpi-note'>Volume total de contratos</div></div><div class='kpi-side-badge'><div class='badge-val'>" & FORMAT ( vPctAtivosJourneys, "0.0%" ) & "</div><div class='badge-lbl'>Ativos</div></div></div>"
-				        & "<div class='kpi attention' data-tip='" & vTipJourneysAtivos & "'><div class='kpi-content'><div class='kpi-label'>Clientes Ativos</div><div class='kpi-value'>" & FORMAT ( vJourneysAtivos, vIntFormat ) & "</div><div class='kpi-note'>Operação vigente em andamento</div></div><div class='kpi-side-badge'><div class='badge-val'>" & FORMAT ( vInativosJourneys, vIntFormat ) & "</div><div class='badge-lbl'>Históricos</div></div></div>"
-				        & "<div class='kpi primary' data-tip='" & vTipJobs & "'><div class='kpi-content'><div class='kpi-label'>Serviços (Jobs)</div><div class='kpi-value'>" & FORMAT ( vJobsTotais, vIntFormat ) & "</div><div class='kpi-note'>Subprodutos solicitados</div></div><div class='kpi-side-badge'><div class='badge-val'>" & FORMAT ( vCrossSell, "0.0" ) & "</div><div class='badge-lbl'>Jobs/Cliente</div></div></div>"
-				        & "<div class='kpi attention' data-tip='" & vTipJobsAtivos & "'><div class='kpi-content'><div class='kpi-label'>Serviços Ativos</div><div class='kpi-value'>" & FORMAT ( vJobsAtivos, vIntFormat ) & "</div><div class='kpi-note'>Carga de trabalho em execução</div></div><div class='kpi-side-badge'><div class='badge-val'>" & FORMAT ( vPctAtivosJobs, "0.0%" ) & "</div><div class='badge-lbl'>Operando</div></div></div>"
+				        & "<div class='kpi primary' data-tip='" & vTipJourneys & "'><div class='kpi-content'><div class='kpi-label'>Journeys</div><div class='kpi-value'>" & FORMAT ( vJourneys, vIntFormat ) & "</div></div></div>"
+				        & "<div class='kpi attention' data-tip='" & vTipJourneysAtivos & "'><div class='kpi-content'><div class='kpi-label'>Journey Ativos</div><div class='kpi-value'>" & FORMAT ( vJourneysAtivos, vIntFormat ) & "</div></div></div>"
+				        & "<div class='kpi primary' data-tip='" & vTipJobs & "'><div class='kpi-content'><div class='kpi-label'>Jobs</div><div class='kpi-value'>" & FORMAT ( vJobsTotais, vIntFormat ) & "</div></div></div>"
+				        & "<div class='kpi attention' data-tip='" & vTipJobsAtivos & "'><div class='kpi-content'><div class='kpi-label'>Jobs Ativos</div><div class='kpi-value'>" & FORMAT ( vJobsAtivos, vIntFormat ) & "</div></div></div>"
+				        & "<div class='kpi money' data-tip='" & vTipCreditos & "'><div class='kpi-content'><div class='kpi-label'>Total Créditos</div><div class='kpi-value'>" & vTotalCreditosFmt & "</div></div></div>"
+				        & "<div class='kpi money' data-tip='" & vTipHonorarios & "'><div class='kpi-content'><div class='kpi-label'>Total Honorários</div><div class='kpi-value'>" & vTotalHonorariosFmt & "</div></div></div>"
 				    & "</div>"
 				VAR vHead =
 				    "<div class='table-head'>"
 				        & "<div data-tip='" & vTipHeaderProd & "'>Produto</div>"
 				        & "<div data-tip='" & vTipHeaderJobs & "'>Jobs</div>"
-				        & "<div data-tip='" & vTipHeaderAtivos & "'>Ativos</div>"
-				        & "<div data-tip='" & vTipHeaderCad & "'>Cadastro</div>"
-				        & "<div data-tip='" & vTipHeaderProc & "'>Procur.</div>"
+				        & "<div data-tip='" & vTipHeaderEmpresas & "'>Empresas</div>"
+				        & "<div data-tip='" & vTipHeaderOnboarding & "'>Onboarding</div>"
 				        & "<div data-tip='" & vTipHeaderCheck & "'>Checklist</div>"
 				        & "<div data-tip='" & vTipHeaderOper & "'>Operação</div>"
-				        & "<div data-tip='" & vTipHeaderReu & "'>Reunião</div>"
+				        & "<div data-tip='" & vTipHeaderNeg & "'>Negociação</div>"
+				        & "<div data-tip='" & vTipHeaderImp & "'>IMPLANTAÇÃO</div>"
 				        & "<div data-tip='" & vTipHeaderFim & "'>Fim</div>"
+				        & "<div data-tip='" & vTipHeaderCreditos & "'>Créditos</div>"
+				        & "<div data-tip='" & vTipHeaderHonorarios & "'>Honorários</div>"
 				    & "</div>"
 				VAR vRows =
 				    CONCATENATEX (
@@ -884,73 +917,97 @@ table medidas_html
 				        VAR pc = [__ProdutoCodigo]
 				        VAR vJobs = [__Jobs]
 				        VAR vAtivos = [__Ativos]
-				        VAR vCad = COALESCE ( [__Cadastro], 0 )
-				        VAR vProc = COALESCE ( [__Procuracao], 0 )
+				        VAR vEmpresas = COALESCE ( [__Empresas], 0 )
+				        VAR vEmpresasAtivas = COALESCE ( [__EmpresasAtivas], 0 )
+				        VAR vOnboarding = COALESCE ( [__Onboarding], 0 )
 				        VAR vCheck = COALESCE ( [__Checklist], 0 )
 				        VAR vOper = COALESCE ( [__Operacao], 0 )
-				        VAR vReu = COALESCE ( [__Reuniao], 0 )
+				        VAR vNeg = COALESCE ( [__Negociacao], 0 )
+				        VAR vImp = COALESCE ( [__Implantacao], 0 )
 				        VAR vFim = COALESCE ( [__Fim], 0 )
+				        VAR vCreditos = [__ProjectCredito]
+				        VAR vHonorarios = [__ProjectHonorario]
+				        VAR vPJ360Credito = [__PJ360Credito]
+				        VAR vPJ360CreditoQtd = [__PJ360CreditoQtd]
+				        VAR vPJ360Honorario = [__PJ360Honorario]
+				        VAR vPJ360HonorarioQtd = [__PJ360HonorarioQtd]
+				        VAR vProjectCredito = [__ProjectCredito]
+				        VAR vProjectCreditoQtd = [__ProjectCreditoQtd]
+				        VAR vProjectHonorario = [__ProjectHonorario]
+				        VAR vProjectHonorarioQtd = [__ProjectHonorarioQtd]
+				        VAR vCreditosFmt = IF ( ISBLANK ( vCreditos ), "R$ -", FORMAT ( vCreditos, vMoneyFormat ) )
+				        VAR vHonorariosFmt = IF ( ISBLANK ( vHonorarios ), "R$ -", FORMAT ( vHonorarios, vMoneyFormat ) )
+				        VAR vPJ360CreditoFmt = IF ( ISBLANK ( vPJ360Credito ), "R$ -", FORMAT ( vPJ360Credito, vMoneyFormat ) )
+				        VAR vPJ360HonorarioFmt = IF ( ISBLANK ( vPJ360Honorario ), "R$ -", FORMAT ( vPJ360Honorario, vMoneyFormat ) )
+				        VAR vProjectCreditoFmt = IF ( ISBLANK ( vProjectCredito ), "R$ -", FORMAT ( vProjectCredito, vMoneyFormat ) )
+				        VAR vProjectHonorarioFmt = IF ( ISBLANK ( vProjectHonorario ), "R$ -", FORMAT ( vProjectHonorario, vMoneyFormat ) )
 				        VAR vPctAtivos = DIVIDE ( vAtivos, vJobs, 0 )
-				        VAR vTotalEtapas = vCad + vProc + vCheck + vOper + vReu + vFim
+				        VAR vPctEmpresasAtivas = DIVIDE ( vEmpresasAtivas, vEmpresas, 0 )
+				        VAR vTotalEtapas = vOnboarding + vCheck + vOper + vNeg + vImp + vFim
+				        VAR vJobsAtivosProduto = SELECTCOLUMNS ( FILTER ( vJobsBase, [__ProdutoCodigo] = pc && [__Fim] = 1 ), "__PmvJob", [__Codigo] )
 				        VAR vStageTable =
 				            UNION (
-				                ROW ( "Ordem", 1, "Etapa", "Cadastro", "Qtd", vCad, "Class", "cad" ),
-				                ROW ( "Ordem", 2, "Etapa", "Procuração", "Qtd", vProc, "Class", "proc" ),
-				                ROW ( "Ordem", 3, "Etapa", "Checklist", "Qtd", vCheck, "Class", "check" ),
-				                ROW ( "Ordem", 4, "Etapa", "Operação", "Qtd", vOper, "Class", "oper" ),
-				                ROW ( "Ordem", 5, "Etapa", "Reunião Técnica", "Qtd", vReu, "Class", "reu" ),
+				                ROW ( "Ordem", 1, "Etapa", "Onboarding", "Qtd", vOnboarding, "Class", "cad" ),
+				                ROW ( "Ordem", 2, "Etapa", "Checklist", "Qtd", vCheck, "Class", "check" ),
+				                ROW ( "Ordem", 3, "Etapa", "Operação", "Qtd", vOper, "Class", "oper" ),
+				                ROW ( "Ordem", 4, "Etapa", "Negociação", "Qtd", vNeg, "Class", "reu" ),
+				                ROW ( "Ordem", 5, "Etapa", "IMPLANTAÇÃO", "Qtd", vImp, "Class", "proc" ),
 				                ROW ( "Ordem", 6, "Etapa", "Fim", "Qtd", vFim, "Class", "fim" )
 				            )
 				        VAR vStageCells =
-				            "<div class='metric'><b>" & FORMAT ( vJobs, vIntFormat ) & "</b><small>jobs</small></div>"
-				                & "<div class='metric active'><b>" & FORMAT ( vAtivos, vIntFormat ) & "</b><small>ativos</small></div>"
+					            "<div class='metric active' data-tip='<b>JOBS DO PRODUTO</b><br/>O que mostra: total de jobs do produto e quantos estão ativos.<br/><br/><b>Total:</b> " & FORMAT ( vJobs, vIntFormat ) & "<br/><b>Ativos:</b> " & FORMAT ( vAtivos, vIntFormat ) & "<br/><b>% ativos:</b> " & FORMAT ( vPctAtivos, vPctFormat ) & "<br/><b>Regra:</b> ativo quando <code>FIM = 1</code>.'><b>" & FORMAT ( vJobs, vIntFormat ) & "</b><small>" & FORMAT ( vAtivos, vIntFormat ) & " ativos</small></div>"
+					                & "<div class='metric active' data-tip='<b>EMPRESAS DO PRODUTO</b><br/>O que mostra: CNPJs únicos vinculados ao produto.<br/><br/><b>Total:</b> " & FORMAT ( vEmpresas, vIntFormat ) & "<br/><b>Ativas:</b> " & FORMAT ( vEmpresasAtivas, vIntFormat ) & "<br/><b>% ativas:</b> " & FORMAT ( vPctEmpresasAtivas, vPctFormat ) & "<br/><b>Origem:</b> <code>ParCNPJ</code> em jobs filhos.'><b>" & FORMAT ( vEmpresas, vIntFormat ) & "</b><small>" & FORMAT ( vEmpresasAtivas, vIntFormat ) & " ativas</small></div>"
 				                & CONCATENATEX (
 				                    vStageTable,
 				                    VAR q = [Qtd]
 				                    VAR pct = DIVIDE ( q, vTotalEtapas, 0 )
-				                    VAR cellTip = "<b>ETAPA: " & [Etapa] & "</b><br/>Jobs nesta etapa: <b>" & FORMAT ( q, vIntFormat ) & "</b> ativos.<br/>Representatividade no produto: <b>" & FORMAT ( pct, vPctFormat ) & "</b>.<br/><br/><b>Tabela Origem:</b> <code>vw_powerbi_journeys_menor_area_novos</code><br/><b>Vínculo:</b> <code>PmvJob</code> = <code>CODIGO</code> do Job Filho.<br/><b>Coluna:</b> <code>ParNome</code>"
+					                    VAR cellTip = "<b>ETAPA: " & [Etapa] & "</b><br/>O que mostra: jobs ativos do produto agrupados nesta etapa.<br/><br/><b>Quantidade:</b> " & FORMAT ( q, vIntFormat ) & "<br/><b>Participação no produto:</b> " & FORMAT ( pct, vPctFormat ) & "<br/><b>Origem:</b> <code>vw_powerbi_journeys_menor_area_novos[ParNome]</code><br/><b>Vínculo:</b> <code>PmvJob</code> = <code>CODIGO</code> do job filho.<br/><b>Atenção:</b> esta coluna é agrupada; abra a linha para ver as etapas detalhadas."
 				                    RETURN "<div class='metric " & [Class] & "' data-tip='" & cellTip & "'><b>" & IF ( q = 0, "0", FORMAT ( q, vIntFormat ) ) & "</b><small>" & FORMAT ( pct, vPctFormat ) & "</small></div>",
 				                    "",
 				                    [Ordem], ASC
 				                )
-				        VAR vJobsProduto =
+					                & "<div class='metric money' data-tip='<b>CRÉDITOS PROJECT</b><br/>O que mostra: soma de créditos PROJECT para este produto.<br/><br/><b>Valor:</b> " & vProjectCreditoFmt & "<br/><b>Origem:</b> <code>CREDITOS</code>.<br/><b>Atenção:</b> valores PJ360 ficam separados na matriz expandida.'><b>" & vCreditosFmt & "</b></div>"
+					                & "<div class='metric money' data-tip='<b>HONORÁRIOS PROJECT</b><br/>O que mostra: honorários PROJECT líquidos para este produto.<br/><br/><b>Valor:</b> " & vProjectHonorarioFmt & "<br/><b>Regra:</b> <code>Honorarios * (1 - PERCENTUAL / 100)</code>.<br/><b>Atenção:</b> valores PJ360 ficam separados na matriz expandida.'><b>" & vHonorariosFmt & "</b></div>"
+				        VAR vStageDetailRaw = FILTER ( vAreas, [__PmvJob] IN vJobsAtivosProduto )
+				        VAR vStageDetailNames =
+				            DISTINCT (
+				                UNION (
+				                    SELECTCOLUMNS ( vStageDetailRaw, "Etapa", [__Etapa] ),
+				                    DATATABLE ( "Etapa", STRING, { { "CADASTRO" }, { "PROCURAÇÃO ELETRÔNICA" }, { "CHECKLIST" }, { "OPERAÇÃO" }, { "REUNIÃO TÉCNICA" }, { "REVISÃO" }, { "RETIFICAÇÃO" }, { "NEGOCIAÇÃO" }, { "QUALIDADE" }, { "COMPENSAÇÃO" }, { "FIM" } } )
+				                )
+				            )
+				        VAR vStageDetailTable =
 				            ADDCOLUMNS (
-				                FILTER ( vJobsBase, [__ProdutoCodigo] = pc ),
-				                "__Etapa", VAR c = [__Codigo] RETURN COALESCE ( MAXX ( FILTER ( vAreas, [__PmvJob] = c ), [__Etapa] ), IF ( [__Fim] = 1, "SEM ETAPA", "INATIVO" ) )
+				                vStageDetailNames,
+				                "Ordem", SWITCH ( [Etapa], "CADASTRO", 1, "PROCURAÇÃO ELETRÔNICA", 2, "CHECKLIST", 3, "OPERAÇÃO", 4, "REUNIÃO TÉCNICA", 5, "REVISÃO", 6, "RETIFICAÇÃO", 7, "NEGOCIAÇÃO", 8, "QUALIDADE", 9, "COMPENSAÇÃO", 10, "FIM", 99, 90 ),
+				                "Qtd", VAR e = [Etapa] RETURN COALESCE ( COUNTROWS ( FILTER ( vStageDetailRaw, [__Etapa] = e ) ), 0 )
 				            )
-				        VAR vPrimeiros = TOPN ( vTopDetalhes, vJobsProduto, [__Data], ASC, [__Job], ASC )
-				        VAR vUltimos = TOPN ( vTopDetalhes, vJobsProduto, [__Data], DESC, [__Job], DESC )
-				        VAR vPrimeirosHTML =
-				            CONCATENATEX (
-				                vPrimeiros,
-				                "<div class='det-row'><div>" & [__Job] & "</div><div><span class='chip'>" & [__Etapa] & "</span></div><div>" & FORMAT ( [__Data], "dd/MM/yyyy" ) & "</div></div>",
-				                "",
-				                [__Data], ASC
-				            )
-				        VAR vUltimosHTML =
-				            CONCATENATEX (
-				                vUltimos,
-				                "<div class='det-row'><div>" & [__Job] & "</div><div><span class='chip'>" & [__Etapa] & "</span></div><div>" & FORMAT ( [__Data], "dd/MM/yyyy" ) & "</div></div>",
-				                "",
-				                [__Data], DESC
-				            )
+				        VAR vTotalEtapasDetalhe = SUMX ( vStageDetailTable, [Qtd] )
 				        VAR vStageLines =
 				            CONCATENATEX (
-				                vStageTable,
-				                VAR q = [Qtd]
-				                VAR pct = DIVIDE ( q, vTotalEtapas, 0 )
-				                VAR lineTip = "<b>ETAPA: " & [Etapa] & "</b><br/>Quantidade: <b>" & FORMAT ( q, vIntFormat ) & "</b> jobs ativos.<br/>Participação: <b>" & FORMAT ( pct, vPctFormat ) & "</b>.<br/><br/><b>Tabela Origem:</b> <code>vw_powerbi_journeys_menor_area_novos</code><br/><b>Coluna:</b> <code>ParNome</code>"
-				                RETURN "<div class='stage-line' data-tip='" & lineTip & "'><div>" & [Etapa] & "</div><div class='bar'><span style='width:" & FORMAT ( ROUND ( pct * 100, 0 ), "0" ) & "%'></span></div><div class='num'>" & FORMAT ( q, vIntFormat ) & "</div><div class='pcttxt'>" & FORMAT ( pct, vPctFormat ) & "</div></div>",
+				                vStageDetailTable,
+				                VAR q = COALESCE ( [Qtd], 0 )
+				                VAR pct = DIVIDE ( q, vTotalEtapasDetalhe, 0 )
+				                VAR barWidth = IF ( q = 0, 0, ROUND ( pct * 100, 0 ) )
+					                VAR lineTip = "<b>ETAPA DETALHADA: " & [Etapa] & "</b><br/>O que mostra: quantidade de jobs ativos nesta etapa real de <code>ParNome</code>.<br/><br/><b>Quantidade:</b> " & FORMAT ( q, vIntFormat ) & "<br/><b>Participação:</b> " & FORMAT ( pct, vPctFormat ) & "<br/><b>Origem:</b> <code>vw_powerbi_journeys_menor_area_novos[ParNome]</code>.<br/><b>Como interpretar:</b> granularidade completa da etapa, sem o agrupamento da linha principal."
+				                RETURN "<div class='stage-line' data-tip='" & lineTip & "'><div>" & [Etapa] & "</div><div class='bar'><span style='width:" & FORMAT ( barWidth, "0" ) & "%'></span></div><div class='num'>" & FORMAT ( q, vIntFormat ) & "</div><div class='pcttxt'>" & FORMAT ( pct, vPctFormat ) & "</div></div>",
 				                "",
 				                [Ordem], ASC
 				            )
+				        VAR vFinanceMatrix =
+				            "<div class='finance-grid'>"
+					                & "<div class='finance-cell group' data-tip='<b>INDICADOR</b><br/>Mostra se a linha compara créditos ou honorários.<br/><br/><b>Como interpretar:</b> leia cada indicador separando origem PJ360 e PROJECT.' style='background:rgba(244,217,169,.08);color:#F4D9A9'>Indicador</div><div class='finance-cell group' data-tip='<b>PJ360</b><br/>Usa apenas colunas com prefixo <code>SIMULACAO</code>.<br/><br/><b>Crédito:</b> <code>SIMULACAO_CREDITO</code><br/><b>Honorário:</b> <code>SIMULACAO_HONORARIO</code>.' style='grid-column:span 2'>PJ360</div><div class='finance-cell group' data-tip='<b>PROJECT</b><br/>Usa colunas sem prefixo <code>SIMULACAO</code>.<br/><br/><b>Crédito:</b> <code>CREDITOS</code><br/><b>Honorário líquido:</b> <code>Honorarios * (1 - PERCENTUAL / 100)</code>.' style='grid-column:span 2'>PROJECT</div>"
+					                & "<div class='finance-cell sub' data-tip='<b>TIPO</b><br/>Categoria financeira exibida na linha.'>Tipo</div><div class='finance-cell sub' data-tip='<b>VALOR PJ360</b><br/>Soma do valor PJ360 para o indicador selecionado.'>VALOR</div><div class='finance-cell sub' data-tip='<b>QTD PJ360</b><br/>Conta jobs com valor PJ360 preenchido e maior que zero.'>QTD</div><div class='finance-cell sub' data-tip='<b>VALOR PROJECT</b><br/>Soma do valor PROJECT para o indicador selecionado.'>VALOR</div><div class='finance-cell sub' data-tip='<b>QTD PROJECT</b><br/>Conta jobs com valor PROJECT preenchido e maior que zero.'>QTD</div>"
+					                & "<div class='finance-cell row-label' data-tip='<b>CRÉDITO</b><br/>Compara créditos PJ360 e PROJECT do produto.'>Crédito</div><div class='finance-cell placeholder' data-tip='<b>PJ360 CRÉDITO - VALOR</b><br/>Soma de <code>SIMULACAO_CREDITO</code> no produto.<br/><br/><b>Valor:</b> " & vPJ360CreditoFmt & "'>" & vPJ360CreditoFmt & "</div><div class='finance-cell placeholder' data-tip='<b>PJ360 CRÉDITO - QTD</b><br/>Jobs com <code>SIMULACAO_CREDITO</code> maior que zero.<br/><br/><b>Quantidade:</b> " & FORMAT ( vPJ360CreditoQtd, vIntFormat ) & "'>" & FORMAT ( vPJ360CreditoQtd, vIntFormat ) & "</div><div class='finance-cell placeholder' data-tip='<b>PROJECT CRÉDITO - VALOR</b><br/>Soma de <code>CREDITOS</code> no produto.<br/><br/><b>Valor:</b> " & vProjectCreditoFmt & "'>" & vProjectCreditoFmt & "</div><div class='finance-cell placeholder' data-tip='<b>PROJECT CRÉDITO - QTD</b><br/>Jobs com <code>CREDITOS</code> maior que zero.<br/><br/><b>Quantidade:</b> " & FORMAT ( vProjectCreditoQtd, vIntFormat ) & "'>" & FORMAT ( vProjectCreditoQtd, vIntFormat ) & "</div>"
+					                & "<div class='finance-cell row-label' data-tip='<b>HONORÁRIOS</b><br/>Compara honorários PJ360 e PROJECT do produto.'>Honorários</div><div class='finance-cell placeholder' data-tip='<b>PJ360 HONORÁRIOS - VALOR</b><br/>Soma de <code>SIMULACAO_HONORARIO</code> no produto.<br/><br/><b>Valor:</b> " & vPJ360HonorarioFmt & "'>" & vPJ360HonorarioFmt & "</div><div class='finance-cell placeholder' data-tip='<b>PJ360 HONORÁRIOS - QTD</b><br/>Jobs com <code>SIMULACAO_HONORARIO</code> maior que zero.<br/><br/><b>Quantidade:</b> " & FORMAT ( vPJ360HonorarioQtd, vIntFormat ) & "'>" & FORMAT ( vPJ360HonorarioQtd, vIntFormat ) & "</div><div class='finance-cell placeholder' data-tip='<b>PROJECT HONORÁRIOS - VALOR</b><br/>Soma de <code>Honorarios * (1 - PERCENTUAL / 100)</code> no produto.<br/><br/><b>Valor:</b> " & vProjectHonorarioFmt & "'>" & vProjectHonorarioFmt & "</div><div class='finance-cell placeholder' data-tip='<b>PROJECT HONORÁRIOS - QTD</b><br/>Jobs com <code>Honorarios</code> maior que zero.<br/><br/><b>Quantidade:</b> " & FORMAT ( vProjectHonorarioQtd, vIntFormat ) & "'>" & FORMAT ( vProjectHonorarioQtd, vIntFormat ) & "</div>"
+					            & "</div><div class='finance-note' data-tip='<b>REGRA FINANCEIRA</b><br/>PJ360 usa <code>SIMULACAO_CREDITO</code> e <code>SIMULACAO_HONORARIO</code>.<br/>PROJECT usa <code>CREDITOS</code> e <code>Honorarios</code> líquido após desconto de <code>PERCENTUAL</code>.<br/><br/><b>QTD:</b> contagem de jobs com valor maior que zero.<br/><b>Atenção:</b> <code>RF_VALOR</code> existe no modelo, mas não é usado.'><b>Regra:</b> PJ360 usa colunas <code>SIMULACAO_*</code>. PROJECT usa <code>CREDITOS</code> e <code>Honorarios</code> líquido após desconto de <code>PERCENTUAL</code>. QTD é contagem de jobs com valor maior que zero. <code>RF_VALOR</code> não é usado.</div>"
 				        RETURN
 				            "<details class='diag-row'><summary><div class='row-grid'>"
-				                & "<div class='prod-cell' data-tip='<b>PRODUTO:</b> " & pTip & "<br/><br/><b>Total Jobs:</b> " & FORMAT ( vJobs, vIntFormat ) & " (tabela <code>vw_powerbi_journeys_filhos_novos</code>)<br/><b>Jobs Ativos:</b> " & FORMAT ( vAtivos, vIntFormat ) & " (regra <code>FIM = 1</code>)<br/><b>Percentual Ativo:</b> " & FORMAT ( vPctAtivos, vPctFormat ) & "<br/><b>Origem:</b> agrupamento por <code>vw_powerbi_journeys_filhos_novos[GppNome]</code>.'><div class='prod-title'>" & p & "</div><div class='prod-sub'>" & FORMAT ( vJobs, vIntFormat ) & " jobs · " & FORMAT ( vAtivos, vIntFormat ) & " ativos</div><div class='prod-progress'><span style='width:" & FORMAT ( ROUND ( vPctAtivos * 100, 0 ), "0" ) & "%'></span></div></div>"
+					                & "<div class='prod-cell' data-tip='<b>PRODUTO:</b> " & pTip & "<br/><br/><b>O que mostra:</b> linha consolidada do produto.<br/><b>Total Jobs:</b> " & FORMAT ( vJobs, vIntFormat ) & "<br/><b>Jobs Ativos:</b> " & FORMAT ( vAtivos, vIntFormat ) & "<br/><b>Percentual Ativo:</b> " & FORMAT ( vPctAtivos, vPctFormat ) & "<br/><b>Origem:</b> <code>vw_powerbi_journeys_filhos_novos[GppNome]</code>.<br/><b>Como usar:</b> clique para expandir etapas detalhadas e matriz financeira.'><div class='prod-title'>" & p & "</div><div class='prod-sub'>Clique para expandir detalhes</div><div class='prod-progress'><span style='width:" & FORMAT ( ROUND ( vPctAtivos * 100, 0 ), "0" ) & "%'></span></div></div>"
 				                & vStageCells
 				            & "</div></summary><div class='details'>"
-				                & "<div class='card'><div class='card-title'>Distribuição por etapa</div>" & vStageLines & "</div>"
-				                & "<div class='card'><div class='card-title'>Primeiros e últimos jobs</div><div class='det-head'><div>Job</div><div>Etapa</div><div>Cadastro</div></div><div class='det-rows-scroll'>" & vPrimeirosHTML & vUltimosHTML & "</div></div>"
+				                & "<div class='card'><div class='card-title'><span>Distribuição por etapa</span><span class='card-sub'>Total e % dos jobs ativos</span></div>" & vStageLines & "</div>"
+					                & "<div class='card finance-card'><div class='card-title' data-tip='<b>CRÉDITOS E HONORÁRIOS</b><br/>Matriz comparativa por produto separando PJ360 e PROJECT.<br/><br/><b>Como ler:</b> VALOR mostra soma financeira; QTD mostra jobs com valor maior que zero.<br/><b>Atenção:</b> PROJECT Honorários aplica desconto de <code>PERCENTUAL</code>; <code>RF_VALOR</code> não participa.'><span>Créditos e Honorários</span><span class='card-sub'>PJ360 x PROJECT</span></div>" & vFinanceMatrix & "</div>"
 				            & "</div></details>",
 				        "",
 				        [__Jobs], DESC,
@@ -960,7 +1017,7 @@ table medidas_html
 				RETURN
 				    vCSS
 				        & "<div class='diag-wrap'>"
-				        & "<div class='sticky'><div class='diag-head'><div class='slicer-space'><div class='detailbar'><div class='detail-pill'>Abrir detalhamento <span>›</span></div></div></div>" & vCards & "</div></div>"
+				        & "<div class='sticky'><div class='diag-head'><div class='slicer-space'><div class='detailbar'><div class='detail-pill' data-tip='" & vTipAbrirDetalhamento & "'>Abrir detalhamento <span>›</span></div></div></div>" & vCards & "</div></div>"
 				        & vHead
 				        & "<div class='rows'>" & IF ( ISBLANK ( vRows ), "<div class='empty'>Nenhum produto encontrado para os filtros atuais.</div>", vRows ) & "</div>"
 				        & "<div class='foot'>" & vNota & "</div>"
